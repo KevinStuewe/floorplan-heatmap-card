@@ -102,6 +102,11 @@ export function normalizeConfig(raw) {
     angle: Number(o.angle) || 0,
     width: Math.max(4, Number(o.width) || 45),
     type: OPENING_TYPES.includes(o.type) ? o.type : 'door',
+    // Door swing only — which end of the opening is the hinge, and
+    // which side of the wall the leaf swings into. Purely cosmetic,
+    // the solver treats an opening the same regardless.
+    flip_hinge: Boolean(o.flip_hinge),
+    flip_swing: Boolean(o.flip_swing),
   }));
 
   fp.sensors = (fp.sensors || []).map((s) => ({

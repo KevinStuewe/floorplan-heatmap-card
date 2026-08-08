@@ -14,7 +14,7 @@ import {
   buildWalls, uid, OPENING_TYPES, WALL_TYPES,
   roomAreaSqm, roomSizeMeters, resizeRoomPoints,
 } from './model.js';
-import { wallGaps, wallCovers } from './renderer.js';
+import { wallGaps, wallCovers, doorSwingGeometry } from './renderer.js';
 import { axisSnap, closestPointOnSegment, distToSegment, pointInPolygon, polygonCentroid, bboxOfPoints, clamp } from './geometry.js';
 import { t, detectLanguage, roomNameSuggestions } from './i18n.js';
 
@@ -1122,12 +1122,11 @@ class PlanEditor {
         out.push(`<line x1="${o.x - hx}" y1="${o.y - hy}" x2="${o.x + hx}" y2="${o.y + hy}"
           stroke="${color}" stroke-width="3" vector-effect="non-scaling-stroke" style="pointer-events:none"/>`);
       } else if (o.type === 'door') {
-        const r = o.width;
-        const sweepX = o.x - hx + Math.cos(o.angle - Math.PI / 2) * r;
-        const sweepY = o.y - hy + Math.sin(o.angle - Math.PI / 2) * r;
-        out.push(`<path d="M ${o.x - hx} ${o.y - hy} L ${o.x + hx} ${o.y + hy} M ${o.x + hx} ${o.y + hy} A ${r} ${r} 0 0 0 ${sweepX} ${sweepY}"
+        const g = doorSwingGeometry(o);
+        const sweepFlag = g.anticlockwise ? 0 : 1;
+        out.push(`<path d="M ${g.hinge.x} ${g.hinge.y} L ${g.close.x} ${g.close.y} M ${g.close.x} ${g.close.y} A ${g.radius} ${g.radius} 0 0 ${sweepFlag} ${g.open.x} ${g.open.y}"
           fill="none" stroke="${color}" stroke-width="1.5" vector-effect="non-scaling-stroke"
-          stroke-dasharray="${selected ? '' : ''}" style="pointer-events:none"/>`);
+          style="pointer-events:none"/>`);
       } else {
         out.push(`<line x1="${o.x - hx}" y1="${o.y - hy}" x2="${o.x + hx}" y2="${o.y + hy}"
           stroke="${color}" stroke-width="2" stroke-dasharray="4 4" vector-effect="non-scaling-stroke" style="pointer-events:none"/>`);
@@ -1499,6 +1498,14 @@ class PlanEditor {
         <label>${t(lang, 'planEditor.openingWidthLabel')} <span data-out="w">${(o.width / this.pxPerMeter).toFixed(2)} m</span></label>
         <input type="range" data-f="width" min="${this.pxPerMeter * 0.3}" max="${this.pxPerMeter * 4}" step="1" value="${o.width}">
       </div>
+      ${o.type === 'door' ? `
+      <div class="field">
+        <label>${t(lang, 'planEditor.doorSwingLabel')}</label>
+        <div class="seg">
+          <button data-f="flip_hinge">${t(lang, 'planEditor.doorFlipHinge')}</button>
+          <button data-f="flip_swing">${t(lang, 'planEditor.doorFlipSwing')}</button>
+        </div>
+      </div>` : ''}
       <div class="empty-note">${t(lang, 'planEditor.openingNote')}</div>
     `);
     panel.querySelectorAll('[data-type]').forEach((btn) => {
@@ -1509,6 +1516,14 @@ class PlanEditor {
       panel.querySelector('[data-out="w"]').textContent = `${(o.width / this.pxPerMeter).toFixed(2)} m`;
       this.render();
     };
+    if (o.type === 'door') {
+      panel.querySelector('[data-f="flip_hinge"]').onclick = () => {
+        this.snapshot(); o.flip_hinge = !o.flip_hinge; this.render();
+      };
+      panel.querySelector('[data-f="flip_swing"]').onclick = () => {
+        this.snapshot(); o.flip_swing = !o.flip_swing; this.render();
+      };
+    }
     return this._withDelete(panel, 'opening', id);
   }
 

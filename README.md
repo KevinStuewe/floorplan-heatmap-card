@@ -193,6 +193,11 @@ walls will look too strong or too weak.
 An opening's `angle` is in radians: `0` = horizontal, `1.5708` = vertical.
 The editor sets this automatically.
 
+For doors, `flip_hinge` and `flip_swing` (both `false` by default) control
+which corner the leaf is hinged at and which side of the wall it swings
+into — purely cosmetic, the solver treats a door the same either way. Set
+them from the editor's opening panel, next to the width slider.
+
 ## Not just temperature
 
 The card simply reads the numeric state of the assigned entities. For

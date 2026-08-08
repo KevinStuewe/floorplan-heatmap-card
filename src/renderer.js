@@ -149,6 +149,34 @@ export function wallCovers(wall, openings, tol = 8) {
   return covers;
 }
 
+/**
+ * A door's leaf geometry: the hinge point, the closed-leaf endpoint
+ * (across the opening, at wall level), and the open-leaf endpoint (a
+ * quarter turn from the hinge). All in floor-plan coordinates.
+ *
+ * `flip_hinge` swaps which end of the opening the hinge sits at.
+ * `flip_swing` mirrors which side of the wall the leaf swings into —
+ * defined relative to the wall's own angle, not the hinge, so a real
+ * door keeps opening into the same room when only the hinge is flipped.
+ */
+export function doorSwingGeometry(o) {
+  const hx = (Math.cos(o.angle) * o.width) / 2;
+  const hy = (Math.sin(o.angle) * o.width) / 2;
+  const p1 = { x: o.x - hx, y: o.y - hy };
+  const p2 = { x: o.x + hx, y: o.y + hy };
+  const hinge = o.flip_hinge ? p2 : p1;
+  const close = o.flip_hinge ? p1 : p2;
+  const perp = o.angle + (o.flip_swing ? Math.PI / 2 : -Math.PI / 2);
+  const open = { x: hinge.x + Math.cos(perp) * o.width, y: hinge.y + Math.sin(perp) * o.width };
+  const start = Math.atan2(close.y - hinge.y, close.x - hinge.x);
+  let end = Math.atan2(open.y - hinge.y, open.x - hinge.x);
+  // atan2 alone could pick the long way around (270°) instead of the
+  // true 90° turn — pull it back within one turn of start.
+  while (end - start > Math.PI) end -= 2 * Math.PI;
+  while (end - start < -Math.PI) end += 2 * Math.PI;
+  return { hinge, close, open, start, end, radius: o.width, anticlockwise: end < start };
+}
+
 /** The sections of a wall that are NOT covered by an opening. */
 export function wallGaps(wall, openings, tol = 8) {
   const covers = wallCovers(wall, openings, tol);
@@ -215,11 +243,11 @@ export function renderFloorplan(ctx, fp, view, opts) {
     } else if (o.type === 'door') {
       ctx.lineWidth = Math.max(1, 1.5 * view.scale);
       ctx.strokeStyle = opts.doorColor || 'rgba(140,150,165,0.9)';
+      const g = doorSwingGeometry(o);
+      const hpx = view.toX(g.hinge.x), hpy = view.toY(g.hinge.y);
       ctx.beginPath();
-      ctx.moveTo(ax, ay);
-      const radius = Math.hypot(bx - ax, by - ay);
-      const start = Math.atan2(by - ay, bx - ax);
-      ctx.arc(ax, ay, radius, start, start - Math.PI / 2, true);
+      ctx.moveTo(hpx, hpy);
+      ctx.arc(hpx, hpy, g.radius * view.scale, g.start, g.end, g.anticlockwise);
       ctx.stroke();
     }
   }
