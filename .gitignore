@@ -1,0 +1,16 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Node (no deps today, but future-proof against local tooling)
+node_modules/
+npm-debug.log*
+
+# Local env / logs
+*.log
+.env

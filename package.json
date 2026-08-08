@@ -1,0 +1,13 @@
+{
+  "name": "floorplan-heatmap-card",
+  "version": "1.0.1",
+  "description": "Home Assistant Lovelace card: temperature heatmap over a floor plan that treats walls, doors and windows as thermal resistance.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "check": "node build.mjs && node --check dist/floorplan-heatmap-card.js && node --test \"test/**/*.test.mjs\""
+  },
+  "license": "MIT"
+}
