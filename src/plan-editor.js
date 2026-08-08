@@ -1,13 +1,13 @@
 /* ------------------------------------------------------------------ *
- * plan-editor.js — Vollbild-Editor für Grundriss und Sensoren.
+ * plan-editor.js — Fullscreen editor for floor plan and sensors.
  *
- * Läuft als eigenes Overlay über der Lovelace-Oberfläche, weil der
- * Konfigurationsdialog viel zu schmal zum Zeichnen ist. Gerendert wird
- * in SVG: das Hit-Testing (welches Objekt liegt unter der Maus?)
- * übernimmt damit der Browser, statt dass wir es von Hand rechnen.
+ * Runs as its own overlay above the Lovelace UI, because the
+ * configuration dialog is far too narrow for drawing. Rendering is
+ * done in SVG: hit-testing (which object is under the mouse?) is thus
+ * handled by the browser instead of us computing it by hand.
  *
- * Alle Striche nutzen vector-effect="non-scaling-stroke", d.h. die
- * Strichstärken sind Bildschirm-Pixel und bleiben beim Zoomen gleich.
+ * All strokes use vector-effect="non-scaling-stroke", i.e. stroke
+ * widths are screen pixels and stay constant when zooming.
  * ------------------------------------------------------------------ */
 
 import {
@@ -164,8 +164,8 @@ const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
 const icon = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`;
 
 /**
- * Öffnet den Editor. Löst mit { floorplan, px_per_meter, background,
- * background_opacity } auf — oder mit null, wenn abgebrochen wurde.
+ * Opens the editor. Resolves with { floorplan, px_per_meter, background,
+ * background_opacity } — or with null if cancelled.
  */
 export function openPlanEditor(options) {
   return new Promise((resolve) => {
@@ -186,8 +186,8 @@ class PlanEditor {
 
     this.tool = 'select';
     this.selection = null;      // { kind, id, vertex? }
-    this.draft = null;          // laufende Zeichnung
-    this.pointer = null;        // Weltkoordinate des Zeigers
+    this.draft = null;          // drawing in progress
+    this.pointer = null;        // world coordinate of the cursor
     this.drag = null;
     this.panning = null;
     this.snapGrid = true;
@@ -199,19 +199,19 @@ class PlanEditor {
     this.view = { cx: 0, cy: 0, zoom: 1 };
   }
 
-  /* ------------------------------ Montage ------------------------- */
+  /* ------------------------------ Mounting -------------------------- */
 
   mount() {
-    // Der Konfigurationsdialog von Home Assistant ist ein natives <dialog>
-    // im Top Layer. Dorthin reicht kein z-index, und alles außerhalb ist
-    // solange `inert`. Ein gewöhnliches Overlay an document.body läge also
-    // unerreichbar dahinter — Klicks träfen den Scrim des HA-Dialogs, der
-    // sich daraufhin schließt und unser Editor-Element abhängt; ein danach
-    // gefeuertes `config-changed` käme nirgends mehr an.
+    // Home Assistant's configuration dialog is a native <dialog> in the
+    // top layer. No z-index reaches there, and everything outside it is
+    // `inert` while it's open. A plain overlay on document.body would
+    // therefore sit unreachably behind it — clicks would hit the HA
+    // dialog's scrim, which would then close and detach our editor
+    // element; a `config-changed` fired afterward would go nowhere.
     //
-    // Deshalb sind wir selbst ein modales <dialog>: showModal() legt uns
-    // über den HA-Dialog (Top Layer stapelt in Aufrufreihenfolge) und hebt
-    // das inert für unseren Teilbaum auf.
+    // So we make ourselves a modal <dialog> too: showModal() places us
+    // above the HA dialog (the top layer stacks in call order) and lifts
+    // the inert state for our subtree.
     this.dialog = document.createElement('dialog');
     this.dialog.style.cssText = [
       'position:fixed', 'inset:0',
@@ -220,7 +220,7 @@ class PlanEditor {
       'background:transparent', 'overflow:hidden',
     ].join(';');
 
-    // <dialog> kann keinen Shadow Root tragen — ein <div> darin schon.
+    // <dialog> cannot host a shadow root — a <div> inside it can.
     this.host = document.createElement('div');
     this.host.style.cssText = 'width:100%;height:100%;';
     this.root = this.host.attachShadow({ mode: 'open' });
@@ -237,9 +237,9 @@ class PlanEditor {
     this.dialog.appendChild(this.host);
     document.body.appendChild(this.dialog);
 
-    // Escape geht durch unsere eigene Behandlung (verwirft erst Entwurf
-    // bzw. Auswahl). Der native Schließweg würde das Fenster wegnehmen,
-    // ohne dass jemand die Promise auflöst.
+    // Escape is handled by us (discards the draft or selection first).
+    // The native close path would tear down the window without anyone
+    // resolving the promise.
     this._onCancel = (event) => {
       event.preventDefault();
       this._escape();
@@ -286,8 +286,8 @@ class PlanEditor {
     document.addEventListener('keyup', this._onKeyUp, true);
 
     this._resizeObserver = new ResizeObserver(() => {
-      // Beim ersten Aufruf hatte das SVG noch keine Größe, das Einpassen
-      // ging also ins Leere. Sobald echte Maße vorliegen, nachholen.
+      // On the first call the SVG had no size yet, so fitting the view
+      // was a no-op. Once real dimensions are available, catch up.
       if (!this._didInitialFit && this.svg.getBoundingClientRect().width > 1) {
         this._didInitialFit = true;
         this.zoomToFit();
@@ -297,7 +297,7 @@ class PlanEditor {
     this._resizeObserver.observe(this.svg);
   }
 
-  /* --------------------------- Koordinaten ------------------------ */
+  /* --------------------------- Coordinates -------------------------- */
 
   get viewBox() {
     const rect = this.svg.getBoundingClientRect();
@@ -315,7 +315,7 @@ class PlanEditor {
     };
   }
 
-  /** Bildschirm-Pixel in Weltkoordinaten — für zoom-unabhängige Toleranzen. */
+  /** Screen pixels to world coordinates — for zoom-independent tolerances. */
   px(n) { return n / this.view.zoom; }
 
   zoomToFit() {
@@ -338,7 +338,7 @@ class PlanEditor {
     };
   }
 
-  /* ----------------------------- Historie ------------------------- */
+  /* ----------------------------- History ----------------------------- */
 
   snapshot() {
     this.undoStack.push(JSON.stringify(this.state));
@@ -362,7 +362,7 @@ class PlanEditor {
     this.render();
   }
 
-  /* ------------------------------ Snapping ------------------------ */
+  /* ------------------------------ Snapping ---------------------------- */
 
   get gridStep() { return this.pxPerMeter * 0.25; }
 
@@ -392,13 +392,12 @@ class PlanEditor {
   }
 
   /**
-   * Sammelt Kanten (achsparallel) und Eckpunkte aller Räume/Wände außer
-   * dem übergebenen Raum — die "Fanglinien", an denen ein verschobener
-   * Raum einrasten kann.
+   * Collects edges (axis-aligned) and corner points of all rooms/walls
+   * except the given room — the "snap lines" a moved room can lock onto.
    */
   _collectSnapTargets(excludeRoomId) {
-    const vLines = []; // { x, y0, y1 } — senkrechte Kante bei konstantem x
-    const hLines = []; // { y, x0, x1 } — waagrechte Kante bei konstantem y
+    const vLines = []; // { x, y0, y1 } — vertical edge at constant x
+    const hLines = []; // { y, x0, x1 } — horizontal edge at constant y
     const points = [];
 
     const addEdge = (x1, y1, x2, y2) => {
@@ -427,11 +426,11 @@ class PlanEditor {
   }
 
   /**
-   * Ermittelt für eine Raumverschiebung um (dx, dy) den nächstgelegenen
-   * Einrast-Versatz — Kante-auf-Kante hat Vorrang, Ecke-auf-Ecke wird
-   * zusätzlich geprüft, falls kein passendes Kantenpaar in Reichweite ist.
-   * x und y werden unabhängig voneinander behandelt, sodass eine Kante
-   * einrasten kann, auch wenn die andere Achse frei bleibt.
+   * Determines, for a room move by (dx, dy), the closest snap offset —
+   * edge-on-edge takes priority, corner-on-corner is checked in addition
+   * if no matching edge pair is in range. x and y are handled
+   * independently, so one edge can snap even while the other axis
+   * stays free.
    */
   _snapRoomMove(beforePoints, dx, dy, roomId) {
     const tol = this.px(11);
@@ -448,7 +447,7 @@ class PlanEditor {
       if (Math.abs(x2 - x1) < 1e-6 && Math.abs(y2 - y1) > 1e-6) {
         const yLo = Math.min(my1, my2), yHi = Math.max(my1, my2);
         for (const g of targets.vLines) {
-          if (yHi < g.y0 - tol || yLo > g.y1 + tol) continue; // Kanten liegen nicht auf gleicher Höhe
+          if (yHi < g.y0 - tol || yLo > g.y1 + tol) continue; // edges aren't at the same height
           const delta = g.x - mx1;
           if (Math.abs(delta) < bestDxDist) { bestDxDist = Math.abs(delta); bestDx = dx + delta; }
         }
@@ -476,7 +475,7 @@ class PlanEditor {
     return { dx: bestDx, dy: bestDy };
   }
 
-  /** Nächstgelegene Wand samt Projektionspunkt — für das Platzieren von Öffnungen. */
+  /** Nearest wall plus projection point — for placing openings. */
   nearestWall(point, maxDist) {
     const walls = buildWalls(this.state);
     let best = null, bestDist = maxDist != null ? maxDist : this.px(18);
@@ -491,7 +490,7 @@ class PlanEditor {
     return best;
   }
 
-  /* --------------------------- Zeigereingabe ---------------------- */
+  /* --------------------------- Pointer input -------------------------- */
 
   _onWheel(event) {
     event.preventDefault();
@@ -508,7 +507,7 @@ class PlanEditor {
     this.svg.setPointerCapture(event.pointerId);
     const world = this.toWorld(event);
 
-    // Mittlere Maustaste, Leertaste oder rechte Taste: schieben.
+    // Middle mouse button, spacebar, or right button: pan.
     if (event.button === 1 || event.button === 2 || this._spaceDown) {
       this.panning = { startX: event.clientX, startY: event.clientY, cx: this.view.cx, cy: this.view.cy };
       this.svg.classList.add('panning');
@@ -546,8 +545,8 @@ class PlanEditor {
     if (this.draft) {
       this.draft.cursor = this._draftCursor(world);
       this.render();
-      // Nur das Anzeigefeld nachziehen statt die Seitenleiste neu zu
-      // bauen — sonst verliert das Längen-Eingabefeld den Fokus.
+      // Only update the readout field instead of rebuilding the sidebar
+      // — otherwise the length input field would lose focus.
       const readout = this.side.querySelector('[data-out="draftLength"]');
       if (readout) {
         const end = this.draft.cursor;
@@ -586,7 +585,7 @@ class PlanEditor {
     }
   }
 
-  /* ----------------------------- Werkzeuge ------------------------ */
+  /* ----------------------------- Tools --------------------------------- */
 
   _draftCursor(world) {
     if (this.draft && (this.draft.kind === 'wall' || this.draft.kind === 'measure') && this.snapAxisOn) {
@@ -610,9 +609,8 @@ class PlanEditor {
     const kind = target.dataset.kind;
     const id = target.dataset.id;
 
-    // Der Schnappschuss für die Historie entsteht erst beim ersten
-    // tatsächlichen Ziehen — bloßes Anklicken soll den Undo-Stapel
-    // nicht mit Nichts-Änderungen zumüllen.
+    // The history snapshot is only taken on the first actual drag —
+    // a plain click shouldn't clutter the undo stack with no-op changes.
     if (kind === 'handle') {
       this.selection = { kind: target.dataset.owner, id, vertex: Number(target.dataset.vertex) };
       this.drag = { kind: 'vertex', owner: target.dataset.owner, id, vertex: Number(target.dataset.vertex), pending: true };
@@ -632,9 +630,9 @@ class PlanEditor {
   }
 
   /**
-   * Türen und Fenster, die aktuell auf einer Kante des Raums sitzen — sie
-   * kennen ihre Wand nicht (siehe model.js), werden also rein geometrisch
-   * über die Kanten des Raums gefunden, bevor der Zug beginnt.
+   * Doors and windows currently sitting on an edge of the room — they
+   * don't know their wall (see model.js), so they're found purely
+   * geometrically via the room's edges before the drag starts.
    */
   _openingsOnRoom(roomId) {
     const room = this.state.rooms.find((r) => r.id === roomId);
@@ -730,7 +728,7 @@ class PlanEditor {
           s.x = snapped.x; s.y = snapped.y;
         }
       } else if (d.target === 'opening') {
-        // Öffnungen gleiten entlang ihrer Wand statt frei zu wandern.
+        // Openings slide along their wall instead of moving freely.
         const o = this.state.openings.find((x) => x.id === d.id);
         if (o && d.before) {
           const target = { x: d.before.x + dx, y: d.before.y + dy };
@@ -762,7 +760,7 @@ class PlanEditor {
     }
   }
 
-  /** Kurzer Klick statt Ziehen ⇒ der Nutzer will ein Polygon, kein Rechteck. */
+  /** A short click instead of a drag ⇒ the user wants a polygon, not a rectangle. */
   _finishRect() {
     const d = this.draft;
     if (!d) return;
@@ -823,7 +821,7 @@ class PlanEditor {
     this.snapshot();
     const wall = { id: uid('w'), x1: start.x, y1: start.y, x2: end.x, y2: end.y, type: 'interior' };
     this.state.walls.push(wall);
-    // Fortlaufend zeichnen: das Ende wird zum nächsten Anfang.
+    // Continuous drawing: the end becomes the next start.
     this.draft = { kind: 'wall', start: { x: end.x, y: end.y }, cursor: { x: end.x, y: end.y } };
     this.render();
     this.renderSide();
@@ -888,7 +886,7 @@ class PlanEditor {
   _measureDown(world) {
     const point = this._draftCursor(world);
     if (!this.draft || this.draft.end) {
-      // Dritter Klick startet eine neue Messung.
+      // A third click starts a new measurement.
       this.draft = { kind: 'measure', start: this.snap(world), cursor: point };
     } else {
       this.draft.end = point;
@@ -897,9 +895,9 @@ class PlanEditor {
     this.renderSide();
   }
 
-  /* ---------------------------- Tastatur -------------------------- */
+  /* ---------------------------- Keyboard ------------------------------- */
 
-  /** Escape schält von innen nach außen ab: Entwurf, Auswahl, Fenster. */
+  /** Escape peels off from inside out: draft, selection, window. */
   _escape() {
     if (this.draft) { this.draft = null; this.render(); this.renderSide(); }
     else if (this.selection) { this.selection = null; this.render(); this.renderSide(); }
@@ -963,7 +961,7 @@ class PlanEditor {
     this.renderSide();
   }
 
-  /* ----------------------------- Rendern -------------------------- */
+  /* ----------------------------- Rendering ----------------------------- */
 
   _buildBar() {
     const lang = this.lang;
@@ -1033,8 +1031,8 @@ class PlanEditor {
     this._updateBarState();
   }
 
-  /** Nur die Zustände in der Leiste nachziehen — ein kompletter Neuaufbau
-   *  bei jeder Mausbewegung würde den Fokus aus den Eingaben reißen. */
+  /** Only update the toolbar states — rebuilding it completely on every
+   *  mouse move would tear focus out of the inputs. */
   _updateBarState() {
     const undoBtn = this.bar.querySelector('[data-act="undo"]');
     const redoBtn = this.bar.querySelector('[data-act="redo"]');
@@ -1243,7 +1241,7 @@ class PlanEditor {
     this.readoutEl.textContent = `x ${m(this.pointer.x)} m · y ${m(this.pointer.y)} m · ${Math.round(this.view.zoom * 100)} %`;
   }
 
-  /* -------------------------- Seitenleiste ------------------------ */
+  /* -------------------------- Sidebar ----------------------------- */
 
   renderSide() {
     this.side.innerHTML = '';
@@ -1414,9 +1412,9 @@ class PlanEditor {
     const widthInput = panel.querySelector('[data-f="width"]');
     const heightInput = panel.querySelector('[data-f="height"]');
     const areaOut = panel.querySelector('[data-out="area"]');
-    // Bewusst ohne renderSide(): ein Neuaufbau der Seitenleiste würde den
-    // Fokus aus dem gerade bearbeiteten Feld reißen. Die abhängigen
-    // Anzeigen ziehen wir stattdessen von Hand nach.
+    // Deliberately without renderSide(): rebuilding the sidebar would
+    // tear focus out of the field being edited. We update the
+    // dependent displays by hand instead.
     const applySize = () => {
       const current = roomSizeMeters(room, this.pxPerMeter);
       const width = parseFloat(widthInput.value);
@@ -1443,7 +1441,7 @@ class PlanEditor {
     return `${size.width.toFixed(2)} × ${size.height.toFixed(2)} m · ${roomAreaSqm(room, this.pxPerMeter).toFixed(1)} m²`;
   }
 
-  /** Aktualisiert einen Listeneintrag, ohne die Seitenleiste neu zu bauen. */
+  /** Updates a list entry without rebuilding the sidebar. */
   _refreshRoomListEntry(room) {
     const item = this.side.querySelector(`.item[data-kind="room"][data-id="${room.id}"]`);
     if (!item) return;
@@ -1520,7 +1518,7 @@ class PlanEditor {
     return this._withDelete(panel, 'sensor', id);
   }
 
-  /** Schlanke Entity-Auswahl — filtert auf Entities mit numerischem Zustand. */
+  /** Lightweight entity picker — filters to entities with a numeric state. */
   _entityCombo(sensor) {
     const wrap = document.createElement('div');
     wrap.className = 'combo';

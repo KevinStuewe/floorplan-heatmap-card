@@ -10,323 +10,35 @@
 
 /* ===== src/i18n.js ===== */
 /* ------------------------------------------------------------------ *
- * i18n.js — Übersetzungstabelle und Spracherkennung.
+ * i18n.js — translation table and language detection.
  *
- * Unterstützt Deutsch und Englisch. Die Sprache wird automatisch aus
- * hass.language übernommen (Home Assistants eigene Spracheinstellung),
- * es gibt bewusst keine Karten-eigene Sprachoption. Vor dem ersten
- * hass-Objekt (z. B. beim Registrieren der Karte in index.js) greift
- * detectLanguageFallback() auf localStorage/navigator zurück.
+ * Supports German and English. The language is taken automatically from
+ * hass.language (Home Assistant's own language setting); there is
+ * deliberately no card-specific language option. Before the first hass
+ * object exists (e.g. when registering the card in index.js),
+ * detectLanguageFallback() falls back to localStorage/navigator.
+ *
+ * The actual strings live in locales/en.json and locales/de.json, not
+ * here — adding a language means adding a locales/<lang>.json, not
+ * touching this file. build.mjs inlines those JSON files into the
+ * bundle at build time (see the JSON-import handling there), since the
+ * dist output has zero runtime dependencies and can't fetch them.
  * ------------------------------------------------------------------ */
 
+const localeEn = {"translations":{"customCards.name":"Floorplan Heatmap","customCards.description":"Temperature distribution over a floor plan — with walls, doors, and windows as thermal resistance.","card.defaultTitle":"Temperature Distribution","card.resetViewTitle":"Reset view angle","card.resetViewLabel":"View","card.emptyLine1":"No floor plan yet.","card.emptyLine2":"Edit card → open {button} and draw rooms.","card.spreadTooltip":"Spread between warmest and coldest sensor","planEditor.title":"Floor Plan & Sensors","editor.openPlanButton":"Edit Floor Plan & Sensors","editor.counts":"{rooms} rooms · {sensors} sensors · {openings} openings","editor.sectionDisplay":"Display","editor.sectionView":"View","editor.sectionShow":"Show","editor.sectionModel":"Model & Accuracy","editor.sectionTransmittance":"Thermal transmittance","editor.fieldTitle":"Title","editor.fieldUnit":"Unit","editor.fieldPalette":"Color scale","editor.autoRange":"Automatically fit scale to sensor readings","editor.fieldMin":"Minimum","editor.fieldMax":"Maximum","editor.fieldOpacity":"Field opacity","editor.viewFlat":"Top-down","editor.viewTilted":"2.5D — walls raised","editor.fieldYaw":"Rotation","editor.fieldPitch":"Tilt angle","editor.fieldWallHeight":"Wall height","editor.viewAngleNote":"These angles are just the starting point. In the card itself, you can rotate the model with the mouse at any time — that's purely a viewing choice and won't overwrite the default set here.","editor.showWalls":"Walls, doors, and windows","editor.showRoomLabels":"Room names","editor.showValues":"Values at sensors","editor.showLegend":"Color legend","editor.showIsotherms":"Isotherms (lines of equal temperature)","editor.isothermStep":"Isotherm spacing","editor.cellSize":"Grid resolution","editor.cellSizeNote":"Smaller = finer and more accurate, but more compute-intensive. 6–10 px is a good compromise for apartments.","editor.sensorRadius":"Sensor radius","editor.sensorRadiusNote":"How large the area around a sensor point is that's held exactly at its value.","editor.transmittanceNote":"0% = perfect insulation, 100% = like free air. These values determine how strongly heat is exchanged between adjacent areas.","editor.dialogClosedWarning":"floorplan-heatmap-card: The configuration dialog was closed while the floor plan editor was open. The changes could not be applied.","editor.paletteCoolwarm":"Cool–Warm (recommended)","editor.paletteThermal":"Thermal","editor.paletteViridis":"Viridis","editor.paletteInferno":"Inferno","editor.paletteTurbo":"Turbo","label.exterior":"Exterior wall","label.interior":"Interior wall","label.door":"Door","label.window":"Window","label.passage":"Passage","tools.select.label":"Select","tools.select.hint":"Click to select · drag to move · drag corner handles · type room dimensions on the right · Del removes","tools.room.label":"Room","tools.room.hint":"Drag for a rectangle · click repeatedly for a polygon (Enter or double-click closes it, Backspace undoes the last point)","tools.wall.label":"Wall","tools.wall.hint":"Click to set the start, click again for the end · type a length on the right and press Enter for an exact size","tools.opening.label":"Door / Window","tools.opening.hint":"Click on a wall — the opening snaps onto it and affects both adjoining rooms","tools.sensor.label":"Sensor","tools.sensor.hint":"Click to place a measurement point · assign the entity on the right","tools.erase.label":"Delete","tools.erase.hint":"Click an element to remove it","tools.measure.label":"Scale","tools.measure.hint":"Click a stretch of known length and enter its real length in meters","planEditor.undoTitle":"Undo (Cmd/Ctrl+Z)","planEditor.redoTitle":"Redo (Cmd/Ctrl+Shift+Z)","planEditor.fitTitle":"Fit all","planEditor.toggleGrid":"Grid","planEditor.toggleSnapGrid":"Snap to grid","planEditor.toggleSnapPoints":"Snap to corners","planEditor.toggleAxisSnap":"0°/90°","planEditor.cancel":"Cancel","planEditor.save":"Apply","planEditor.hintSuffix":"Scroll wheel zooms, middle button or spacebar pans.","planEditor.roomFallback":"Room {n}","planEditor.sensorFallback":"Sensor","planEditor.panelGeneral":"General Settings","planEditor.panelWallDraft":"Draw Wall","planEditor.panelMeasure":"Calibrate Scale","planEditor.panelRoom":"Room","planEditor.panelWall":"Freestanding Wall","planEditor.panelOpening":"Opening","planEditor.panelSensor":"Sensor","planEditor.scaleLabel":"Scale — pixels per meter","planEditor.backgroundLabel":"Background image (path under /local/…)","planEditor.backgroundPlaceholder":"/local/floorplan.png","planEditor.backgroundOpacityLabel":"Background opacity —","planEditor.scaleNote":"The scale only affects labels and the sensor radius — the temperature field itself is scale-free.","planEditor.currentLength":"Current length","planEditor.exactLengthLabel":"Set exact length (meters) — Enter confirms","planEditor.examplePlaceholder":"e.g. 3.20","planEditor.finishDrawing":"Finish drawing (Esc)","planEditor.measureNote":"Click a stretch whose real length you know — a room wall, for example. Then enter the length in meters.","planEditor.measuredDistance":"Measured distance","planEditor.notMeasuredYet":"nothing measured yet","planEditor.realLengthLabel":"Real length (meters) — Enter applies","planEditor.current":"Current","planEditor.name":"Name","planEditor.width":"Width (m)","planEditor.length":"Length (m)","planEditor.area":"Area","planEditor.corners":"Corners","planEditor.roomSizeNote":"Dimensions are the outer edges — Enter or clicking elsewhere applies them. The top-left corner stays fixed; doors and windows don't move with it. Corner points can still be dragged at the white handles.","planEditor.type":"Type","planEditor.wallLength":"Length","planEditor.wallTypeNote":"Room edges are automatically detected as exterior or interior walls; this type only applies to freestanding walls.","planEditor.kind":"Kind","planEditor.openingWidthLabel":"Width —","planEditor.openingNote":"Passage = open, door = clearly damped, window = almost sealed. The opening affects every wall at this spot — so both rooms, if two adjoin here.","planEditor.displayNameLabel":"Display name (empty = entity name)","planEditor.exampleRoomPlaceholder":"e.g. Living Room","planEditor.currentValue":"Current value","planEditor.notAvailable":"not available","planEditor.entityPlaceholder":"sensor.living_room_temperature","planEditor.deleteButton":"Delete (Del)","planEditor.noEntity":"No entity","planEditor.noEntityAssigned":"no entity assigned","planEditor.noSensorsYet":"No sensors placed yet.","planEditor.noRoomsYet":"No rooms drawn yet.","planEditor.sensorsHeader":"Sensors ({n})","planEditor.roomsHeader":"Rooms ({n})","planEditor.overview":"Overview","planEditor.summaryLine":"{rooms} rooms · {walls} freestanding walls · {openings} openings · {sensors} sensors"},"roomNameSuggestions":["Living Room","Kitchen","Bedroom","Bathroom","Hallway","Office","Kids Room","Guest WC"]};
+const localeDe = {"translations":{"customCards.name":"Grundriss-Heatmap","customCards.description":"Temperaturverteilung über einen Grundriss — mit Wänden, Türen und Fenstern als Wärmewiderstand.","card.defaultTitle":"Temperaturverteilung","card.resetViewTitle":"Blickwinkel zurücksetzen","card.resetViewLabel":"Ansicht","card.emptyLine1":"Noch kein Grundriss angelegt.","card.emptyLine2":"Karte bearbeiten → {button} öffnen und Räume zeichnen.","card.spreadTooltip":"Spreizung zwischen wärmstem und kältestem Sensor","planEditor.title":"Grundriss & Sensoren","editor.openPlanButton":"Grundriss & Sensoren bearbeiten","editor.counts":"{rooms} Räume · {sensors} Sensoren · {openings} Öffnungen","editor.sectionDisplay":"Darstellung","editor.sectionView":"Ansicht","editor.sectionShow":"Anzeigen","editor.sectionModel":"Modell & Genauigkeit","editor.sectionTransmittance":"Wärmedurchlässigkeit","editor.fieldTitle":"Titel","editor.fieldUnit":"Einheit","editor.fieldPalette":"Farbskala","editor.autoRange":"Skala automatisch an die Messwerte anpassen","editor.fieldMin":"Minimum","editor.fieldMax":"Maximum","editor.fieldOpacity":"Deckkraft der Fläche","editor.viewFlat":"Draufsicht","editor.viewTilted":"2,5D — Wände aufgestellt","editor.fieldYaw":"Drehung","editor.fieldPitch":"Höhenwinkel","editor.fieldWallHeight":"Wandhöhe","editor.viewAngleNote":"Diese Winkel sind der Ausgangspunkt. In der Karte selbst lässt sich das Modell jederzeit mit der Maus drehen — das bleibt aber eine reine Ansichtssache und überschreibt die Voreinstellung hier nicht.","editor.showWalls":"Wände, Türen und Fenster","editor.showRoomLabels":"Raumnamen","editor.showValues":"Messwerte an den Sensoren","editor.showLegend":"Farblegende","editor.showIsotherms":"Isothermen (Linien gleicher Temperatur)","editor.isothermStep":"Abstand der Isothermen","editor.cellSize":"Gitterauflösung","editor.cellSizeNote":"Kleiner = feiner und genauer, aber rechenintensiver. 6–10 px ist für Wohnungen ein guter Kompromiss.","editor.sensorRadius":"Sensorradius","editor.sensorRadiusNote":"Wie groß die Fläche um einen Messpunkt ist, die exakt auf dessen Wert festgehalten wird.","editor.transmittanceNote":"0 % = perfekte Dämmung, 100 % = wie freie Luft. Diese Werte bestimmen, wie stark Wärme zwischen benachbarten Bereichen ausgetauscht wird.","editor.dialogClosedWarning":"floorplan-heatmap-card: Der Konfigurationsdialog wurde geschlossen, während der Grundriss-Editor offen war. Die Änderungen konnten nicht übernommen werden.","editor.paletteCoolwarm":"Kalt–Warm (empfohlen)","editor.paletteThermal":"Thermal","editor.paletteViridis":"Viridis","editor.paletteInferno":"Inferno","editor.paletteTurbo":"Turbo","label.exterior":"Außenwand","label.interior":"Innenwand","label.door":"Tür","label.window":"Fenster","label.passage":"Durchgang","tools.select.label":"Auswählen","tools.select.hint":"Klicken zum Auswählen · ziehen zum Verschieben · Eckpunkte an den Griffen ziehen · Raummaße rechts eintippen · Entf löscht","tools.room.label":"Raum","tools.room.hint":"Ziehen ergibt ein Rechteck · einzelne Klicks ergeben ein Polygon (Enter oder Doppelklick schließt, Rücktaste nimmt zurück)","tools.wall.label":"Wand","tools.wall.hint":"Klick setzt den Anfang, zweiter Klick das Ende · Länge rechts eintippen und Enter für ein exaktes Maß","tools.opening.label":"Tür / Fenster","tools.opening.hint":"Auf eine Wand klicken — die Öffnung rastet darauf ein und wirkt auf beide angrenzenden Räume","tools.sensor.label":"Sensor","tools.sensor.hint":"Klick setzt einen Messpunkt · rechts die Entity zuweisen","tools.erase.label":"Löschen","tools.erase.hint":"Auf ein Element klicken, um es zu entfernen","tools.measure.label":"Maßstab","tools.measure.hint":"Eine Strecke bekannter Länge abklicken und die echte Länge in Metern eintragen","planEditor.undoTitle":"Rückgängig (Cmd/Ctrl+Z)","planEditor.redoTitle":"Wiederholen (Cmd/Ctrl+Shift+Z)","planEditor.fitTitle":"Alles einpassen","planEditor.toggleGrid":"Raster","planEditor.toggleSnapGrid":"Am Raster","planEditor.toggleSnapPoints":"An Ecken","planEditor.toggleAxisSnap":"0°/90°","planEditor.cancel":"Abbrechen","planEditor.save":"Übernehmen","planEditor.hintSuffix":"Mausrad zoomt, mittlere Taste oder Leertaste schiebt.","planEditor.roomFallback":"Raum {n}","planEditor.sensorFallback":"Sensor","planEditor.panelGeneral":"Grundeinstellungen","planEditor.panelWallDraft":"Wand zeichnen","planEditor.panelMeasure":"Maßstab kalibrieren","planEditor.panelRoom":"Raum","planEditor.panelWall":"Freistehende Wand","planEditor.panelOpening":"Öffnung","planEditor.panelSensor":"Sensor","planEditor.scaleLabel":"Maßstab — Pixel pro Meter","planEditor.backgroundLabel":"Hintergrundbild (Pfad unter /local/…)","planEditor.backgroundPlaceholder":"/local/grundriss.png","planEditor.backgroundOpacityLabel":"Deckkraft Hintergrund —","planEditor.scaleNote":"Der Maßstab wirkt sich nur auf Beschriftungen und den Sensorradius aus — das Temperaturfeld selbst ist maßstabsfrei.","planEditor.currentLength":"Aktuelle Länge","planEditor.exactLengthLabel":"Länge exakt setzen (Meter) — Enter bestätigt","planEditor.examplePlaceholder":"z. B. 3.20","planEditor.finishDrawing":"Zeichnen beenden (Esc)","planEditor.measureNote":"Eine Strecke abklicken, deren echte Länge du kennst — etwa eine Zimmerwand. Danach die Länge in Metern eintragen.","planEditor.measuredDistance":"Gemessene Strecke","planEditor.notMeasuredYet":"noch nichts gemessen","planEditor.realLengthLabel":"Echte Länge (Meter) — Enter übernimmt","planEditor.current":"Aktuell","planEditor.name":"Name","planEditor.width":"Breite (m)","planEditor.length":"Länge (m)","planEditor.area":"Fläche","planEditor.corners":"Ecken","planEditor.roomSizeNote":"Maße sind die Außenkanten — Enter oder ein Klick daneben übernimmt. Die linke obere Ecke bleibt dabei stehen, Türen und Fenster wandern nicht mit. Eckpunkte lassen sich weiterhin an den weißen Griffen ziehen.","planEditor.type":"Typ","planEditor.wallLength":"Länge","planEditor.wallTypeNote":"Raumkanten werden automatisch als Außen- oder Innenwand erkannt; dieser Typ gilt nur für freistehende Wände.","planEditor.kind":"Art","planEditor.openingWidthLabel":"Breite —","planEditor.openingNote":"Durchgang = offen, Tür = deutlich gedämpft, Fenster = fast dicht. Die Öffnung wirkt auf jede Wand an dieser Stelle — bei zwei aneinandergrenzenden Räumen also auf beide.","planEditor.displayNameLabel":"Anzeigename (leer = Entity-Name)","planEditor.exampleRoomPlaceholder":"z. B. Wohnzimmer","planEditor.currentValue":"Aktueller Wert","planEditor.notAvailable":"nicht verfügbar","planEditor.entityPlaceholder":"sensor.wohnzimmer_temperatur","planEditor.deleteButton":"Löschen (Entf)","planEditor.noEntity":"Ohne Entity","planEditor.noEntityAssigned":"keine Entity zugewiesen","planEditor.noSensorsYet":"Noch keine Sensoren gesetzt.","planEditor.noRoomsYet":"Noch keine Räume gezeichnet.","planEditor.sensorsHeader":"Sensoren ({n})","planEditor.roomsHeader":"Räume ({n})","planEditor.overview":"Übersicht","planEditor.summaryLine":"{rooms} Räume · {walls} freie Wände · {openings} Öffnungen · {sensors} Sensoren"},"roomNameSuggestions":["Wohnzimmer","Küche","Schlafzimmer","Bad","Flur","Büro","Kinderzimmer","Gäste-WC"]};
+
 const TRANSLATIONS = {
-  en: {
-    'customCards.name': 'Floorplan Heatmap',
-    'customCards.description':
-      'Temperature distribution over a floor plan — with walls, doors, and windows as thermal resistance.',
-
-    'card.defaultTitle': 'Temperature Distribution',
-    'card.resetViewTitle': 'Reset view angle',
-    'card.resetViewLabel': 'View',
-    'card.emptyLine1': 'No floor plan yet.',
-    'card.emptyLine2': 'Edit card → open {button} and draw rooms.',
-    'card.spreadTooltip': 'Spread between warmest and coldest sensor',
-
-    'planEditor.title': 'Floor Plan & Sensors',
-
-    'editor.openPlanButton': 'Edit Floor Plan & Sensors',
-    'editor.counts': '{rooms} rooms · {sensors} sensors · {openings} openings',
-    'editor.sectionDisplay': 'Display',
-    'editor.sectionView': 'View',
-    'editor.sectionShow': 'Show',
-    'editor.sectionModel': 'Model & Accuracy',
-    'editor.sectionTransmittance': 'Thermal transmittance',
-    'editor.fieldTitle': 'Title',
-    'editor.fieldUnit': 'Unit',
-    'editor.fieldPalette': 'Color scale',
-    'editor.autoRange': 'Automatically fit scale to sensor readings',
-    'editor.fieldMin': 'Minimum',
-    'editor.fieldMax': 'Maximum',
-    'editor.fieldOpacity': 'Field opacity',
-    'editor.viewFlat': 'Top-down',
-    'editor.viewTilted': '2.5D — walls raised',
-    'editor.fieldYaw': 'Rotation',
-    'editor.fieldPitch': 'Tilt angle',
-    'editor.fieldWallHeight': 'Wall height',
-    'editor.viewAngleNote':
-      "These angles are just the starting point. In the card itself, you can rotate the model with the mouse at any time — that's purely a viewing choice and won't overwrite the default set here.",
-    'editor.showWalls': 'Walls, doors, and windows',
-    'editor.showRoomLabels': 'Room names',
-    'editor.showValues': 'Values at sensors',
-    'editor.showLegend': 'Color legend',
-    'editor.showIsotherms': 'Isotherms (lines of equal temperature)',
-    'editor.isothermStep': 'Isotherm spacing',
-    'editor.cellSize': 'Grid resolution',
-    'editor.cellSizeNote':
-      'Smaller = finer and more accurate, but more compute-intensive. 6–10 px is a good compromise for apartments.',
-    'editor.sensorRadius': 'Sensor radius',
-    'editor.sensorRadiusNote':
-      "How large the area around a sensor point is that's held exactly at its value.",
-    'editor.transmittanceNote':
-      '0% = perfect insulation, 100% = like free air. These values determine how strongly heat is exchanged between adjacent areas.',
-    'editor.dialogClosedWarning':
-      'floorplan-heatmap-card: The configuration dialog was closed while the floor plan editor was open. The changes could not be applied.',
-    'editor.paletteCoolwarm': 'Cool–Warm (recommended)',
-    'editor.paletteThermal': 'Thermal',
-    'editor.paletteViridis': 'Viridis',
-    'editor.paletteInferno': 'Inferno',
-    'editor.paletteTurbo': 'Turbo',
-
-    'label.exterior': 'Exterior wall',
-    'label.interior': 'Interior wall',
-    'label.door': 'Door',
-    'label.window': 'Window',
-    'label.passage': 'Passage',
-
-    'tools.select.label': 'Select',
-    'tools.select.hint':
-      'Click to select · drag to move · drag corner handles · type room dimensions on the right · Del removes',
-    'tools.room.label': 'Room',
-    'tools.room.hint':
-      'Drag for a rectangle · click repeatedly for a polygon (Enter or double-click closes it, Backspace undoes the last point)',
-    'tools.wall.label': 'Wall',
-    'tools.wall.hint':
-      'Click to set the start, click again for the end · type a length on the right and press Enter for an exact size',
-    'tools.opening.label': 'Door / Window',
-    'tools.opening.hint':
-      'Click on a wall — the opening snaps onto it and affects both adjoining rooms',
-    'tools.sensor.label': 'Sensor',
-    'tools.sensor.hint': 'Click to place a measurement point · assign the entity on the right',
-    'tools.erase.label': 'Delete',
-    'tools.erase.hint': 'Click an element to remove it',
-    'tools.measure.label': 'Scale',
-    'tools.measure.hint':
-      'Click a stretch of known length and enter its real length in meters',
-
-    'planEditor.undoTitle': 'Undo (Cmd/Ctrl+Z)',
-    'planEditor.redoTitle': 'Redo (Cmd/Ctrl+Shift+Z)',
-    'planEditor.fitTitle': 'Fit all',
-    'planEditor.toggleGrid': 'Grid',
-    'planEditor.toggleSnapGrid': 'Snap to grid',
-    'planEditor.toggleSnapPoints': 'Snap to corners',
-    'planEditor.toggleAxisSnap': '0°/90°',
-    'planEditor.cancel': 'Cancel',
-    'planEditor.save': 'Apply',
-    'planEditor.hintSuffix': 'Scroll wheel zooms, middle button or spacebar pans.',
-    'planEditor.roomFallback': 'Room {n}',
-    'planEditor.sensorFallback': 'Sensor',
-    'planEditor.panelGeneral': 'General Settings',
-    'planEditor.panelWallDraft': 'Draw Wall',
-    'planEditor.panelMeasure': 'Calibrate Scale',
-    'planEditor.panelRoom': 'Room',
-    'planEditor.panelWall': 'Freestanding Wall',
-    'planEditor.panelOpening': 'Opening',
-    'planEditor.panelSensor': 'Sensor',
-    'planEditor.scaleLabel': 'Scale — pixels per meter',
-    'planEditor.backgroundLabel': 'Background image (path under /local/…)',
-    'planEditor.backgroundPlaceholder': '/local/floorplan.png',
-    'planEditor.backgroundOpacityLabel': 'Background opacity —',
-    'planEditor.scaleNote':
-      'The scale only affects labels and the sensor radius — the temperature field itself is scale-free.',
-    'planEditor.currentLength': 'Current length',
-    'planEditor.exactLengthLabel': 'Set exact length (meters) — Enter confirms',
-    'planEditor.examplePlaceholder': 'e.g. 3.20',
-    'planEditor.finishDrawing': 'Finish drawing (Esc)',
-    'planEditor.measureNote':
-      'Click a stretch whose real length you know — a room wall, for example. Then enter the length in meters.',
-    'planEditor.measuredDistance': 'Measured distance',
-    'planEditor.notMeasuredYet': 'nothing measured yet',
-    'planEditor.realLengthLabel': 'Real length (meters) — Enter applies',
-    'planEditor.current': 'Current',
-    'planEditor.name': 'Name',
-    'planEditor.width': 'Width (m)',
-    'planEditor.length': 'Length (m)',
-    'planEditor.area': 'Area',
-    'planEditor.corners': 'Corners',
-    'planEditor.roomSizeNote':
-      "Dimensions are the outer edges — Enter or clicking elsewhere applies them. The top-left corner stays fixed; doors and windows don't move with it. Corner points can still be dragged at the white handles.",
-    'planEditor.type': 'Type',
-    'planEditor.wallLength': 'Length',
-    'planEditor.wallTypeNote':
-      'Room edges are automatically detected as exterior or interior walls; this type only applies to freestanding walls.',
-    'planEditor.kind': 'Kind',
-    'planEditor.openingWidthLabel': 'Width —',
-    'planEditor.openingNote':
-      'Passage = open, door = clearly damped, window = almost sealed. The opening affects every wall at this spot — so both rooms, if two adjoin here.',
-    'planEditor.displayNameLabel': 'Display name (empty = entity name)',
-    'planEditor.exampleRoomPlaceholder': 'e.g. Living Room',
-    'planEditor.currentValue': 'Current value',
-    'planEditor.notAvailable': 'not available',
-    'planEditor.entityPlaceholder': 'sensor.living_room_temperature',
-    'planEditor.deleteButton': 'Delete (Del)',
-    'planEditor.noEntity': 'No entity',
-    'planEditor.noEntityAssigned': 'no entity assigned',
-    'planEditor.noSensorsYet': 'No sensors placed yet.',
-    'planEditor.noRoomsYet': 'No rooms drawn yet.',
-    'planEditor.sensorsHeader': 'Sensors ({n})',
-    'planEditor.roomsHeader': 'Rooms ({n})',
-    'planEditor.overview': 'Overview',
-    'planEditor.summaryLine':
-      '{rooms} rooms · {walls} freestanding walls · {openings} openings · {sensors} sensors',
-  },
-
-  de: {
-    'customCards.name': 'Grundriss-Heatmap',
-    'customCards.description':
-      'Temperaturverteilung über einen Grundriss — mit Wänden, Türen und Fenstern als Wärmewiderstand.',
-
-    'card.defaultTitle': 'Temperaturverteilung',
-    'card.resetViewTitle': 'Blickwinkel zurücksetzen',
-    'card.resetViewLabel': 'Ansicht',
-    'card.emptyLine1': 'Noch kein Grundriss angelegt.',
-    'card.emptyLine2': 'Karte bearbeiten → {button} öffnen und Räume zeichnen.',
-    'card.spreadTooltip': 'Spreizung zwischen wärmstem und kältestem Sensor',
-
-    'planEditor.title': 'Grundriss & Sensoren',
-
-    'editor.openPlanButton': 'Grundriss & Sensoren bearbeiten',
-    'editor.counts': '{rooms} Räume · {sensors} Sensoren · {openings} Öffnungen',
-    'editor.sectionDisplay': 'Darstellung',
-    'editor.sectionView': 'Ansicht',
-    'editor.sectionShow': 'Anzeigen',
-    'editor.sectionModel': 'Modell & Genauigkeit',
-    'editor.sectionTransmittance': 'Wärmedurchlässigkeit',
-    'editor.fieldTitle': 'Titel',
-    'editor.fieldUnit': 'Einheit',
-    'editor.fieldPalette': 'Farbskala',
-    'editor.autoRange': 'Skala automatisch an die Messwerte anpassen',
-    'editor.fieldMin': 'Minimum',
-    'editor.fieldMax': 'Maximum',
-    'editor.fieldOpacity': 'Deckkraft der Fläche',
-    'editor.viewFlat': 'Draufsicht',
-    'editor.viewTilted': '2,5D — Wände aufgestellt',
-    'editor.fieldYaw': 'Drehung',
-    'editor.fieldPitch': 'Höhenwinkel',
-    'editor.fieldWallHeight': 'Wandhöhe',
-    'editor.viewAngleNote':
-      'Diese Winkel sind der Ausgangspunkt. In der Karte selbst lässt sich das Modell jederzeit mit der Maus drehen — das bleibt aber eine reine Ansichtssache und überschreibt die Voreinstellung hier nicht.',
-    'editor.showWalls': 'Wände, Türen und Fenster',
-    'editor.showRoomLabels': 'Raumnamen',
-    'editor.showValues': 'Messwerte an den Sensoren',
-    'editor.showLegend': 'Farblegende',
-    'editor.showIsotherms': 'Isothermen (Linien gleicher Temperatur)',
-    'editor.isothermStep': 'Abstand der Isothermen',
-    'editor.cellSize': 'Gitterauflösung',
-    'editor.cellSizeNote':
-      'Kleiner = feiner und genauer, aber rechenintensiver. 6–10 px ist für Wohnungen ein guter Kompromiss.',
-    'editor.sensorRadius': 'Sensorradius',
-    'editor.sensorRadiusNote':
-      'Wie groß die Fläche um einen Messpunkt ist, die exakt auf dessen Wert festgehalten wird.',
-    'editor.transmittanceNote':
-      '0 % = perfekte Dämmung, 100 % = wie freie Luft. Diese Werte bestimmen, wie stark Wärme zwischen benachbarten Bereichen ausgetauscht wird.',
-    'editor.dialogClosedWarning':
-      'floorplan-heatmap-card: Der Konfigurationsdialog wurde geschlossen, während der Grundriss-Editor offen war. Die Änderungen konnten nicht übernommen werden.',
-    'editor.paletteCoolwarm': 'Kalt–Warm (empfohlen)',
-    'editor.paletteThermal': 'Thermal',
-    'editor.paletteViridis': 'Viridis',
-    'editor.paletteInferno': 'Inferno',
-    'editor.paletteTurbo': 'Turbo',
-
-    'label.exterior': 'Außenwand',
-    'label.interior': 'Innenwand',
-    'label.door': 'Tür',
-    'label.window': 'Fenster',
-    'label.passage': 'Durchgang',
-
-    'tools.select.label': 'Auswählen',
-    'tools.select.hint':
-      'Klicken zum Auswählen · ziehen zum Verschieben · Eckpunkte an den Griffen ziehen · Raummaße rechts eintippen · Entf löscht',
-    'tools.room.label': 'Raum',
-    'tools.room.hint':
-      'Ziehen ergibt ein Rechteck · einzelne Klicks ergeben ein Polygon (Enter oder Doppelklick schließt, Rücktaste nimmt zurück)',
-    'tools.wall.label': 'Wand',
-    'tools.wall.hint':
-      'Klick setzt den Anfang, zweiter Klick das Ende · Länge rechts eintippen und Enter für ein exaktes Maß',
-    'tools.opening.label': 'Tür / Fenster',
-    'tools.opening.hint':
-      'Auf eine Wand klicken — die Öffnung rastet darauf ein und wirkt auf beide angrenzenden Räume',
-    'tools.sensor.label': 'Sensor',
-    'tools.sensor.hint': 'Klick setzt einen Messpunkt · rechts die Entity zuweisen',
-    'tools.erase.label': 'Löschen',
-    'tools.erase.hint': 'Auf ein Element klicken, um es zu entfernen',
-    'tools.measure.label': 'Maßstab',
-    'tools.measure.hint':
-      'Eine Strecke bekannter Länge abklicken und die echte Länge in Metern eintragen',
-
-    'planEditor.undoTitle': 'Rückgängig (Cmd/Ctrl+Z)',
-    'planEditor.redoTitle': 'Wiederholen (Cmd/Ctrl+Shift+Z)',
-    'planEditor.fitTitle': 'Alles einpassen',
-    'planEditor.toggleGrid': 'Raster',
-    'planEditor.toggleSnapGrid': 'Am Raster',
-    'planEditor.toggleSnapPoints': 'An Ecken',
-    'planEditor.toggleAxisSnap': '0°/90°',
-    'planEditor.cancel': 'Abbrechen',
-    'planEditor.save': 'Übernehmen',
-    'planEditor.hintSuffix': 'Mausrad zoomt, mittlere Taste oder Leertaste schiebt.',
-    'planEditor.roomFallback': 'Raum {n}',
-    'planEditor.sensorFallback': 'Sensor',
-    'planEditor.panelGeneral': 'Grundeinstellungen',
-    'planEditor.panelWallDraft': 'Wand zeichnen',
-    'planEditor.panelMeasure': 'Maßstab kalibrieren',
-    'planEditor.panelRoom': 'Raum',
-    'planEditor.panelWall': 'Freistehende Wand',
-    'planEditor.panelOpening': 'Öffnung',
-    'planEditor.panelSensor': 'Sensor',
-    'planEditor.scaleLabel': 'Maßstab — Pixel pro Meter',
-    'planEditor.backgroundLabel': 'Hintergrundbild (Pfad unter /local/…)',
-    'planEditor.backgroundPlaceholder': '/local/grundriss.png',
-    'planEditor.backgroundOpacityLabel': 'Deckkraft Hintergrund —',
-    'planEditor.scaleNote':
-      'Der Maßstab wirkt sich nur auf Beschriftungen und den Sensorradius aus — das Temperaturfeld selbst ist maßstabsfrei.',
-    'planEditor.currentLength': 'Aktuelle Länge',
-    'planEditor.exactLengthLabel': 'Länge exakt setzen (Meter) — Enter bestätigt',
-    'planEditor.examplePlaceholder': 'z. B. 3.20',
-    'planEditor.finishDrawing': 'Zeichnen beenden (Esc)',
-    'planEditor.measureNote':
-      'Eine Strecke abklicken, deren echte Länge du kennst — etwa eine Zimmerwand. Danach die Länge in Metern eintragen.',
-    'planEditor.measuredDistance': 'Gemessene Strecke',
-    'planEditor.notMeasuredYet': 'noch nichts gemessen',
-    'planEditor.realLengthLabel': 'Echte Länge (Meter) — Enter übernimmt',
-    'planEditor.current': 'Aktuell',
-    'planEditor.name': 'Name',
-    'planEditor.width': 'Breite (m)',
-    'planEditor.length': 'Länge (m)',
-    'planEditor.area': 'Fläche',
-    'planEditor.corners': 'Ecken',
-    'planEditor.roomSizeNote':
-      'Maße sind die Außenkanten — Enter oder ein Klick daneben übernimmt. Die linke obere Ecke bleibt dabei stehen, Türen und Fenster wandern nicht mit. Eckpunkte lassen sich weiterhin an den weißen Griffen ziehen.',
-    'planEditor.type': 'Typ',
-    'planEditor.wallLength': 'Länge',
-    'planEditor.wallTypeNote':
-      'Raumkanten werden automatisch als Außen- oder Innenwand erkannt; dieser Typ gilt nur für freistehende Wände.',
-    'planEditor.kind': 'Art',
-    'planEditor.openingWidthLabel': 'Breite —',
-    'planEditor.openingNote':
-      'Durchgang = offen, Tür = deutlich gedämpft, Fenster = fast dicht. Die Öffnung wirkt auf jede Wand an dieser Stelle — bei zwei aneinandergrenzenden Räumen also auf beide.',
-    'planEditor.displayNameLabel': 'Anzeigename (leer = Entity-Name)',
-    'planEditor.exampleRoomPlaceholder': 'z. B. Wohnzimmer',
-    'planEditor.currentValue': 'Aktueller Wert',
-    'planEditor.notAvailable': 'nicht verfügbar',
-    'planEditor.entityPlaceholder': 'sensor.wohnzimmer_temperatur',
-    'planEditor.deleteButton': 'Löschen (Entf)',
-    'planEditor.noEntity': 'Ohne Entity',
-    'planEditor.noEntityAssigned': 'keine Entity zugewiesen',
-    'planEditor.noSensorsYet': 'Noch keine Sensoren gesetzt.',
-    'planEditor.noRoomsYet': 'Noch keine Räume gezeichnet.',
-    'planEditor.sensorsHeader': 'Sensoren ({n})',
-    'planEditor.roomsHeader': 'Räume ({n})',
-    'planEditor.overview': 'Übersicht',
-    'planEditor.summaryLine':
-      '{rooms} Räume · {walls} freie Wände · {openings} Öffnungen · {sensors} Sensoren',
-  },
+  en: localeEn.translations,
+  de: localeDe.translations,
 };
 
 const ROOM_NAME_SUGGESTIONS = {
-  en: ['Living Room', 'Kitchen', 'Bedroom', 'Bathroom', 'Hallway', 'Office', 'Kids Room', 'Guest WC'],
-  de: ['Wohnzimmer', 'Küche', 'Schlafzimmer', 'Bad', 'Flur', 'Büro', 'Kinderzimmer', 'Gäste-WC'],
+  en: localeEn.roomNameSuggestions,
+  de: localeDe.roomNameSuggestions,
 };
 
-/** Übersetzt `key` in `lang`, fällt auf Englisch und dann auf den Key selbst zurück. */
+/** Translates `key` into `lang`, falling back to English and then to the key itself. */
 function t(lang, key, vars) {
   const dict = TRANSLATIONS[lang] || TRANSLATIONS.en;
   let str = dict[key] != null ? dict[key] : TRANSLATIONS.en[key];
@@ -344,8 +56,8 @@ function roomNameSuggestions(lang) {
 }
 
 /**
- * Sprache ohne hass-Objekt raten — für Stellen, die vor dem ersten
- * hass-Update laufen (Registrierung in index.js, statische Stub-Config).
+ * Guess the language without a hass object — for places that run before
+ * the first hass update (registration in index.js, static stub config).
  */
 function detectLanguageFallback() {
   let stored = '';
@@ -358,20 +70,20 @@ function detectLanguageFallback() {
   return normalizeLanguage(raw);
 }
 
-/** Liest hass.language aus, sonst Fallback über detectLanguageFallback(). */
+/** Reads hass.language, otherwise falls back via detectLanguageFallback(). */
 function detectLanguage(hass) {
   return normalizeLanguage((hass && hass.language) || detectLanguageFallback());
 }
 
-/** Nur Deutsch und Englisch werden unterstützt; alles andere landet auf Englisch. */
+/** Only German and English are supported; anything else falls back to English. */
 function normalizeLanguage(raw) {
   return String(raw || '').toLowerCase().startsWith('de') ? 'de' : 'en';
 }
 
 /* ===== src/geometry.js ===== */
 /* ------------------------------------------------------------------ *
- * geometry.js — kleine Vektor-/Polygon-Helfer.
- * Alle Koordinaten sind "Grundriss-Pixel" (siehe model.js).
+ * geometry.js — small vector/polygon helpers.
+ * All coordinates are "floor-plan pixels" (see model.js).
  * ------------------------------------------------------------------ */
 
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
@@ -387,7 +99,7 @@ function pointInPolygon(x, y, pts) {
   return inside;
 }
 
-/** Vorzeichenbehaftete Fläche; > 0 = gegen den Uhrzeigersinn (bei y-nach-unten: im Uhrzeigersinn). */
+/** Signed area; > 0 = counter-clockwise (with y-down: clockwise). */
 function polygonArea(pts) {
   let a = 0;
   for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
@@ -406,7 +118,7 @@ function polygonCentroid(pts) {
   }
   a *= 0.5;
   if (Math.abs(a) < 1e-9) {
-    // Entartetes Polygon: einfacher Mittelwert.
+    // Degenerate polygon: simple average.
     const n = pts.length || 1;
     return [pts.reduce((s, p) => s + p[0], 0) / n, pts.reduce((s, p) => s + p[1], 0) / n];
   }
@@ -414,13 +126,13 @@ function polygonCentroid(pts) {
 }
 
 /**
- * Schnittparameter zweier Strecken A→B und C→D.
- * Liefert { t, u, x, y } mit P = A + t·(B−A) = C + u·(D−C), sonst null.
- * Parallele Strecken gelten als schnittfrei.
+ * Intersection parameters of two segments A→B and C→D.
+ * Returns { t, u, x, y } with P = A + t·(B−A) = C + u·(D−C), otherwise null.
+ * Parallel segments are treated as non-intersecting.
  *
- * `eps` weitet den zulässigen Bereich beidseitig auf [−eps, 1+eps]. Der
- * Solver braucht das, um Treffer exakt am Streckenende noch zu sehen und
- * sie dann selbst eindeutig einer Seite zuzuordnen.
+ * `eps` widens the accepted range on both sides to [−eps, 1+eps]. The
+ * solver needs this to still catch hits exactly at a segment's end and
+ * then unambiguously assign them to one side itself.
  */
 function segIntersectParams(ax, ay, bx, by, cx, cy, dx, dy, eps = 0) {
   const r1x = bx - ax, r1y = by - ay;
@@ -465,7 +177,7 @@ function bboxOfPoints(points, pad = 0) {
   return { minX, minY, maxX, maxY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
 }
 
-/** Rastet einen Winkel auf 0°/90°/180°/270° ein, wenn er nah genug dran liegt. */
+/** Snaps an angle to 0°/90°/180°/270° if it's close enough. */
 function axisSnap(x1, y1, x2, y2, toleranceDeg = 6) {
   const dx = x2 - x1, dy = y2 - y1;
   const len = Math.hypot(dx, dy);
@@ -484,12 +196,12 @@ function axisSnap(x1, y1, x2, y2, toleranceDeg = 6) {
 
 /* ===== src/palette.js ===== */
 /* ------------------------------------------------------------------ *
- * palette.js — Farbskalen für das Temperaturfeld.
+ * palette.js — Color scales for the temperature field.
  *
- * "coolwarm" ist die Voreinstellung: eine divergierende Blau→Grau→Rot-
- * Skala (Moreland), deren Helligkeit zu beiden Enden hin gleichmäßig
- * abfällt. Sie liest sich sofort als kalt/warm und hat — anders als eine
- * Regenbogenskala — keine falschen Kanten in der Mitte.
+ * "coolwarm" is the default: a diverging blue→gray→red scale
+ * (Moreland) whose brightness falls off evenly toward both ends.
+ * It reads instantly as cold/warm and — unlike a rainbow scale — has
+ * no false edges in the middle.
  * ------------------------------------------------------------------ */
 
 
@@ -501,7 +213,7 @@ const STOPS = {
     [0.75, [230, 126, 100]],
     [1.00, [180, 4, 38]],
   ],
-  // Kalt→warm ohne hellen Mittelpunkt; kräftiger auf dunklen Grundrissen.
+  // Cold→warm without a bright midpoint; more vivid on dark floor plans.
   thermal: [
     [0.00, [16, 48, 120]],
     [0.22, [22, 130, 168]],
@@ -543,7 +255,7 @@ const PALETTE_NAMES = Object.keys(STOPS);
 
 const lutCache = new Map();
 
-/** 256×4 Lookup-Tabelle (RGBA, Alpha immer 255) für eine Palette. */
+/** 256×4 lookup table (RGBA, alpha always 255) for a palette. */
 function paletteLUT(name) {
   const key = STOPS[name] ? name : 'coolwarm';
   if (lutCache.has(key)) return lutCache.get(key);
@@ -570,7 +282,7 @@ function paletteLUT(name) {
   return lut;
 }
 
-/** CSS-Gradient für die Legende. */
+/** CSS gradient for the legend. */
 function paletteGradientCss(name, direction = '90deg') {
   const stops = STOPS[STOPS[name] ? name : 'coolwarm'];
   const parts = stops.map(([pos, [r, g, b]]) => `rgb(${r},${g},${b}) ${(pos * 100).toFixed(0)}%`);
@@ -583,7 +295,7 @@ function paletteColorCss(name, ratio) {
   return `rgb(${lut[i]}, ${lut[i + 1]}, ${lut[i + 2]})`;
 }
 
-/** Schwarz oder Weiß — je nachdem, was auf der Palettenfarbe besser lesbar ist. */
+/** Black or white — whichever reads better on top of the palette color. */
 function readableTextOn(name, ratio) {
   const lut = paletteLUT(name);
   const i = Math.round(clamp(ratio, 0, 1) * 255) * 4;
@@ -593,24 +305,24 @@ function readableTextOn(name, ratio) {
 
 /* ===== src/model.js ===== */
 /* ------------------------------------------------------------------ *
- * model.js — Datenmodell, Defaults und Ableitungen aus dem Grundriss.
+ * model.js — Data model, defaults, and derivations from the floor plan.
  *
- * Der Grundriss besteht aus vier Objektarten:
+ * The floor plan consists of four object types:
  *
- *   rooms     Polygone. Ihre Kanten SIND Wände — man zeichnet keine
- *             Außenlinie doppelt. Ob eine Kante Außen- oder Innenwand
- *             ist, wird automatisch bestimmt (siehe buildWalls).
- *   walls     Freistehende Wandsegmente für Teilungen, die keinen Raum
- *             begrenzen (Raumteiler, Nische, Schrankwand).
- *   openings  Türen, Durchgänge und Fenster. Bewusst EIGENSTÄNDIGE
- *             Geometrie (Mittelpunkt + Winkel + Breite) statt an eine
- *             bestimmte Wand gehängt: liegen zwei Raumkanten aufeinander,
- *             öffnet eine Tür so automatisch beide.
- *   sensors   Messpunkte mit HA-Entity.
+ *   rooms     Polygons. Their edges ARE walls — you don't draw an
+ *             outline twice. Whether an edge is an exterior or interior
+ *             wall is determined automatically (see buildWalls).
+ *   walls     Freestanding wall segments for dividers that don't bound
+ *             a room (room divider, alcove, closet wall).
+ *   openings  Doors, passages, and windows. Deliberately STANDALONE
+ *             geometry (center + angle + width) instead of attached to
+ *             a specific wall: if two room edges coincide, a door
+ *             automatically opens both.
+ *   sensors   Measurement points with an HA entity.
  *
- * Koordinaten sind abstrakte "Grundriss-Pixel". px_per_meter übersetzt
- * sie in Meter — nur für Beschriftungen und Sensor-Radien relevant, das
- * Feld selbst ist maßstabsfrei.
+ * Coordinates are abstract "floor plan pixels". px_per_meter translates
+ * them into meters — relevant only for labels and sensor radii, the
+ * field itself is scale-free.
  * ------------------------------------------------------------------ */
 
 
@@ -635,16 +347,16 @@ const DEFAULTS = {
   background_opacity: 0.25,
   aspect_ratio: '',
 
-  // 2,5D-Ansicht
-  view_mode: 'flat',   // 'flat' = Draufsicht, 'tilted' = aufgestellte Wände
-  yaw: -22,            // Grad, Drehung um die Hochachse
-  pitch: 58,           // Grad Höhenwinkel; 90 = senkrecht von oben
-  wall_height: 2.5,    // Meter
+  // 2.5D view
+  view_mode: 'flat',   // 'flat' = top-down view, 'tilted' = raised walls
+  yaw: -22,            // degrees, rotation around the vertical axis
+  pitch: 58,           // degrees of elevation angle; 90 = straight down from above
+  wall_height: 2.5,    // meters
 };
 
 const VIEW_MODES = ['flat', 'tilted'];
 
-/** Durchlässigkeit 0…1 pro Bauteil. 1 = freie Luft, 0 = perfekte Dämmung. */
+/** Transmittance 0…1 per building component. 1 = free air, 0 = perfect insulation. */
 const DEFAULT_TRANSMITTANCE = {
   exterior: 0.02,
   interior: 0.12,
@@ -666,7 +378,7 @@ function emptyFloorplan() {
   return { rooms: [], walls: [], openings: [], sensors: [] };
 }
 
-/** Füllt fehlende Felder auf und repariert alte/unvollständige Configs. */
+/** Fills in missing fields and repairs old/incomplete configs. */
 function normalizeConfig(raw) {
   const config = { ...DEFAULTS, ...(raw || {}) };
   const fp = { ...emptyFloorplan(), ...(raw && raw.floorplan ? raw.floorplan : {}) };
@@ -713,14 +425,14 @@ function normalizeConfig(raw) {
   const num = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
   config.view_mode = VIEW_MODES.includes(config.view_mode) ? config.view_mode : DEFAULTS.view_mode;
   config.yaw = num(config.yaw, DEFAULTS.yaw);
-  // Unter ~12° wird die Bodenebene so flach, dass ihre Matrix nicht mehr
-  // umkehrbar ist — dann ließe sich kein Hover-Wert mehr zuordnen.
+  // Below ~12° the floor plane becomes so flat that its matrix is no
+  // longer invertible — hover values could then no longer be resolved.
   config.pitch = Math.min(90, Math.max(12, num(config.pitch, DEFAULTS.pitch)));
   config.wall_height = Math.min(8, Math.max(0.5, num(config.wall_height, DEFAULTS.wall_height)));
   return config;
 }
 
-/** Alle Punkte des Grundrisses — für Bounding-Box und Auto-Fit. */
+/** All points of the floor plan — for bounding box and auto-fit. */
 function floorplanPoints(fp) {
   const pts = [];
   for (const room of fp.rooms) pts.push(...room.points);
@@ -738,15 +450,15 @@ function isEmptyFloorplan(fp) {
 }
 
 /**
- * Baut die effektive Wandliste: jede Raumkante plus jede freistehende Wand.
+ * Builds the effective wall list: every room edge plus every freestanding wall.
  *
- * Raumkanten werden automatisch klassifiziert: liegt der Punkt knapp
- * außerhalb der Kante (entlang der Außennormalen) in einem anderen Raum,
- * ist es eine Innenwand — sonst eine Außenwand. Dadurch muss man beim
- * Zeichnen nicht über Wandtypen nachdenken.
+ * Room edges are classified automatically: if the point just outside the
+ * edge (along the outward normal) lies inside another room, it's an
+ * interior wall — otherwise an exterior wall. This means you don't have
+ * to think about wall types while drawing.
  *
- * Deckungsgleiche Kanten (zwei Räume, exakt dieselbe Wand) werden
- * dedupliziert, damit dieselbe Wand nicht doppelt dämpft.
+ * Coincident edges (two rooms, exactly the same wall) are deduplicated so
+ * the same wall doesn't dampen twice.
  */
 function buildWalls(fp) {
   const walls = [];
@@ -772,10 +484,10 @@ function buildWalls(fp) {
       const probe = 6;
       const nx = (dy / len) * probe;
       const ny = (-dx / len) * probe;
-      // Beide Seiten der Kante abtasten statt sich auf die Umlaufrichtung
-      // des Polygons zu verlassen: Räume überlappen sich nicht, also kann
-      // nur die Außenseite in einem anderen Raum landen — und das
-      // funktioniert unabhängig davon, wie herum gezeichnet wurde.
+      // Probe both sides of the edge instead of relying on the polygon's
+      // winding direction: rooms don't overlap, so only the outside can
+      // land inside another room — and this works regardless of which
+      // way the polygon was drawn.
       const neighbouring = fp.rooms.some(
         (other) =>
           other.id !== room.id &&
@@ -803,7 +515,7 @@ function buildWalls(fp) {
   return walls;
 }
 
-/** Endpunkte für das Einrasten beim Zeichnen. */
+/** Endpoints for snapping while drawing. */
 function snapCandidates(fp) {
   const pts = [];
   for (const room of fp.rooms) for (const p of room.points) pts.push({ x: p[0], y: p[1] });
@@ -815,7 +527,7 @@ function roomAreaSqm(room, pxPerMeter) {
   return Math.abs(polygonArea(room.points)) / (pxPerMeter * pxPerMeter);
 }
 
-/** Außenmaße eines Raums (umschließendes Rechteck) in Metern. */
+/** Outer dimensions of a room (bounding rectangle) in meters. */
 function roomSizeMeters(room, pxPerMeter) {
   const b = bboxOfPoints(room.points);
   return {
@@ -825,14 +537,13 @@ function roomSizeMeters(room, pxPerMeter) {
 }
 
 /**
- * Streckt ein Raumpolygon auf die gewünschten Außenmaße in Grundriss-Pixeln.
+ * Stretches a room polygon to the desired outer dimensions in floor plan pixels.
  *
- * Die linke obere Ecke bleibt stehen — so wandert der Raum beim Tippen
- * einer neuen Länge nicht unter dem Blick weg, und ein an dieser Ecke
- * anschließender Nachbarraum bleibt bündig. Bei nicht rechteckigen Räumen
- * wird das ganze Polygon proportional mitgezogen. Achsen ohne Ausdehnung
- * (entartetes Polygon) bleiben unverändert: aus 0 lässt sich nichts
- * skalieren.
+ * The top-left corner stays fixed — so the room doesn't shift out from
+ * under the cursor while typing a new length, and a neighboring room
+ * attached at this corner stays flush. For non-rectangular rooms, the
+ * whole polygon is scaled proportionally. Axes with no extent
+ * (degenerate polygon) are left unchanged: nothing can be scaled from 0.
  */
 function resizeRoomPoints(points, widthPx, heightPx) {
   const b = bboxOfPoints(points);
@@ -845,46 +556,47 @@ function resizeRoomPoints(points, widthPx, heightPx) {
 
 /* ===== src/solver.js ===== */
 /* ------------------------------------------------------------------ *
- * solver.js — stationäre Wärmediffusion über den Grundriss.
+ * solver.js — steady-state heat diffusion across the floor plan.
  *
- * Modell: ∇·(k∇T) = 0 auf einem regelmäßigen Gitter. Die Sensoren sind
- * Dirichlet-Randbedingungen (feste Werte auf einer kleinen Scheibe um
- * den Messpunkt), jede Gitterkante zwischen zwei Zellen bekommt eine
- * Leitfähigkeit k: 1 für freie Luft, weniger, wenn die Kante eine Wand
- * kreuzt — je nach Bauteil (Außenwand, Innenwand, Tür, Fenster).
+ * Model: ∇·(k∇T) = 0 on a regular grid. The sensors are Dirichlet
+ * boundary conditions (fixed values on a small disc around the
+ * measurement point); every grid edge between two cells gets a
+ * conductance k: 1 for free air, less if the edge crosses a wall —
+ * depending on the component (exterior wall, interior wall, door,
+ * window).
  *
- * Dadurch fällt die Temperatur nicht mit der Luftlinie ab, sondern
- * "fließt" um Wände herum durch die Öffnungen — und ein Nachbarraum
- * hinter einer geschlossenen Tür bleibt spürbar entkoppelt, statt
- * einfach nur weit weg zu sein.
+ * As a result, temperature doesn't drop off with straight-line distance,
+ * but "flows" around walls through the openings — and a neighboring room
+ * behind a closed door stays noticeably decoupled, instead of just being
+ * far away.
  *
- * Gelöst wird mit SOR (Gauß-Seidel mit Überrelaxation). Weil das Feld
- * zwischen zwei Sensor-Updates fast gleich bleibt, startet jeder Lauf
- * warm vom vorigen Ergebnis und braucht dann nur noch wenige Iterationen.
+ * Solved with SOR (Gauss-Seidel with over-relaxation). Because the field
+ * barely changes between two sensor updates, each run starts warm from
+ * the previous result and then only needs a few more iterations.
  * ------------------------------------------------------------------ */
 
 
 const MIN_CONDUCTANCE = 1e-4;
 
 /**
- * Wie viele Meter freie Luft ein Bauteil mit Durchlässigkeit t ersetzt:
- *   Luft-Äquivalent = (1/t − 1) · WALL_AIR_EQUIVALENT_M
+ * How many meters of free air a component with transmittance t replaces:
+ *   air equivalent = (1/t − 1) · WALL_AIR_EQUIVALENT_M
  *
- * Ohne diese Umrechnung hinge die Wirkung einer Wand an der
- * Gitterauflösung: eine Wand belegt immer genau eine Gitterkante, aber
- * ein Raum besteht bei feinem Gitter aus mehr Zellen — die Luft im Raum
- * bekäme also immer mehr Widerstand, die Wand aber nicht. Über den
- * Umweg "entspricht so und so vielen Metern Luft" bleibt das Verhältnis
- * konstant, egal wie fein gerechnet wird.
+ * Without this conversion, a wall's effect would depend on grid
+ * resolution: a wall always occupies exactly one grid edge, but a room
+ * consists of more cells at a finer grid — so the air in the room would
+ * keep gaining resistance while the wall wouldn't. Going via "equivalent
+ * to this many meters of air" keeps the ratio constant no matter how
+ * fine the grid is.
  *
- * Der Faktor 5 sorgt dafür, dass bei den Voreinstellungen rund vier
- * Fünftel des Temperaturunterschieds an der Wand abfallen und nicht im
- * Raum davor — reale Räume durchmischen sich durch Konvektion viel
- * stärker, als eine reine Wärmeleitungsrechnung es täte.
+ * The factor of 5 ensures that, with the default settings, roughly
+ * four-fifths of the temperature difference drops across the wall
+ * rather than in the room in front of it — real rooms mix far more
+ * through convection than a pure heat-conduction calculation would.
  */
 const WALL_AIR_EQUIVALENT_M = 5;
 
-/** Toleranz für die Zuordnung eines Wandtreffers zu genau einer Gitterkante. */
+/** Tolerance for assigning a wall hit to exactly one grid edge. */
 const FACE_EPS = 1e-6;
 
 class HeatField {
@@ -903,7 +615,7 @@ class HeatField {
     this._build();
   }
 
-  /** Signatur, mit der die Karte erkennt, ob das Gitter neu gebaut werden muss. */
+  /** Signature the card uses to detect whether the grid needs to be rebuilt. */
   static signature(floorplan, options) {
     return JSON.stringify([floorplan, options.cellSize, options.sensorRadius, options.transmittance, options.pxPerMeter]);
   }
@@ -932,8 +644,8 @@ class HeatField {
     const rooms = this.fp.rooms || [];
 
     if (!rooms.length) {
-      // Nur Wände gezeichnet, keine Räume: die gesamte Bounding-Box zählt
-      // als Fläche, damit auch dieser Workflow ein Feld ergibt.
+      // Only walls drawn, no rooms: the entire bounding box counts as
+      // area, so this workflow also produces a field.
       inside.fill(1);
       this.inside = inside;
       this.roomOfCell = null;
@@ -959,9 +671,9 @@ class HeatField {
   }
 
   /**
-   * Sortiert jede Wand in die Gitterzellen ein, die sie berührt (plus
-   * 8er-Nachbarschaft). Für eine Gitterkante müssen dann nur noch die
-   * Wände aus dem Bucket ihrer Zelle geprüft werden statt alle.
+   * Buckets each wall into the grid cells it touches (plus its 8
+   * neighbors). For a grid edge, only the walls in its cell's bucket
+   * then need to be checked instead of all of them.
    */
   _bucketWalls(walls) {
     const { cols, rows, n } = this;
@@ -994,9 +706,9 @@ class HeatField {
   }
 
   /**
-   * Durchlässigkeit an einem Wanddurchstoßpunkt. Öffnungen sind eigene
-   * Geometrie und gewinnen gegen die Wand — die durchlässigste Öffnung
-   * an der Stelle bestimmt den Wert.
+   * Transmittance at a wall crossing point. Openings are separate
+   * geometry and win against the wall — the most transmissive opening
+   * at that spot determines the value.
    */
   _transmittanceAt(wall, px, py) {
     const trans = this.opts.transmittance;
@@ -1016,7 +728,7 @@ class HeatField {
     return value;
   }
 
-  /** Durchlässigkeit 0…1 → Leitfähigkeit einer Gitterkante (freie Luft = 1). */
+  /** Transmittance 0…1 → conductance of a grid edge (free air = 1). */
   _conductance(t) {
     if (t >= 1) return 1;
     if (t <= 0) return 0;
@@ -1030,8 +742,8 @@ class HeatField {
     const walls = buildWalls(this.fp);
     const buckets = this._bucketWalls(walls);
 
-    const condX = new Float32Array(n); // Kante (c,r) → (c+1,r)
-    const condY = new Float32Array(n); // Kante (c,r) → (c,r+1)
+    const condX = new Float32Array(n); // edge (c,r) → (c+1,r)
+    const condY = new Float32Array(n); // edge (c,r) → (c,r+1)
 
     const faceConductance = (ax, ay, bx, by, candidates) => {
       let t = 1;
@@ -1040,14 +752,14 @@ class HeatField {
           const w = walls[candidates[i]];
           const hit = segIntersectParams(ax, ay, bx, by, w.x1, w.y1, w.x2, w.y2, FACE_EPS);
           if (!hit) continue;
-          // Halboffenes Intervall [0, 1): trifft eine Wand genau einen
-          // Zellmittelpunkt, sähen sie sonst BEIDE angrenzenden Kanten
-          // und die Wand dämpfte doppelt — sichtbar als sprunghaft
-          // stärkere Dämmung, sobald das Gitter zufällig passend liegt.
+          // Half-open interval [0, 1): if a wall hits exactly one cell
+          // center, both adjacent edges would otherwise see it and the
+          // wall would dampen twice — visible as abruptly stronger
+          // insulation whenever the grid happens to line up that way.
           if (hit.t >= 1 - FACE_EPS) continue;
-          // Mehrere gekreuzte Wände: die dichteste bestimmt den Durchlass.
-          // (Kein Produkt — sonst dämpfen zwei deckungsgleiche Raumkanten
-          // dieselbe physische Wand doppelt.)
+          // Multiple crossed walls: the densest one determines the
+          // transmittance. (Not a product — otherwise two coincident
+          // room edges would dampen the same physical wall twice.)
           const value = this._transmittanceAt(w, hit.x, hit.y);
           if (value < t) t = value;
         }
@@ -1076,7 +788,7 @@ class HeatField {
     this.walls = walls;
   }
 
-  /** Zellen, deren Mittelpunkt im Sensorradius liegt → feste Werte. */
+  /** Cells whose center lies within the sensor radius → fixed values. */
   _buildDirichlet(sensorValues) {
     const { cols, rows, n, inside } = this;
     const cs = this.opts.cellSize;
@@ -1111,7 +823,7 @@ class HeatField {
       }
 
       if (!hits) {
-        // Sensor außerhalb der Räume platziert: nächstgelegene Fläche nehmen.
+        // Sensor placed outside the rooms: use the nearest area instead.
         const idx = this._nearestInsideCell(s.x, s.y);
         if (idx >= 0) {
           fixed[idx] = 1;
@@ -1149,7 +861,7 @@ class HeatField {
     return best;
   }
 
-  /** Zellen, die über leitende Kanten überhaupt einen Sensor "sehen". */
+  /** Cells that can "see" a sensor at all via conductive edges. */
   _reachability(fixed) {
     const { cols, rows, n, condX, condY } = this;
     const reach = new Uint8Array(n);
@@ -1169,8 +881,8 @@ class HeatField {
   }
 
   /**
-   * @param {number[]} sensorValues Werte in der Reihenfolge von fp.sensors (NaN = unbekannt)
-   * @returns {boolean} true, wenn ein Feld vorliegt
+   * @param {number[]} sensorValues Values in the order of fp.sensors (NaN = unknown)
+   * @returns {boolean} true if a field is available
    */
   solve(sensorValues) {
     const started = (typeof performance !== 'undefined' ? performance : Date).now();
@@ -1193,9 +905,9 @@ class HeatField {
 
     const span = Math.max(0.05, dirichlet.max - dirichlet.min);
     const tol = span * 1e-4;
-    // Gauß-Seidel braucht grob so viele Durchläufe, wie das Gitter breit
-    // ist — die Grenze muss also mit der Auflösung mitwachsen, sonst
-    // liefern feine Gitter unfertige Felder.
+    // Gauss-Seidel needs roughly as many passes as the grid is wide —
+    // so the limit must scale with resolution, or fine grids will
+    // produce unfinished fields.
     const maxIter = this._warm ? 200 : clamp(6 * Math.max(cols, rows), 400, 4000);
     const omega = 1.85;
     let iter = 0;
@@ -1247,7 +959,7 @@ class HeatField {
     return true;
   }
 
-  /** Bilinear interpolierter Feldwert an einer Grundriss-Koordinate, sonst NaN. */
+  /** Bilinearly interpolated field value at a floor-plan coordinate, else NaN. */
   sample(x, y) {
     if (!this.T) return NaN;
     const { cols, rows, inside, T } = this;
@@ -1275,17 +987,17 @@ class HeatField {
 
 /* ===== src/isotherms.js ===== */
 /* ------------------------------------------------------------------ *
- * isotherms.js — Marching Squares über das gelöste Feld.
+ * isotherms.js — Marching squares over the solved field.
  *
- * Liefert Liniensegmente gleicher Temperatur. Die machen den Verlauf
- * ablesbar, ohne dass man Farben schätzen muss — besonders dort, wo die
- * Palette flach wird.
+ * Produces line segments of equal temperature. These make the gradient
+ * readable without having to guess colors — especially where the
+ * palette gets flat.
  * ------------------------------------------------------------------ */
 
 /**
  * @param {HeatField} field
- * @param {number} step Abstand der Isothermen in Messeinheiten (z.B. 0.5 °C)
- * @returns {{level:number, segments:number[][]}[]} Segmente als [x1,y1,x2,y2] in Grundriss-Koordinaten
+ * @param {number} step Spacing of isotherms in measurement units (e.g. 0.5 °C)
+ * @returns {{level:number, segments:number[][]}[]} Segments as [x1,y1,x2,y2] in floor plan coordinates
  */
 function computeIsotherms(field, step, maxLevels = 40) {
   if (!field || !field.T || !field.stats || !(step > 0)) return [];
@@ -1320,7 +1032,7 @@ function computeIsotherms(field, step, maxLevels = 40) {
 
         const x0 = cx(c), x1 = cx(c + 1), y0 = cy(r), y1 = cy(r + 1);
         const interp = (a, b) => (level - a) / (b - a || 1e-9);
-        // Kantenmittelpunkte der Zelle: oben, rechts, unten, links
+        // Edge midpoints of the cell: top, right, bottom, left
         const top = [x0 + (x1 - x0) * interp(v00, v10), y0];
         const right = [x1, y0 + (y1 - y0) * interp(v10, v11)];
         const bottom = [x0 + (x1 - x0) * interp(v01, v11), y1];
@@ -1347,16 +1059,16 @@ function computeIsotherms(field, step, maxLevels = 40) {
 
 /* ===== src/renderer.js ===== */
 /* ------------------------------------------------------------------ *
- * renderer.js — zeichnet Feld und Grundriss auf ein Canvas.
+ * renderer.js — draws the field and floor plan onto a canvas.
  *
- * Das Feld wird in Gitterauflösung in eine ImageData geschrieben und
- * dann hochskaliert — aber vorher auf die Raumpolygone geclippt. Ohne
- * dieses Clipping "blutet" die Heatmap über die Außenwände hinaus, was
- * im alten Demo-Stand der auffälligste Makel war.
+ * The field is written into an ImageData at grid resolution and then
+ * scaled up — but clipped to the room polygons first. Without this
+ * clipping, the heatmap "bleeds" past the exterior walls, which was the
+ * most noticeable flaw in the old demo state.
  * ------------------------------------------------------------------ */
 
 
-/** Abbildung Grundriss-Koordinaten → Canvas-Koordinaten (einpassend, seitenverhältnistreu). */
+/** Mapping floor-plan coordinates → canvas coordinates (fit, aspect-ratio preserving). */
 function computeView(bounds, width, height, padding = 8) {
   const availW = Math.max(1, width - padding * 2);
   const availH = Math.max(1, height - padding * 2);
@@ -1387,11 +1099,11 @@ function roomsPath(rooms, view) {
 }
 
 /**
- * Färbt das gelöste Feld in ein Canvas in Gitterauflösung.
+ * Colors the solved field into a canvas at grid resolution.
  *
- * Eigene Funktion, damit die Karte das Ergebnis zwischenspeichern kann:
- * beim Drehen der 2,5D-Ansicht ändert sich nur die Projektion, nicht das
- * Feld — dann wäre es Verschwendung, die Farben jedes Mal neu zu rechnen.
+ * A separate function so the card can cache the result: rotating the
+ * 2.5D view only changes the projection, not the field — recomputing
+ * the colors every time would be wasteful.
  */
 function heatmapBuffer(doc, field, opts) {
   const { cols, rows, inside, T, reach } = field;
@@ -1420,13 +1132,13 @@ function heatmapBuffer(doc, field, opts) {
   return buffer;
 }
 
-/** Feld als Farbfläche in der flachen Draufsicht. */
+/** Field as a colored surface in the flat top-down view. */
 function renderField(ctx, field, view, opts) {
   const { cols, rows } = field;
   const buffer = opts.buffer || heatmapBuffer(ctx.canvas.ownerDocument, field, opts);
   const cs = field.opts.cellSize;
-  // Die ImageData-Pixel sind Zellmittelpunkte; das halbe Zellmaß Versatz
-  // sorgt dafür, dass die Interpolation nicht um eine halbe Zelle wandert.
+  // The ImageData pixels are cell centers; the half-cell-size offset
+  // ensures the interpolation doesn't drift by half a cell.
   const dx = view.toX(field.bounds.minX + cs * 0.5);
   const dy = view.toY(field.bounds.minY + cs * 0.5);
   const dw = cols * cs * view.scale;
@@ -1459,12 +1171,12 @@ function renderIsotherms(ctx, isotherms, view, opts) {
 }
 
 /**
- * Ordnet einer Wand die Öffnungen zu, die auf ihr liegen, und gibt deren
- * Abschnitte als Parameter t ∈ [0, 1] entlang der Wand zurück.
+ * Assigns to a wall the openings that lie on it, and returns their
+ * sections as parameter t ∈ [0, 1] along the wall.
  *
- * Die Zuordnung ist rein geometrisch — Öffnungen kennen ihre Wand nicht.
- * Das ist Absicht: liegen zwei Raumkanten aufeinander, öffnet eine
- * einzelne Tür so beide, ohne dass sie doppelt gepflegt werden müsste.
+ * The assignment is purely geometric — openings don't know their wall.
+ * That's intentional: if two room edges coincide, a single door opens
+ * both without needing to be maintained twice.
  */
 function wallCovers(wall, openings, tol = 8) {
   const dx = wall.x2 - wall.x1, dy = wall.y2 - wall.y1;
@@ -1494,7 +1206,7 @@ function wallCovers(wall, openings, tol = 8) {
   return covers;
 }
 
-/** Die Abschnitte einer Wand, die KEINE Öffnung bedeckt. */
+/** The sections of a wall that are NOT covered by an opening. */
 function wallGaps(wall, openings, tol = 8) {
   const covers = wallCovers(wall, openings, tol);
   if (!covers.length) {
@@ -1530,8 +1242,8 @@ function renderFloorplan(ctx, fp, view, opts) {
     }
   }
 
-  // Öffnungen: Fenster als dünne durchgehende Linie, Türen als Schwelle
-  // mit angedeutetem Türblatt, Durchgänge bleiben leer.
+  // Openings: windows as a thin continuous line, doors as a threshold
+  // with an indicated door leaf, passages stay empty.
   for (const o of openings) {
     const hx = (Math.cos(o.angle) * o.width) / 2;
     const hy = (Math.sin(o.angle) * o.width) / 2;
@@ -1578,35 +1290,35 @@ function renderFloorplan(ctx, fp, view, opts) {
 
 /* ===== src/projection.js ===== */
 /* ------------------------------------------------------------------ *
- * projection.js — axonometrische 2,5D-Projektion.
+ * projection.js — axonometric 2.5D projection.
  *
- * Zwei Winkel steuern die Ansicht:
- *   yaw    Drehung um die Hochachse — man läuft um das Modell herum
- *   pitch  Höhenwinkel: 90° = senkrecht von oben, kleiner = flacher
+ * Two angles control the view:
+ *   yaw    rotation around the vertical axis — walking around the model
+ *   pitch  elevation angle: 90° = straight down, smaller = flatter
  *
- * Bewusst eine PARALLELE Projektion, keine perspektivische. Der Grund
- * ist nicht nur Geschmack: die Abbildung der Bodenebene (z = 0) ist
- * dadurch eine affine Transformation und lässt sich als 2×3-Matrix an
- * ctx.transform() übergeben. Die fertig gerechnete Heatmap kann also
- * unverändert als Bild auf den Boden gelegt werden. Eine perspektivische
- * Ansicht bräuchte eine Homographie, die Canvas 2D nicht beherrscht —
- * man müsste den Boden in Kacheln zerlegen und stückweise annähern.
+ * Deliberately a PARALLEL projection, not a perspective one. The reason
+ * isn't just taste: it makes the mapping of the floor plane (z = 0) an
+ * affine transformation, expressible as a 2×3 matrix passed to
+ * ctx.transform(). The pre-computed heatmap can then be stamped onto the
+ * floor unmodified. A perspective view would need a homography, which
+ * Canvas 2D doesn't support — the floor would have to be split into
+ * tiles and approximated piecewise.
  *
- * Bildschirmkoordinaten (y zeigt nach unten):
+ * Screen coordinates (y points down):
  *   rx =  (x−ox)·cos θ − (y−oy)·sin θ
  *   ry =  (x−ox)·sin θ + (y−oy)·cos θ
  *   sx =  rx
  *   sy =  ry·sin φ − z·cos φ
  *
- * Bei φ = 90° fällt der z-Term weg und es bleibt exakt die Draufsicht.
- * `ry` ist zugleich der Tiefenschlüssel: je größer, desto näher am
- * Betrachter — danach wird für den Maleralgorithmus sortiert.
+ * At φ = 90° the z term drops out, leaving exactly the top-down view.
+ * `ry` is also the depth key: the larger it is, the closer to the
+ * viewer — used to sort for the painter's algorithm.
  * ------------------------------------------------------------------ */
 
 
 const DEG = Math.PI / 180;
 
-/** Flacher als das wird die Bodenmatrix singulär und nicht mehr umkehrbar. */
+/** Below this, the floor matrix becomes singular and can no longer be inverted. */
 const MIN_PITCH_DEG = 12;
 const MAX_PITCH_DEG = 90;
 
@@ -1633,8 +1345,8 @@ function rawExtent({ floorplan, yaw, pitch, wallHeight }) {
   const sp = Math.sin(pitch), cp = Math.cos(pitch);
 
   let pMinX = Infinity, pMinY = Infinity, pMaxX = -Infinity, pMaxY = -Infinity;
-  // Ober- und Unterkante mitnehmen: die Wandkronen ragen nach oben aus
-  // dem Grundriss heraus und gehören mit ins Bild.
+  // Include the top and bottom edge: the wall tops rise above the
+  // floor plan outline and need to be part of the image.
   for (const [x, y] of points) {
     const rx = (x - ox) * cy - (y - oy) * sy;
     const ry = (x - ox) * sy + (y - oy) * cy;
@@ -1655,14 +1367,14 @@ function rawExtent({ floorplan, yaw, pitch, wallHeight }) {
   };
 }
 
-/** Seitenverhältnis der projizierten Szene — für die Höhe der Bühne. */
+/** Aspect ratio of the projected scene — used for the stage height. */
 function projectedAspect(options) {
   const extent = rawExtent(options);
   return extent.width / extent.height;
 }
 
 /**
- * @param {object} options floorplan, yaw/pitch (Bogenmaß), wallHeight, width, height, padding
+ * @param {object} options floorplan, yaw/pitch (radians), wallHeight, width, height, padding
  */
 function createProjection(options) {
   const { width, height, padding = 8 } = options;
@@ -1686,7 +1398,7 @@ function createProjection(options) {
     };
   };
 
-  // Affine Matrix der Bodenebene für ctx.transform(a, b, c, d, e, f):
+  // Affine matrix of the floor plane for ctx.transform(a, b, c, d, e, f):
   //   sx = a·x + c·y + e     sy = b·x + d·y + f
   const a = cy * scale;
   const b = sy * sp * scale;
@@ -1698,15 +1410,15 @@ function createProjection(options) {
 
   return {
     scale,
-    // Wie stark die Bodenebene gestaucht erscheint: 1 = Draufsicht,
-    // gegen 0 = fast waagrechter Blick. Kreise auf dem Boden werden
-    // damit zu Ellipsen.
+    // How strongly the floor plane appears compressed: 1 = top-down
+    // view, toward 0 = nearly horizontal view. Circles on the floor
+    // become ellipses as a result.
     flatness: sp,
     project,
     depthOf: (x, y) => (x - ox) * sy + (y - oy) * cy,
     floorMatrix: [a, b, c, d, matE, matF],
     floorPoint: (x, y) => [a * x + c * y + matE, b * x + d * y + matF],
-    /** Bildschirmpunkt zurück auf die Bodenebene — für den Hover-Wert. */
+    /** Screen point back onto the floor plane — for the hover value. */
     unprojectFloor: (sx, sy2) => {
       if (Math.abs(det) < 1e-9) return null;
       const px = sx - matE, py = sy2 - matF;
@@ -1717,22 +1429,21 @@ function createProjection(options) {
 
 /* ===== src/scene3d.js ===== */
 /* ------------------------------------------------------------------ *
- * scene3d.js — zeichnet die 2,5D-Ansicht.
+ * scene3d.js — renders the 2.5D view.
  *
- * Reihenfolge und Verdeckung entstehen durch den Maleralgorithmus: alle
- * Wandflächen werden gesammelt, nach Tiefe sortiert und von hinten nach
- * vorn gezeichnet. Ein Z-Buffer ist nicht nötig, weil jedes Wandstück ein
- * konvexer Quader ist — dessen Rückseiten werden zwangsläufig von seinen
- * eigenen Vorderseiten überdeckt, ganz ohne Backface-Culling.
+ * Ordering and occlusion come from the painter's algorithm: all wall
+ * faces are collected, sorted by depth, and drawn back to front. A
+ * z-buffer isn't needed because every wall piece is a convex box — its
+ * back faces are inevitably covered by its own front faces, with no
+ * backface culling required.
  *
- * Türen und Fenster sind keine aufgemalten Symbole, sondern fehlende
- * Geometrie: eine Tür lässt den Wandquader dort weg und setzt nur einen
- * Sturz darüber, ein Fenster bekommt Brüstung, Sturz und eine
- * durchscheinende Scheibe dazwischen.
+ * Doors and windows aren't painted-on symbols but absent geometry: a
+ * door leaves out the wall box there and places only a lintel above it,
+ * a window gets a sill, a lintel, and a translucent pane in between.
  * ------------------------------------------------------------------ */
 
 
-/** Bauteilmaße in Metern. */
+/** Component dimensions in meters. */
 const GEOMETRY = {
   thicknessExterior: 0.24,
   thicknessInterior: 0.12,
@@ -1742,15 +1453,15 @@ const GEOMETRY = {
   sensorHeight: 1.3,
 };
 
-/** Richtung, aus der das Modell beleuchtet wird (oben links). */
+/** Direction the model is lit from (top left). */
 const LIGHT = [-0.55, -0.835];
 
 const shadeRgb = (rgb, factor) =>
   `rgb(${Math.round(rgb[0] * factor)}, ${Math.round(rgb[1] * factor)}, ${Math.round(rgb[2] * factor)})`;
 
 /**
- * Die fünf sichtbaren Flächen eines Wandquaders (der Boden entfällt —
- * von oben schaut niemand darunter).
+ * The five visible faces of a wall box (the floor is omitted — nobody
+ * looks underneath it from above).
  */
 function boxFaces(x1, y1, x2, y2, halfT, z0, z1) {
   const dx = x2 - x1, dy = y2 - y1;
@@ -1773,12 +1484,12 @@ function boxFaces(x1, y1, x2, y2, halfT, z0, z1) {
 }
 
 /**
- * Baut die Baukörper des Grundrisses: pro Wand die Quader, die nach Abzug
- * der Öffnungen übrig bleiben, plus die Glasscheiben der Fenster.
+ * Builds the floor plan's solid bodies: per wall, the boxes left over
+ * after subtracting the openings, plus the window panes.
  *
- * Absichtlich frei von Zeichenkram und in Grundriss-Koordinaten — so ist
- * die eigentlich knifflige Logik (was bleibt von einer Wand mit Tür?)
- * ohne Canvas prüfbar.
+ * Deliberately free of drawing concerns and in floor-plan coordinates —
+ * so the actually tricky logic (what's left of a wall with a door?) can
+ * be tested without a canvas.
  *
  * @returns {{x1,y1,x2,y2,z0,z1,halfT,exterior,glass}[]}
  */
@@ -1811,12 +1522,12 @@ function wallSolids(floorplan, opts) {
     for (const { t0, t1, opening } of wallCovers(wall, openings, tol)) {
       if (opening.type === 'passage') continue;
       if (opening.type === 'door') {
-        add(t0, t1, doorHeight, height); // nur der Sturz bleibt stehen
+        add(t0, t1, doorHeight, height); // only the lintel remains standing
         continue;
       }
-      add(t0, t1, 0, sill);        // Brüstung
-      add(t0, t1, head, height);   // Sturz
-      add(t0, t1, sill, head, true); // Scheibe
+      add(t0, t1, 0, sill);        // sill
+      add(t0, t1, head, height);   // lintel
+      add(t0, t1, sill, head, true); // pane
     }
   }
   return solids;
@@ -1824,8 +1535,8 @@ function wallSolids(floorplan, opts) {
 
 /**
  * @returns {{sensors: {x:number,y:number,floorX:number,floorY:number}[]}}
- *          Bildschirmpositionen der Sensoren, damit die Karte ihre Chips
- *          darüber legen kann.
+ *          Screen positions of the sensors, so the card can overlay
+ *          their chips on top.
  */
 function renderScene(ctx, params) {
   const {
@@ -1836,7 +1547,7 @@ function renderScene(ctx, params) {
 
   const sensorZ = GEOMETRY.sensorHeight * pxPerMeter;
 
-  /* --- Boden: Heatmap als affin transformiertes Bild ---------------- */
+  /* --- Floor: heatmap as an affinely transformed image ---------------- */
   if (field && buffer) {
     const cs = field.opts.cellSize;
     ctx.save();
@@ -1855,8 +1566,8 @@ function renderScene(ctx, params) {
     ctx.restore();
   }
 
-  /* --- Isothermen: Punkte einzeln projizieren, damit die Strichstärke
-         nicht mitverzerrt wird ----------------------------------------- */
+  /* --- Isotherms: project points individually so the line width
+         isn't distorted along with them ----------------------------------------- */
   if (isotherms && isotherms.length) {
     ctx.save();
     ctx.beginPath();
@@ -1874,8 +1585,8 @@ function renderScene(ctx, params) {
     ctx.restore();
   }
 
-  /* --- Raumnamen liegen auf dem Boden und dürfen von nahen Wänden
-         verdeckt werden, deshalb vor den Wänden ------------------------ */
+  /* --- Room names sit on the floor and may be covered by nearby walls,
+         hence drawn before the walls ------------------------ */
   if (showRoomLabels) {
     ctx.save();
     ctx.textAlign = 'center';
@@ -1893,7 +1604,7 @@ function renderScene(ctx, params) {
     ctx.restore();
   }
 
-  /* --- Wände ------------------------------------------------------- */
+  /* --- Walls ------------------------------------------------------- */
   if (showWalls) {
     const faces = [];
     for (const s of wallSolids(floorplan, { pxPerMeter, wallHeight })) {
@@ -1916,7 +1627,7 @@ function renderScene(ctx, params) {
       }
     }
 
-    // Projizieren, Tiefe mitteln, von hinten nach vorn sortieren.
+    // Project, average the depth, sort back to front.
     const drawables = faces.map(({ face, base, glass }) => {
       let depth = 0;
       const points = face.pts.map(([x, y, z]) => {
@@ -1960,9 +1671,9 @@ function renderScene(ctx, params) {
     ctx.restore();
   }
 
-  /* --- Sensoren: Standfuß auf dem Boden, Mast bis auf Messhöhe.
-         Bewusst zuletzt und ohne Tiefentest — die eigenen Messpunkte
-         soll man immer sehen, auch hinter einer Wand. ------------------ */
+  /* --- Sensors: base on the floor, mast up to measurement height.
+         Deliberately drawn last and without depth testing — you should
+         always see your own measurement points, even behind a wall. ------------------ */
   const sensorPoints = [];
   ctx.save();
   for (const s of floorplan.sensors) {
@@ -1992,15 +1703,15 @@ function renderScene(ctx, params) {
 
 /* ===== src/plan-editor.js ===== */
 /* ------------------------------------------------------------------ *
- * plan-editor.js — Vollbild-Editor für Grundriss und Sensoren.
+ * plan-editor.js — Fullscreen editor for floor plan and sensors.
  *
- * Läuft als eigenes Overlay über der Lovelace-Oberfläche, weil der
- * Konfigurationsdialog viel zu schmal zum Zeichnen ist. Gerendert wird
- * in SVG: das Hit-Testing (welches Objekt liegt unter der Maus?)
- * übernimmt damit der Browser, statt dass wir es von Hand rechnen.
+ * Runs as its own overlay above the Lovelace UI, because the
+ * configuration dialog is far too narrow for drawing. Rendering is
+ * done in SVG: hit-testing (which object is under the mouse?) is thus
+ * handled by the browser instead of us computing it by hand.
  *
- * Alle Striche nutzen vector-effect="non-scaling-stroke", d.h. die
- * Strichstärken sind Bildschirm-Pixel und bleiben beim Zoomen gleich.
+ * All strokes use vector-effect="non-scaling-stroke", i.e. stroke
+ * widths are screen pixels and stay constant when zooming.
  * ------------------------------------------------------------------ */
 
 
@@ -2150,8 +1861,8 @@ const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
 const icon = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`;
 
 /**
- * Öffnet den Editor. Löst mit { floorplan, px_per_meter, background,
- * background_opacity } auf — oder mit null, wenn abgebrochen wurde.
+ * Opens the editor. Resolves with { floorplan, px_per_meter, background,
+ * background_opacity } — or with null if cancelled.
  */
 function openPlanEditor(options) {
   return new Promise((resolve) => {
@@ -2172,8 +1883,8 @@ class PlanEditor {
 
     this.tool = 'select';
     this.selection = null;      // { kind, id, vertex? }
-    this.draft = null;          // laufende Zeichnung
-    this.pointer = null;        // Weltkoordinate des Zeigers
+    this.draft = null;          // drawing in progress
+    this.pointer = null;        // world coordinate of the cursor
     this.drag = null;
     this.panning = null;
     this.snapGrid = true;
@@ -2185,19 +1896,19 @@ class PlanEditor {
     this.view = { cx: 0, cy: 0, zoom: 1 };
   }
 
-  /* ------------------------------ Montage ------------------------- */
+  /* ------------------------------ Mounting -------------------------- */
 
   mount() {
-    // Der Konfigurationsdialog von Home Assistant ist ein natives <dialog>
-    // im Top Layer. Dorthin reicht kein z-index, und alles außerhalb ist
-    // solange `inert`. Ein gewöhnliches Overlay an document.body läge also
-    // unerreichbar dahinter — Klicks träfen den Scrim des HA-Dialogs, der
-    // sich daraufhin schließt und unser Editor-Element abhängt; ein danach
-    // gefeuertes `config-changed` käme nirgends mehr an.
+    // Home Assistant's configuration dialog is a native <dialog> in the
+    // top layer. No z-index reaches there, and everything outside it is
+    // `inert` while it's open. A plain overlay on document.body would
+    // therefore sit unreachably behind it — clicks would hit the HA
+    // dialog's scrim, which would then close and detach our editor
+    // element; a `config-changed` fired afterward would go nowhere.
     //
-    // Deshalb sind wir selbst ein modales <dialog>: showModal() legt uns
-    // über den HA-Dialog (Top Layer stapelt in Aufrufreihenfolge) und hebt
-    // das inert für unseren Teilbaum auf.
+    // So we make ourselves a modal <dialog> too: showModal() places us
+    // above the HA dialog (the top layer stacks in call order) and lifts
+    // the inert state for our subtree.
     this.dialog = document.createElement('dialog');
     this.dialog.style.cssText = [
       'position:fixed', 'inset:0',
@@ -2206,7 +1917,7 @@ class PlanEditor {
       'background:transparent', 'overflow:hidden',
     ].join(';');
 
-    // <dialog> kann keinen Shadow Root tragen — ein <div> darin schon.
+    // <dialog> cannot host a shadow root — a <div> inside it can.
     this.host = document.createElement('div');
     this.host.style.cssText = 'width:100%;height:100%;';
     this.root = this.host.attachShadow({ mode: 'open' });
@@ -2223,9 +1934,9 @@ class PlanEditor {
     this.dialog.appendChild(this.host);
     document.body.appendChild(this.dialog);
 
-    // Escape geht durch unsere eigene Behandlung (verwirft erst Entwurf
-    // bzw. Auswahl). Der native Schließweg würde das Fenster wegnehmen,
-    // ohne dass jemand die Promise auflöst.
+    // Escape is handled by us (discards the draft or selection first).
+    // The native close path would tear down the window without anyone
+    // resolving the promise.
     this._onCancel = (event) => {
       event.preventDefault();
       this._escape();
@@ -2272,8 +1983,8 @@ class PlanEditor {
     document.addEventListener('keyup', this._onKeyUp, true);
 
     this._resizeObserver = new ResizeObserver(() => {
-      // Beim ersten Aufruf hatte das SVG noch keine Größe, das Einpassen
-      // ging also ins Leere. Sobald echte Maße vorliegen, nachholen.
+      // On the first call the SVG had no size yet, so fitting the view
+      // was a no-op. Once real dimensions are available, catch up.
       if (!this._didInitialFit && this.svg.getBoundingClientRect().width > 1) {
         this._didInitialFit = true;
         this.zoomToFit();
@@ -2283,7 +1994,7 @@ class PlanEditor {
     this._resizeObserver.observe(this.svg);
   }
 
-  /* --------------------------- Koordinaten ------------------------ */
+  /* --------------------------- Coordinates -------------------------- */
 
   get viewBox() {
     const rect = this.svg.getBoundingClientRect();
@@ -2301,7 +2012,7 @@ class PlanEditor {
     };
   }
 
-  /** Bildschirm-Pixel in Weltkoordinaten — für zoom-unabhängige Toleranzen. */
+  /** Screen pixels to world coordinates — for zoom-independent tolerances. */
   px(n) { return n / this.view.zoom; }
 
   zoomToFit() {
@@ -2324,7 +2035,7 @@ class PlanEditor {
     };
   }
 
-  /* ----------------------------- Historie ------------------------- */
+  /* ----------------------------- History ----------------------------- */
 
   snapshot() {
     this.undoStack.push(JSON.stringify(this.state));
@@ -2348,7 +2059,7 @@ class PlanEditor {
     this.render();
   }
 
-  /* ------------------------------ Snapping ------------------------ */
+  /* ------------------------------ Snapping ---------------------------- */
 
   get gridStep() { return this.pxPerMeter * 0.25; }
 
@@ -2378,13 +2089,12 @@ class PlanEditor {
   }
 
   /**
-   * Sammelt Kanten (achsparallel) und Eckpunkte aller Räume/Wände außer
-   * dem übergebenen Raum — die "Fanglinien", an denen ein verschobener
-   * Raum einrasten kann.
+   * Collects edges (axis-aligned) and corner points of all rooms/walls
+   * except the given room — the "snap lines" a moved room can lock onto.
    */
   _collectSnapTargets(excludeRoomId) {
-    const vLines = []; // { x, y0, y1 } — senkrechte Kante bei konstantem x
-    const hLines = []; // { y, x0, x1 } — waagrechte Kante bei konstantem y
+    const vLines = []; // { x, y0, y1 } — vertical edge at constant x
+    const hLines = []; // { y, x0, x1 } — horizontal edge at constant y
     const points = [];
 
     const addEdge = (x1, y1, x2, y2) => {
@@ -2413,11 +2123,11 @@ class PlanEditor {
   }
 
   /**
-   * Ermittelt für eine Raumverschiebung um (dx, dy) den nächstgelegenen
-   * Einrast-Versatz — Kante-auf-Kante hat Vorrang, Ecke-auf-Ecke wird
-   * zusätzlich geprüft, falls kein passendes Kantenpaar in Reichweite ist.
-   * x und y werden unabhängig voneinander behandelt, sodass eine Kante
-   * einrasten kann, auch wenn die andere Achse frei bleibt.
+   * Determines, for a room move by (dx, dy), the closest snap offset —
+   * edge-on-edge takes priority, corner-on-corner is checked in addition
+   * if no matching edge pair is in range. x and y are handled
+   * independently, so one edge can snap even while the other axis
+   * stays free.
    */
   _snapRoomMove(beforePoints, dx, dy, roomId) {
     const tol = this.px(11);
@@ -2434,7 +2144,7 @@ class PlanEditor {
       if (Math.abs(x2 - x1) < 1e-6 && Math.abs(y2 - y1) > 1e-6) {
         const yLo = Math.min(my1, my2), yHi = Math.max(my1, my2);
         for (const g of targets.vLines) {
-          if (yHi < g.y0 - tol || yLo > g.y1 + tol) continue; // Kanten liegen nicht auf gleicher Höhe
+          if (yHi < g.y0 - tol || yLo > g.y1 + tol) continue; // edges aren't at the same height
           const delta = g.x - mx1;
           if (Math.abs(delta) < bestDxDist) { bestDxDist = Math.abs(delta); bestDx = dx + delta; }
         }
@@ -2462,7 +2172,7 @@ class PlanEditor {
     return { dx: bestDx, dy: bestDy };
   }
 
-  /** Nächstgelegene Wand samt Projektionspunkt — für das Platzieren von Öffnungen. */
+  /** Nearest wall plus projection point — for placing openings. */
   nearestWall(point, maxDist) {
     const walls = buildWalls(this.state);
     let best = null, bestDist = maxDist != null ? maxDist : this.px(18);
@@ -2477,7 +2187,7 @@ class PlanEditor {
     return best;
   }
 
-  /* --------------------------- Zeigereingabe ---------------------- */
+  /* --------------------------- Pointer input -------------------------- */
 
   _onWheel(event) {
     event.preventDefault();
@@ -2494,7 +2204,7 @@ class PlanEditor {
     this.svg.setPointerCapture(event.pointerId);
     const world = this.toWorld(event);
 
-    // Mittlere Maustaste, Leertaste oder rechte Taste: schieben.
+    // Middle mouse button, spacebar, or right button: pan.
     if (event.button === 1 || event.button === 2 || this._spaceDown) {
       this.panning = { startX: event.clientX, startY: event.clientY, cx: this.view.cx, cy: this.view.cy };
       this.svg.classList.add('panning');
@@ -2532,8 +2242,8 @@ class PlanEditor {
     if (this.draft) {
       this.draft.cursor = this._draftCursor(world);
       this.render();
-      // Nur das Anzeigefeld nachziehen statt die Seitenleiste neu zu
-      // bauen — sonst verliert das Längen-Eingabefeld den Fokus.
+      // Only update the readout field instead of rebuilding the sidebar
+      // — otherwise the length input field would lose focus.
       const readout = this.side.querySelector('[data-out="draftLength"]');
       if (readout) {
         const end = this.draft.cursor;
@@ -2572,7 +2282,7 @@ class PlanEditor {
     }
   }
 
-  /* ----------------------------- Werkzeuge ------------------------ */
+  /* ----------------------------- Tools --------------------------------- */
 
   _draftCursor(world) {
     if (this.draft && (this.draft.kind === 'wall' || this.draft.kind === 'measure') && this.snapAxisOn) {
@@ -2596,9 +2306,8 @@ class PlanEditor {
     const kind = target.dataset.kind;
     const id = target.dataset.id;
 
-    // Der Schnappschuss für die Historie entsteht erst beim ersten
-    // tatsächlichen Ziehen — bloßes Anklicken soll den Undo-Stapel
-    // nicht mit Nichts-Änderungen zumüllen.
+    // The history snapshot is only taken on the first actual drag —
+    // a plain click shouldn't clutter the undo stack with no-op changes.
     if (kind === 'handle') {
       this.selection = { kind: target.dataset.owner, id, vertex: Number(target.dataset.vertex) };
       this.drag = { kind: 'vertex', owner: target.dataset.owner, id, vertex: Number(target.dataset.vertex), pending: true };
@@ -2618,9 +2327,9 @@ class PlanEditor {
   }
 
   /**
-   * Türen und Fenster, die aktuell auf einer Kante des Raums sitzen — sie
-   * kennen ihre Wand nicht (siehe model.js), werden also rein geometrisch
-   * über die Kanten des Raums gefunden, bevor der Zug beginnt.
+   * Doors and windows currently sitting on an edge of the room — they
+   * don't know their wall (see model.js), so they're found purely
+   * geometrically via the room's edges before the drag starts.
    */
   _openingsOnRoom(roomId) {
     const room = this.state.rooms.find((r) => r.id === roomId);
@@ -2716,7 +2425,7 @@ class PlanEditor {
           s.x = snapped.x; s.y = snapped.y;
         }
       } else if (d.target === 'opening') {
-        // Öffnungen gleiten entlang ihrer Wand statt frei zu wandern.
+        // Openings slide along their wall instead of moving freely.
         const o = this.state.openings.find((x) => x.id === d.id);
         if (o && d.before) {
           const target = { x: d.before.x + dx, y: d.before.y + dy };
@@ -2748,7 +2457,7 @@ class PlanEditor {
     }
   }
 
-  /** Kurzer Klick statt Ziehen ⇒ der Nutzer will ein Polygon, kein Rechteck. */
+  /** A short click instead of a drag ⇒ the user wants a polygon, not a rectangle. */
   _finishRect() {
     const d = this.draft;
     if (!d) return;
@@ -2809,7 +2518,7 @@ class PlanEditor {
     this.snapshot();
     const wall = { id: uid('w'), x1: start.x, y1: start.y, x2: end.x, y2: end.y, type: 'interior' };
     this.state.walls.push(wall);
-    // Fortlaufend zeichnen: das Ende wird zum nächsten Anfang.
+    // Continuous drawing: the end becomes the next start.
     this.draft = { kind: 'wall', start: { x: end.x, y: end.y }, cursor: { x: end.x, y: end.y } };
     this.render();
     this.renderSide();
@@ -2874,7 +2583,7 @@ class PlanEditor {
   _measureDown(world) {
     const point = this._draftCursor(world);
     if (!this.draft || this.draft.end) {
-      // Dritter Klick startet eine neue Messung.
+      // A third click starts a new measurement.
       this.draft = { kind: 'measure', start: this.snap(world), cursor: point };
     } else {
       this.draft.end = point;
@@ -2883,9 +2592,9 @@ class PlanEditor {
     this.renderSide();
   }
 
-  /* ---------------------------- Tastatur -------------------------- */
+  /* ---------------------------- Keyboard ------------------------------- */
 
-  /** Escape schält von innen nach außen ab: Entwurf, Auswahl, Fenster. */
+  /** Escape peels off from inside out: draft, selection, window. */
   _escape() {
     if (this.draft) { this.draft = null; this.render(); this.renderSide(); }
     else if (this.selection) { this.selection = null; this.render(); this.renderSide(); }
@@ -2949,7 +2658,7 @@ class PlanEditor {
     this.renderSide();
   }
 
-  /* ----------------------------- Rendern -------------------------- */
+  /* ----------------------------- Rendering ----------------------------- */
 
   _buildBar() {
     const lang = this.lang;
@@ -3019,8 +2728,8 @@ class PlanEditor {
     this._updateBarState();
   }
 
-  /** Nur die Zustände in der Leiste nachziehen — ein kompletter Neuaufbau
-   *  bei jeder Mausbewegung würde den Fokus aus den Eingaben reißen. */
+  /** Only update the toolbar states — rebuilding it completely on every
+   *  mouse move would tear focus out of the inputs. */
   _updateBarState() {
     const undoBtn = this.bar.querySelector('[data-act="undo"]');
     const redoBtn = this.bar.querySelector('[data-act="redo"]');
@@ -3229,7 +2938,7 @@ class PlanEditor {
     this.readoutEl.textContent = `x ${m(this.pointer.x)} m · y ${m(this.pointer.y)} m · ${Math.round(this.view.zoom * 100)} %`;
   }
 
-  /* -------------------------- Seitenleiste ------------------------ */
+  /* -------------------------- Sidebar ----------------------------- */
 
   renderSide() {
     this.side.innerHTML = '';
@@ -3400,9 +3109,9 @@ class PlanEditor {
     const widthInput = panel.querySelector('[data-f="width"]');
     const heightInput = panel.querySelector('[data-f="height"]');
     const areaOut = panel.querySelector('[data-out="area"]');
-    // Bewusst ohne renderSide(): ein Neuaufbau der Seitenleiste würde den
-    // Fokus aus dem gerade bearbeiteten Feld reißen. Die abhängigen
-    // Anzeigen ziehen wir stattdessen von Hand nach.
+    // Deliberately without renderSide(): rebuilding the sidebar would
+    // tear focus out of the field being edited. We update the
+    // dependent displays by hand instead.
     const applySize = () => {
       const current = roomSizeMeters(room, this.pxPerMeter);
       const width = parseFloat(widthInput.value);
@@ -3429,7 +3138,7 @@ class PlanEditor {
     return `${size.width.toFixed(2)} × ${size.height.toFixed(2)} m · ${roomAreaSqm(room, this.pxPerMeter).toFixed(1)} m²`;
   }
 
-  /** Aktualisiert einen Listeneintrag, ohne die Seitenleiste neu zu bauen. */
+  /** Updates a list entry without rebuilding the sidebar. */
   _refreshRoomListEntry(room) {
     const item = this.side.querySelector(`.item[data-kind="room"][data-id="${room.id}"]`);
     if (!item) return;
@@ -3506,7 +3215,7 @@ class PlanEditor {
     return this._withDelete(panel, 'sensor', id);
   }
 
-  /** Schlanke Entity-Auswahl — filtert auf Entities mit numerischem Zustand. */
+  /** Lightweight entity picker — filters to entities with a numeric state. */
   _entityCombo(sensor) {
     const wrap = document.createElement('div');
     wrap.className = 'combo';
@@ -3620,10 +3329,10 @@ class PlanEditor {
 
 /* ===== src/editor.js ===== */
 /* ------------------------------------------------------------------ *
- * editor.js — das Formular im Lovelace-Konfigurationsdialog.
+ * editor.js — the form in the Lovelace configuration dialog.
  *
- * Bewusst schlank gehalten: alles Räumliche passiert im Vollbild-Editor
- * (plan-editor.js), hier stehen nur die Darstellungs- und Modellwerte.
+ * Deliberately kept lean: everything spatial happens in the fullscreen
+ * editor (plan-editor.js), only display and model values live here.
  * ------------------------------------------------------------------ */
 
 
@@ -3717,10 +3426,10 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
   }
 
   setConfig(config) {
-    // Home Assistant spiegelt jede von uns gemeldete Änderung sofort
-    // wieder herein. Würden wir darauf neu rendern, wäre der gerade
-    // gezogene Regler mitten in der Bewegung durch ein frisches Element
-    // ersetzt — das Ziehen bräche nach dem ersten Schritt ab.
+    // Home Assistant immediately reflects back every change we report.
+    // If we re-rendered on that, a slider currently being dragged would
+    // be replaced by a fresh element mid-drag — the drag would stop
+    // dead after the first step.
     const serialized = JSON.stringify(config);
     if (serialized === this._configJson) return;
     this._configJson = serialized;
@@ -3729,9 +3438,9 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
   }
 
   set hass(hass) {
-    // Ein Neurendern bei jedem hass-Update würde Regler mitten in der
-    // Bewegung ersetzen (siehe setConfig) — deshalb nur bei tatsächlichem
-    // Sprachwechsel (typischerweise: erstes hass-Update nach dem Erzeugen).
+    // Re-rendering on every hass update would replace sliders mid-drag
+    // (see setConfig) — so only re-render on an actual language change
+    // (typically: the first hass update after creation).
     const prevLang = this._hass ? this._lang() : null;
     this._hass = hass;
     if (this._config && this._lang() !== prevLang) this._render();
@@ -3888,18 +3597,27 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
         else value = input.value;
         if (typeof value === 'number' && !Number.isFinite(value)) return;
 
-        // Schieberegler dürfen kein Neurendern auslösen — sonst wird das
-        // Element beim Ziehen ersetzt. Stattdessen nur die Zahl daneben
-        // nachziehen; das übrige Formular hängt nicht an diesen Werten.
+        // Sliders must not trigger a re-render — otherwise the element
+        // gets replaced while being dragged. Instead just update the
+        // number next to it; the rest of the form doesn't depend on
+        // these values.
         if (input.type === 'range') {
           this._setReadout(key, value, cfg.unit);
           this._emit({ [key]: value }, false);
           return;
         }
+        // Number fields fire oninput on every keystroke; a re-render
+        // would replace the field mid-input and kick out focus (see
+        // auto_range: nothing in the form depends live on min/max, so a
+        // re-render here isn't needed anyway).
+        if (input.type === 'number') {
+          this._emit({ [key]: value }, false);
+          return;
+        }
         this._emit({ [key]: value });
       };
-      // Textfelder erst beim Verlassen übernehmen, damit der Fokus nicht
-      // nach jedem Tastendruck verloren geht.
+      // Only apply text fields on blur, so focus isn't lost after every
+      // keystroke.
       if (input.type === 'text') input.onchange = handler;
       else input.oninput = handler;
     });
@@ -3915,7 +3633,7 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
     });
   }
 
-  /** Liest alle Durchlässigkeits-Regler aus dem Formular. */
+  /** Reads all transmittance sliders from the form. */
   _readTransmittance() {
     const out = { ...DEFAULT_TRANSMITTANCE, ...(this._config.transmittance || {}) };
     this.shadowRoot.querySelectorAll('[data-trans]').forEach((input) => {
@@ -3950,9 +3668,9 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
       hass: this._hass,
     });
     if (!result) return;
-    // `config-changed` verpufft, wenn Home Assistant den Dialog samt
-    // Formular in der Zwischenzeit abgeräumt hat — dann wäre die ganze
-    // Zeichenarbeit lautlos verloren. Lieber sichtbar melden.
+    // `config-changed` fizzles out if Home Assistant has torn down the
+    // dialog and form in the meantime — all that drawing work would be
+    // lost silently. Better to report it visibly.
     if (!this.isConnected) {
       console.warn(t(this._lang(), 'editor.dialogClosedWarning'));
       return;
@@ -3973,15 +3691,15 @@ function escapeAttr(value) {
 
 /* ===== src/card.js ===== */
 /* ------------------------------------------------------------------ *
- * card.js — die Lovelace-Karte selbst.
+ * card.js — the Lovelace card itself.
  *
- * Ebenen von unten nach oben:
- *   1. optionales Hintergrundbild (Referenz-Grundriss, gedimmt)
- *   2. Temperaturfeld, auf die Raumpolygone geclippt
- *   3. Isothermen
- *   4. Wände, Türen, Fenster, Raumnamen
- *   5. Sensor-Chips als echtes DOM — dadurch lesbar, hover- und
- *      klickbar (öffnet den more-info-Dialog der Entity)
+ * Layers from bottom to top:
+ *   1. optional background image (reference floor plan, dimmed)
+ *   2. temperature field, clipped to the room polygons
+ *   3. isotherms
+ *   4. walls, doors, windows, room names
+ *   5. sensor chips as real DOM — hence readable, hoverable and
+ *      clickable (opens the entity's more-info dialog)
  * ------------------------------------------------------------------ */
 
 
@@ -4122,10 +3840,11 @@ const CARD_STYLES = `
     font-size: 13px;
     line-height: 1.5;
   }
+  .empty[hidden] { display: none; }
   .empty .big { font-size: 26px; opacity: 0.65; }
 `;
 
-/** Lässt Pfade in Grundriss-Koordinaten stehen — für die 2,5D-Bodenebene. */
+/** Leaves paths in floor-plan coordinates — for the 2.5D floor plane. */
 const IDENTITY_VIEW = { toX: (x) => x, toY: (y) => y, scale: 1 };
 
 class FloorplanHeatmapCard extends HTMLElement {
@@ -4159,9 +3878,9 @@ class FloorplanHeatmapCard extends HTMLElement {
     this._fieldSignature = '';
     this._lastValues = null;
     this._buffer = null;
-    // Der Blickwinkel aus der Konfiguration ist der Ausgangspunkt.
-    // Dreht der Betrachter danach am Modell, bleibt das eine reine
-    // Ansichtssache und wird bewusst nicht in die Config zurückgeschrieben.
+    // The view angle from the config is the starting point.
+    // If the viewer then rotates the model, that remains purely a
+    // viewing choice and is deliberately not written back to the config.
     this._angles = { yaw: this._config.yaw, pitch: clampPitch(this._config.pitch) };
     this._anglesTouched = false;
     this._build();
@@ -4174,7 +3893,7 @@ class FloorplanHeatmapCard extends HTMLElement {
     this._update(false);
   }
 
-  /** Sprache aus hass.language — vor dem ersten hass-Update Browser-Fallback. */
+  /** Language from hass.language — browser fallback before the first hass update. */
   _lang() {
     return detectLanguage(this._hass);
   }
@@ -4272,8 +3991,8 @@ class FloorplanHeatmapCard extends HTMLElement {
     this._applyStaticText();
   }
 
-  /** Zieht die sprachabhängigen, statisch aufgebauten Texte nach — auch
-   *  aufgerufen, wenn hass erst nach _build() eintrifft. */
+  /** Refreshes the language-dependent, statically built texts — also
+   *  called when hass arrives only after _build(). */
   _applyStaticText() {
     if (!this._resetBtn) return;
     const lang = this._lang();
@@ -4284,7 +4003,7 @@ class FloorplanHeatmapCard extends HTMLElement {
       `${t(lang, 'card.emptyLine2', { button: `<b>${t(lang, 'planEditor.title')}</b>` })}`;
   }
 
-  /** Aktuelle Messwerte in der Reihenfolge von floorplan.sensors. */
+  /** Current readings in the order of floorplan.sensors. */
   _readValues() {
     const sensors = this._config.floorplan.sensors;
     const hass = this._hass;
@@ -4347,7 +4066,7 @@ class FloorplanHeatmapCard extends HTMLElement {
 
     this._hasField = this._field.solve(values);
     this._range = this._computeRange();
-    this._buffer = null; // Farbpuffer neu einfärben, sobald sich Werte ändern
+    this._buffer = null; // recolor the color buffer as soon as values change
     this._isotherms =
       this._hasField && cfg.show_isotherms ? computeIsotherms(this._field, cfg.isotherm_step) : [];
     this._scheduleRender();
@@ -4377,7 +4096,7 @@ class FloorplanHeatmapCard extends HTMLElement {
   _render() {
     const cfg = this._config;
     if (!cfg || !this._canvas || this._stage.hidden) return;
-    // Ein Resize kann uns vor dem ersten Lösungslauf erreichen.
+    // A resize can reach us before the first solve run.
     if (!this._range) this._range = { min: cfg.min, max: cfg.max };
 
     const tilted = cfg.view_mode === 'tilted';
@@ -4410,8 +4129,8 @@ class FloorplanHeatmapCard extends HTMLElement {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
 
-    // Der eingefärbte Puffer hängt nur an Feld, Palette und Skala — beim
-    // Drehen ändert sich davon nichts, deshalb wird er wiederverwendet.
+    // The colored buffer depends only on field, palette and scale — none
+    // of that changes on rotation, so it gets reused.
     if (this._hasField && !this._buffer) {
       this._buffer = heatmapBuffer(document, this._field, {
         palette: cfg.palette,
@@ -4429,7 +4148,7 @@ class FloorplanHeatmapCard extends HTMLElement {
     this._renderSummary();
   }
 
-  /** Klassische Draufsicht. */
+  /** Classic top-down view. */
   _renderFlat(ctx, cssW, cssH) {
     const cfg = this._config;
     const bounds = floorplanBounds(cfg.floorplan, 20);
@@ -4477,7 +4196,7 @@ class FloorplanHeatmapCard extends HTMLElement {
     return cfg.floorplan.sensors.map((s) => ({ x: view.toX(s.x), y: view.toY(s.y) }));
   }
 
-  /** 2,5D-Ansicht mit aufgestellten Wänden. */
+  /** 2.5D view with raised walls. */
   _renderTilted(ctx, cssW, cssH, wallHeightPx) {
     const cfg = this._config;
     const projection = createProjection({
@@ -4491,12 +4210,12 @@ class FloorplanHeatmapCard extends HTMLElement {
     });
     this._projection = projection;
     this._view = null;
-    // Der Hover-Wert bezieht sich immer auf die Bodenebene — man liest
-    // die Temperatur am Fußpunkt unter dem Zeiger ab, nicht an der Wand.
+    // The hover value always refers to the floor plane — you read the
+    // temperature at the foot point under the pointer, not on the wall.
     this._sampleAt = (px, py) => projection.unprojectFloor(px, py);
 
-    // Der Clip-Pfad wird hier in Grundriss-Koordinaten gebaut, weil die
-    // Bodenmatrix ihn beim Zeichnen ohnehin transformiert.
+    // The clip path is built here in floor-plan coordinates because the
+    // floor matrix transforms it during drawing anyway.
     const clipPath = cfg.floorplan.rooms.length
       ? roomsPath(cfg.floorplan.rooms, IDENTITY_VIEW)
       : null;
@@ -4546,8 +4265,8 @@ class FloorplanHeatmapCard extends HTMLElement {
       el.className = 'chip';
       el.innerHTML = '<div class="pill"><span class="name"></span><span class="value"></span></div><div class="dot"></div>';
       el.addEventListener('click', () => {
-        // Bewusst über this._config gelesen: der Chip überlebt Config-
-        // Änderungen, die Sensorliste von damals nicht.
+        // Deliberately read via this._config: the chip outlives config
+        // changes, the sensor list from back then does not.
         const idx = Array.prototype.indexOf.call(this._chips.children, el);
         const current = this._config.floorplan.sensors[idx];
         const entity = current && current.entity;
@@ -4597,7 +4316,7 @@ class FloorplanHeatmapCard extends HTMLElement {
     this._legend.querySelector('.lo').textContent = `${this._range.min.toFixed(1)} ${unit}`;
     this._legend.querySelector('.hi').textContent = `${this._range.max.toFixed(1)} ${unit}`;
 
-    // Markierungen für die tatsächlichen Messwerte auf der Skala.
+    // Markers for the actual readings on the scale.
     const span = Math.max(1e-6, this._range.max - this._range.min);
     const values = (this._lastValues || []).filter(Number.isFinite);
     bar.querySelectorAll('.tick').forEach((t) => t.remove());
@@ -4622,7 +4341,7 @@ class FloorplanHeatmapCard extends HTMLElement {
 
   _onPointerDown(event) {
     if (this._config.view_mode !== 'tilted' || event.button !== 0) return;
-    // Chips sollen anklickbar bleiben und keine Drehung auslösen.
+    // Chips should stay clickable and not trigger a rotation.
     if (event.target.closest && event.target.closest('.chip, .reset')) return;
     this._turn = {
       id: event.pointerId,
@@ -4686,7 +4405,7 @@ class FloorplanHeatmapCard extends HTMLElement {
 
 /* ===== src/index.js ===== */
 /* ------------------------------------------------------------------ *
- * index.js — Registrierung der Custom Elements.
+ * index.js — Registration of the custom elements.
  * ------------------------------------------------------------------ */
 
 
@@ -4701,8 +4420,8 @@ if (!customElements.get('floorplan-heatmap-card-editor')) {
 
 window.customCards = window.customCards || [];
 if (!window.customCards.some((c) => c.type === 'floorplan-heatmap-card')) {
-  // Beim Registrieren gibt es noch kein hass-Objekt — die Sprache kommt
-  // hier aus dem Browser/localStorage statt aus hass.language.
+  // There is no hass object yet at registration time — the language comes
+  // from the browser/localStorage here instead of hass.language.
   const lang = detectLanguageFallback();
   window.customCards.push({
     type: 'floorplan-heatmap-card',

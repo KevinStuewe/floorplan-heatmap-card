@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ *
- * index.js — Registrierung der Custom Elements.
+ * index.js — Registration of the custom elements.
  * ------------------------------------------------------------------ */
 
 import { FloorplanHeatmapCard } from './card.js';
@@ -17,8 +17,8 @@ if (!customElements.get('floorplan-heatmap-card-editor')) {
 
 window.customCards = window.customCards || [];
 if (!window.customCards.some((c) => c.type === 'floorplan-heatmap-card')) {
-  // Beim Registrieren gibt es noch kein hass-Objekt — die Sprache kommt
-  // hier aus dem Browser/localStorage statt aus hass.language.
+  // There is no hass object yet at registration time — the language comes
+  // from the browser/localStorage here instead of hass.language.
   const lang = detectLanguageFallback();
   window.customCards.push({
     type: 'floorplan-heatmap-card',

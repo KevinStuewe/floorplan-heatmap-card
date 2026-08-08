@@ -1,13 +1,13 @@
 /* ------------------------------------------------------------------ *
- * card.js — die Lovelace-Karte selbst.
+ * card.js — the Lovelace card itself.
  *
- * Ebenen von unten nach oben:
- *   1. optionales Hintergrundbild (Referenz-Grundriss, gedimmt)
- *   2. Temperaturfeld, auf die Raumpolygone geclippt
- *   3. Isothermen
- *   4. Wände, Türen, Fenster, Raumnamen
- *   5. Sensor-Chips als echtes DOM — dadurch lesbar, hover- und
- *      klickbar (öffnet den more-info-Dialog der Entity)
+ * Layers from bottom to top:
+ *   1. optional background image (reference floor plan, dimmed)
+ *   2. temperature field, clipped to the room polygons
+ *   3. isotherms
+ *   4. walls, doors, windows, room names
+ *   5. sensor chips as real DOM — hence readable, hoverable and
+ *      clickable (opens the entity's more-info dialog)
  * ------------------------------------------------------------------ */
 
 import { normalizeConfig, isEmptyFloorplan, floorplanBounds, DEFAULTS } from './model.js';
@@ -157,10 +157,11 @@ const CARD_STYLES = `
     font-size: 13px;
     line-height: 1.5;
   }
+  .empty[hidden] { display: none; }
   .empty .big { font-size: 26px; opacity: 0.65; }
 `;
 
-/** Lässt Pfade in Grundriss-Koordinaten stehen — für die 2,5D-Bodenebene. */
+/** Leaves paths in floor-plan coordinates — for the 2.5D floor plane. */
 const IDENTITY_VIEW = { toX: (x) => x, toY: (y) => y, scale: 1 };
 
 export class FloorplanHeatmapCard extends HTMLElement {
@@ -194,9 +195,9 @@ export class FloorplanHeatmapCard extends HTMLElement {
     this._fieldSignature = '';
     this._lastValues = null;
     this._buffer = null;
-    // Der Blickwinkel aus der Konfiguration ist der Ausgangspunkt.
-    // Dreht der Betrachter danach am Modell, bleibt das eine reine
-    // Ansichtssache und wird bewusst nicht in die Config zurückgeschrieben.
+    // The view angle from the config is the starting point.
+    // If the viewer then rotates the model, that remains purely a
+    // viewing choice and is deliberately not written back to the config.
     this._angles = { yaw: this._config.yaw, pitch: clampPitch(this._config.pitch) };
     this._anglesTouched = false;
     this._build();
@@ -209,7 +210,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
     this._update(false);
   }
 
-  /** Sprache aus hass.language — vor dem ersten hass-Update Browser-Fallback. */
+  /** Language from hass.language — browser fallback before the first hass update. */
   _lang() {
     return detectLanguage(this._hass);
   }
@@ -307,8 +308,8 @@ export class FloorplanHeatmapCard extends HTMLElement {
     this._applyStaticText();
   }
 
-  /** Zieht die sprachabhängigen, statisch aufgebauten Texte nach — auch
-   *  aufgerufen, wenn hass erst nach _build() eintrifft. */
+  /** Refreshes the language-dependent, statically built texts — also
+   *  called when hass arrives only after _build(). */
   _applyStaticText() {
     if (!this._resetBtn) return;
     const lang = this._lang();
@@ -319,7 +320,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
       `${t(lang, 'card.emptyLine2', { button: `<b>${t(lang, 'planEditor.title')}</b>` })}`;
   }
 
-  /** Aktuelle Messwerte in der Reihenfolge von floorplan.sensors. */
+  /** Current readings in the order of floorplan.sensors. */
   _readValues() {
     const sensors = this._config.floorplan.sensors;
     const hass = this._hass;
@@ -382,7 +383,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
 
     this._hasField = this._field.solve(values);
     this._range = this._computeRange();
-    this._buffer = null; // Farbpuffer neu einfärben, sobald sich Werte ändern
+    this._buffer = null; // recolor the color buffer as soon as values change
     this._isotherms =
       this._hasField && cfg.show_isotherms ? computeIsotherms(this._field, cfg.isotherm_step) : [];
     this._scheduleRender();
@@ -412,7 +413,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
   _render() {
     const cfg = this._config;
     if (!cfg || !this._canvas || this._stage.hidden) return;
-    // Ein Resize kann uns vor dem ersten Lösungslauf erreichen.
+    // A resize can reach us before the first solve run.
     if (!this._range) this._range = { min: cfg.min, max: cfg.max };
 
     const tilted = cfg.view_mode === 'tilted';
@@ -445,8 +446,8 @@ export class FloorplanHeatmapCard extends HTMLElement {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
 
-    // Der eingefärbte Puffer hängt nur an Feld, Palette und Skala — beim
-    // Drehen ändert sich davon nichts, deshalb wird er wiederverwendet.
+    // The colored buffer depends only on field, palette and scale — none
+    // of that changes on rotation, so it gets reused.
     if (this._hasField && !this._buffer) {
       this._buffer = heatmapBuffer(document, this._field, {
         palette: cfg.palette,
@@ -464,7 +465,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
     this._renderSummary();
   }
 
-  /** Klassische Draufsicht. */
+  /** Classic top-down view. */
   _renderFlat(ctx, cssW, cssH) {
     const cfg = this._config;
     const bounds = floorplanBounds(cfg.floorplan, 20);
@@ -512,7 +513,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
     return cfg.floorplan.sensors.map((s) => ({ x: view.toX(s.x), y: view.toY(s.y) }));
   }
 
-  /** 2,5D-Ansicht mit aufgestellten Wänden. */
+  /** 2.5D view with raised walls. */
   _renderTilted(ctx, cssW, cssH, wallHeightPx) {
     const cfg = this._config;
     const projection = createProjection({
@@ -526,12 +527,12 @@ export class FloorplanHeatmapCard extends HTMLElement {
     });
     this._projection = projection;
     this._view = null;
-    // Der Hover-Wert bezieht sich immer auf die Bodenebene — man liest
-    // die Temperatur am Fußpunkt unter dem Zeiger ab, nicht an der Wand.
+    // The hover value always refers to the floor plane — you read the
+    // temperature at the foot point under the pointer, not on the wall.
     this._sampleAt = (px, py) => projection.unprojectFloor(px, py);
 
-    // Der Clip-Pfad wird hier in Grundriss-Koordinaten gebaut, weil die
-    // Bodenmatrix ihn beim Zeichnen ohnehin transformiert.
+    // The clip path is built here in floor-plan coordinates because the
+    // floor matrix transforms it during drawing anyway.
     const clipPath = cfg.floorplan.rooms.length
       ? roomsPath(cfg.floorplan.rooms, IDENTITY_VIEW)
       : null;
@@ -581,8 +582,8 @@ export class FloorplanHeatmapCard extends HTMLElement {
       el.className = 'chip';
       el.innerHTML = '<div class="pill"><span class="name"></span><span class="value"></span></div><div class="dot"></div>';
       el.addEventListener('click', () => {
-        // Bewusst über this._config gelesen: der Chip überlebt Config-
-        // Änderungen, die Sensorliste von damals nicht.
+        // Deliberately read via this._config: the chip outlives config
+        // changes, the sensor list from back then does not.
         const idx = Array.prototype.indexOf.call(this._chips.children, el);
         const current = this._config.floorplan.sensors[idx];
         const entity = current && current.entity;
@@ -632,7 +633,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
     this._legend.querySelector('.lo').textContent = `${this._range.min.toFixed(1)} ${unit}`;
     this._legend.querySelector('.hi').textContent = `${this._range.max.toFixed(1)} ${unit}`;
 
-    // Markierungen für die tatsächlichen Messwerte auf der Skala.
+    // Markers for the actual readings on the scale.
     const span = Math.max(1e-6, this._range.max - this._range.min);
     const values = (this._lastValues || []).filter(Number.isFinite);
     bar.querySelectorAll('.tick').forEach((t) => t.remove());
@@ -657,7 +658,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
 
   _onPointerDown(event) {
     if (this._config.view_mode !== 'tilted' || event.button !== 0) return;
-    // Chips sollen anklickbar bleiben und keine Drehung auslösen.
+    // Chips should stay clickable and not trigger a rotation.
     if (event.target.closest && event.target.closest('.chip, .reset')) return;
     this._turn = {
       id: event.pointerId,

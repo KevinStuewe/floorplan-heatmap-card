@@ -1,17 +1,17 @@
 /* ------------------------------------------------------------------ *
- * renderer.js — zeichnet Feld und Grundriss auf ein Canvas.
+ * renderer.js — draws the field and floor plan onto a canvas.
  *
- * Das Feld wird in Gitterauflösung in eine ImageData geschrieben und
- * dann hochskaliert — aber vorher auf die Raumpolygone geclippt. Ohne
- * dieses Clipping "blutet" die Heatmap über die Außenwände hinaus, was
- * im alten Demo-Stand der auffälligste Makel war.
+ * The field is written into an ImageData at grid resolution and then
+ * scaled up — but clipped to the room polygons first. Without this
+ * clipping, the heatmap "bleeds" past the exterior walls, which was the
+ * most noticeable flaw in the old demo state.
  * ------------------------------------------------------------------ */
 
 import { paletteLUT } from './palette.js';
 import { clamp, polygonCentroid, closestPointOnSegment } from './geometry.js';
 import { buildWalls } from './model.js';
 
-/** Abbildung Grundriss-Koordinaten → Canvas-Koordinaten (einpassend, seitenverhältnistreu). */
+/** Mapping floor-plan coordinates → canvas coordinates (fit, aspect-ratio preserving). */
 export function computeView(bounds, width, height, padding = 8) {
   const availW = Math.max(1, width - padding * 2);
   const availH = Math.max(1, height - padding * 2);
@@ -42,11 +42,11 @@ export function roomsPath(rooms, view) {
 }
 
 /**
- * Färbt das gelöste Feld in ein Canvas in Gitterauflösung.
+ * Colors the solved field into a canvas at grid resolution.
  *
- * Eigene Funktion, damit die Karte das Ergebnis zwischenspeichern kann:
- * beim Drehen der 2,5D-Ansicht ändert sich nur die Projektion, nicht das
- * Feld — dann wäre es Verschwendung, die Farben jedes Mal neu zu rechnen.
+ * A separate function so the card can cache the result: rotating the
+ * 2.5D view only changes the projection, not the field — recomputing
+ * the colors every time would be wasteful.
  */
 export function heatmapBuffer(doc, field, opts) {
   const { cols, rows, inside, T, reach } = field;
@@ -75,13 +75,13 @@ export function heatmapBuffer(doc, field, opts) {
   return buffer;
 }
 
-/** Feld als Farbfläche in der flachen Draufsicht. */
+/** Field as a colored surface in the flat top-down view. */
 export function renderField(ctx, field, view, opts) {
   const { cols, rows } = field;
   const buffer = opts.buffer || heatmapBuffer(ctx.canvas.ownerDocument, field, opts);
   const cs = field.opts.cellSize;
-  // Die ImageData-Pixel sind Zellmittelpunkte; das halbe Zellmaß Versatz
-  // sorgt dafür, dass die Interpolation nicht um eine halbe Zelle wandert.
+  // The ImageData pixels are cell centers; the half-cell-size offset
+  // ensures the interpolation doesn't drift by half a cell.
   const dx = view.toX(field.bounds.minX + cs * 0.5);
   const dy = view.toY(field.bounds.minY + cs * 0.5);
   const dw = cols * cs * view.scale;
@@ -114,12 +114,12 @@ export function renderIsotherms(ctx, isotherms, view, opts) {
 }
 
 /**
- * Ordnet einer Wand die Öffnungen zu, die auf ihr liegen, und gibt deren
- * Abschnitte als Parameter t ∈ [0, 1] entlang der Wand zurück.
+ * Assigns to a wall the openings that lie on it, and returns their
+ * sections as parameter t ∈ [0, 1] along the wall.
  *
- * Die Zuordnung ist rein geometrisch — Öffnungen kennen ihre Wand nicht.
- * Das ist Absicht: liegen zwei Raumkanten aufeinander, öffnet eine
- * einzelne Tür so beide, ohne dass sie doppelt gepflegt werden müsste.
+ * The assignment is purely geometric — openings don't know their wall.
+ * That's intentional: if two room edges coincide, a single door opens
+ * both without needing to be maintained twice.
  */
 export function wallCovers(wall, openings, tol = 8) {
   const dx = wall.x2 - wall.x1, dy = wall.y2 - wall.y1;
@@ -149,7 +149,7 @@ export function wallCovers(wall, openings, tol = 8) {
   return covers;
 }
 
-/** Die Abschnitte einer Wand, die KEINE Öffnung bedeckt. */
+/** The sections of a wall that are NOT covered by an opening. */
 export function wallGaps(wall, openings, tol = 8) {
   const covers = wallCovers(wall, openings, tol);
   if (!covers.length) {
@@ -185,8 +185,8 @@ export function renderFloorplan(ctx, fp, view, opts) {
     }
   }
 
-  // Öffnungen: Fenster als dünne durchgehende Linie, Türen als Schwelle
-  // mit angedeutetem Türblatt, Durchgänge bleiben leer.
+  // Openings: windows as a thin continuous line, doors as a threshold
+  // with an indicated door leaf, passages stay empty.
   for (const o of openings) {
     const hx = (Math.cos(o.angle) * o.width) / 2;
     const hy = (Math.sin(o.angle) * o.width) / 2;

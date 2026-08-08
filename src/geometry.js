@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------ *
- * geometry.js — kleine Vektor-/Polygon-Helfer.
- * Alle Koordinaten sind "Grundriss-Pixel" (siehe model.js).
+ * geometry.js — small vector/polygon helpers.
+ * All coordinates are "floor-plan pixels" (see model.js).
  * ------------------------------------------------------------------ */
 
 export const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
@@ -16,7 +16,7 @@ export function pointInPolygon(x, y, pts) {
   return inside;
 }
 
-/** Vorzeichenbehaftete Fläche; > 0 = gegen den Uhrzeigersinn (bei y-nach-unten: im Uhrzeigersinn). */
+/** Signed area; > 0 = counter-clockwise (with y-down: clockwise). */
 export function polygonArea(pts) {
   let a = 0;
   for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
@@ -35,7 +35,7 @@ export function polygonCentroid(pts) {
   }
   a *= 0.5;
   if (Math.abs(a) < 1e-9) {
-    // Entartetes Polygon: einfacher Mittelwert.
+    // Degenerate polygon: simple average.
     const n = pts.length || 1;
     return [pts.reduce((s, p) => s + p[0], 0) / n, pts.reduce((s, p) => s + p[1], 0) / n];
   }
@@ -43,13 +43,13 @@ export function polygonCentroid(pts) {
 }
 
 /**
- * Schnittparameter zweier Strecken A→B und C→D.
- * Liefert { t, u, x, y } mit P = A + t·(B−A) = C + u·(D−C), sonst null.
- * Parallele Strecken gelten als schnittfrei.
+ * Intersection parameters of two segments A→B and C→D.
+ * Returns { t, u, x, y } with P = A + t·(B−A) = C + u·(D−C), otherwise null.
+ * Parallel segments are treated as non-intersecting.
  *
- * `eps` weitet den zulässigen Bereich beidseitig auf [−eps, 1+eps]. Der
- * Solver braucht das, um Treffer exakt am Streckenende noch zu sehen und
- * sie dann selbst eindeutig einer Seite zuzuordnen.
+ * `eps` widens the accepted range on both sides to [−eps, 1+eps]. The
+ * solver needs this to still catch hits exactly at a segment's end and
+ * then unambiguously assign them to one side itself.
  */
 export function segIntersectParams(ax, ay, bx, by, cx, cy, dx, dy, eps = 0) {
   const r1x = bx - ax, r1y = by - ay;
@@ -94,7 +94,7 @@ export function bboxOfPoints(points, pad = 0) {
   return { minX, minY, maxX, maxY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
 }
 
-/** Rastet einen Winkel auf 0°/90°/180°/270° ein, wenn er nah genug dran liegt. */
+/** Snaps an angle to 0°/90°/180°/270° if it's close enough. */
 export function axisSnap(x1, y1, x2, y2, toleranceDeg = 6) {
   const dx = x2 - x1, dy = y2 - y1;
   const len = Math.hypot(dx, dy);

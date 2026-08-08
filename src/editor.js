@@ -1,8 +1,8 @@
 /* ------------------------------------------------------------------ *
- * editor.js — das Formular im Lovelace-Konfigurationsdialog.
+ * editor.js — the form in the Lovelace configuration dialog.
  *
- * Bewusst schlank gehalten: alles Räumliche passiert im Vollbild-Editor
- * (plan-editor.js), hier stehen nur die Darstellungs- und Modellwerte.
+ * Deliberately kept lean: everything spatial happens in the fullscreen
+ * editor (plan-editor.js), only display and model values live here.
  * ------------------------------------------------------------------ */
 
 import { DEFAULT_TRANSMITTANCE, normalizeConfig } from './model.js';
@@ -100,10 +100,10 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
   }
 
   setConfig(config) {
-    // Home Assistant spiegelt jede von uns gemeldete Änderung sofort
-    // wieder herein. Würden wir darauf neu rendern, wäre der gerade
-    // gezogene Regler mitten in der Bewegung durch ein frisches Element
-    // ersetzt — das Ziehen bräche nach dem ersten Schritt ab.
+    // Home Assistant immediately reflects back every change we report.
+    // If we re-rendered on that, a slider currently being dragged would
+    // be replaced by a fresh element mid-drag — the drag would stop
+    // dead after the first step.
     const serialized = JSON.stringify(config);
     if (serialized === this._configJson) return;
     this._configJson = serialized;
@@ -112,9 +112,9 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
   }
 
   set hass(hass) {
-    // Ein Neurendern bei jedem hass-Update würde Regler mitten in der
-    // Bewegung ersetzen (siehe setConfig) — deshalb nur bei tatsächlichem
-    // Sprachwechsel (typischerweise: erstes hass-Update nach dem Erzeugen).
+    // Re-rendering on every hass update would replace sliders mid-drag
+    // (see setConfig) — so only re-render on an actual language change
+    // (typically: the first hass update after creation).
     const prevLang = this._hass ? this._lang() : null;
     this._hass = hass;
     if (this._config && this._lang() !== prevLang) this._render();
@@ -271,18 +271,27 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
         else value = input.value;
         if (typeof value === 'number' && !Number.isFinite(value)) return;
 
-        // Schieberegler dürfen kein Neurendern auslösen — sonst wird das
-        // Element beim Ziehen ersetzt. Stattdessen nur die Zahl daneben
-        // nachziehen; das übrige Formular hängt nicht an diesen Werten.
+        // Sliders must not trigger a re-render — otherwise the element
+        // gets replaced while being dragged. Instead just update the
+        // number next to it; the rest of the form doesn't depend on
+        // these values.
         if (input.type === 'range') {
           this._setReadout(key, value, cfg.unit);
           this._emit({ [key]: value }, false);
           return;
         }
+        // Number fields fire oninput on every keystroke; a re-render
+        // would replace the field mid-input and kick out focus (see
+        // auto_range: nothing in the form depends live on min/max, so a
+        // re-render here isn't needed anyway).
+        if (input.type === 'number') {
+          this._emit({ [key]: value }, false);
+          return;
+        }
         this._emit({ [key]: value });
       };
-      // Textfelder erst beim Verlassen übernehmen, damit der Fokus nicht
-      // nach jedem Tastendruck verloren geht.
+      // Only apply text fields on blur, so focus isn't lost after every
+      // keystroke.
       if (input.type === 'text') input.onchange = handler;
       else input.oninput = handler;
     });
@@ -298,7 +307,7 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
     });
   }
 
-  /** Liest alle Durchlässigkeits-Regler aus dem Formular. */
+  /** Reads all transmittance sliders from the form. */
   _readTransmittance() {
     const out = { ...DEFAULT_TRANSMITTANCE, ...(this._config.transmittance || {}) };
     this.shadowRoot.querySelectorAll('[data-trans]').forEach((input) => {
@@ -333,9 +342,9 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
       hass: this._hass,
     });
     if (!result) return;
-    // `config-changed` verpufft, wenn Home Assistant den Dialog samt
-    // Formular in der Zwischenzeit abgeräumt hat — dann wäre die ganze
-    // Zeichenarbeit lautlos verloren. Lieber sichtbar melden.
+    // `config-changed` fizzles out if Home Assistant has torn down the
+    // dialog and form in the meantime — all that drawing work would be
+    // lost silently. Better to report it visibly.
     if (!this.isConnected) {
       console.warn(t(this._lang(), 'editor.dialogClosedWarning'));
       return;

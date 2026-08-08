@@ -1,10 +1,10 @@
 /* ------------------------------------------------------------------ *
- * palette.js — Farbskalen für das Temperaturfeld.
+ * palette.js — Color scales for the temperature field.
  *
- * "coolwarm" ist die Voreinstellung: eine divergierende Blau→Grau→Rot-
- * Skala (Moreland), deren Helligkeit zu beiden Enden hin gleichmäßig
- * abfällt. Sie liest sich sofort als kalt/warm und hat — anders als eine
- * Regenbogenskala — keine falschen Kanten in der Mitte.
+ * "coolwarm" is the default: a diverging blue→gray→red scale
+ * (Moreland) whose brightness falls off evenly toward both ends.
+ * It reads instantly as cold/warm and — unlike a rainbow scale — has
+ * no false edges in the middle.
  * ------------------------------------------------------------------ */
 
 import { clamp } from './geometry.js';
@@ -17,7 +17,7 @@ const STOPS = {
     [0.75, [230, 126, 100]],
     [1.00, [180, 4, 38]],
   ],
-  // Kalt→warm ohne hellen Mittelpunkt; kräftiger auf dunklen Grundrissen.
+  // Cold→warm without a bright midpoint; more vivid on dark floor plans.
   thermal: [
     [0.00, [16, 48, 120]],
     [0.22, [22, 130, 168]],
@@ -59,7 +59,7 @@ export const PALETTE_NAMES = Object.keys(STOPS);
 
 const lutCache = new Map();
 
-/** 256×4 Lookup-Tabelle (RGBA, Alpha immer 255) für eine Palette. */
+/** 256×4 lookup table (RGBA, alpha always 255) for a palette. */
 export function paletteLUT(name) {
   const key = STOPS[name] ? name : 'coolwarm';
   if (lutCache.has(key)) return lutCache.get(key);
@@ -86,7 +86,7 @@ export function paletteLUT(name) {
   return lut;
 }
 
-/** CSS-Gradient für die Legende. */
+/** CSS gradient for the legend. */
 export function paletteGradientCss(name, direction = '90deg') {
   const stops = STOPS[STOPS[name] ? name : 'coolwarm'];
   const parts = stops.map(([pos, [r, g, b]]) => `rgb(${r},${g},${b}) ${(pos * 100).toFixed(0)}%`);
@@ -99,7 +99,7 @@ export function paletteColorCss(name, ratio) {
   return `rgb(${lut[i]}, ${lut[i + 1]}, ${lut[i + 2]})`;
 }
 
-/** Schwarz oder Weiß — je nachdem, was auf der Palettenfarbe besser lesbar ist. */
+/** Black or white — whichever reads better on top of the palette color. */
 export function readableTextOn(name, ratio) {
   const lut = paletteLUT(name);
   const i = Math.round(clamp(ratio, 0, 1) * 255) * 4;

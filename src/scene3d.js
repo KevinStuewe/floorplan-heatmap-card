@@ -1,23 +1,22 @@
 /* ------------------------------------------------------------------ *
- * scene3d.js — zeichnet die 2,5D-Ansicht.
+ * scene3d.js — renders the 2.5D view.
  *
- * Reihenfolge und Verdeckung entstehen durch den Maleralgorithmus: alle
- * Wandflächen werden gesammelt, nach Tiefe sortiert und von hinten nach
- * vorn gezeichnet. Ein Z-Buffer ist nicht nötig, weil jedes Wandstück ein
- * konvexer Quader ist — dessen Rückseiten werden zwangsläufig von seinen
- * eigenen Vorderseiten überdeckt, ganz ohne Backface-Culling.
+ * Ordering and occlusion come from the painter's algorithm: all wall
+ * faces are collected, sorted by depth, and drawn back to front. A
+ * z-buffer isn't needed because every wall piece is a convex box — its
+ * back faces are inevitably covered by its own front faces, with no
+ * backface culling required.
  *
- * Türen und Fenster sind keine aufgemalten Symbole, sondern fehlende
- * Geometrie: eine Tür lässt den Wandquader dort weg und setzt nur einen
- * Sturz darüber, ein Fenster bekommt Brüstung, Sturz und eine
- * durchscheinende Scheibe dazwischen.
+ * Doors and windows aren't painted-on symbols but absent geometry: a
+ * door leaves out the wall box there and places only a lintel above it,
+ * a window gets a sill, a lintel, and a translucent pane in between.
  * ------------------------------------------------------------------ */
 
 import { buildWalls } from './model.js';
 import { wallGaps, wallCovers } from './renderer.js';
 import { polygonCentroid } from './geometry.js';
 
-/** Bauteilmaße in Metern. */
+/** Component dimensions in meters. */
 export const GEOMETRY = {
   thicknessExterior: 0.24,
   thicknessInterior: 0.12,
@@ -27,15 +26,15 @@ export const GEOMETRY = {
   sensorHeight: 1.3,
 };
 
-/** Richtung, aus der das Modell beleuchtet wird (oben links). */
+/** Direction the model is lit from (top left). */
 const LIGHT = [-0.55, -0.835];
 
 const shadeRgb = (rgb, factor) =>
   `rgb(${Math.round(rgb[0] * factor)}, ${Math.round(rgb[1] * factor)}, ${Math.round(rgb[2] * factor)})`;
 
 /**
- * Die fünf sichtbaren Flächen eines Wandquaders (der Boden entfällt —
- * von oben schaut niemand darunter).
+ * The five visible faces of a wall box (the floor is omitted — nobody
+ * looks underneath it from above).
  */
 function boxFaces(x1, y1, x2, y2, halfT, z0, z1) {
   const dx = x2 - x1, dy = y2 - y1;
@@ -58,12 +57,12 @@ function boxFaces(x1, y1, x2, y2, halfT, z0, z1) {
 }
 
 /**
- * Baut die Baukörper des Grundrisses: pro Wand die Quader, die nach Abzug
- * der Öffnungen übrig bleiben, plus die Glasscheiben der Fenster.
+ * Builds the floor plan's solid bodies: per wall, the boxes left over
+ * after subtracting the openings, plus the window panes.
  *
- * Absichtlich frei von Zeichenkram und in Grundriss-Koordinaten — so ist
- * die eigentlich knifflige Logik (was bleibt von einer Wand mit Tür?)
- * ohne Canvas prüfbar.
+ * Deliberately free of drawing concerns and in floor-plan coordinates —
+ * so the actually tricky logic (what's left of a wall with a door?) can
+ * be tested without a canvas.
  *
  * @returns {{x1,y1,x2,y2,z0,z1,halfT,exterior,glass}[]}
  */
@@ -96,12 +95,12 @@ export function wallSolids(floorplan, opts) {
     for (const { t0, t1, opening } of wallCovers(wall, openings, tol)) {
       if (opening.type === 'passage') continue;
       if (opening.type === 'door') {
-        add(t0, t1, doorHeight, height); // nur der Sturz bleibt stehen
+        add(t0, t1, doorHeight, height); // only the lintel remains standing
         continue;
       }
-      add(t0, t1, 0, sill);        // Brüstung
-      add(t0, t1, head, height);   // Sturz
-      add(t0, t1, sill, head, true); // Scheibe
+      add(t0, t1, 0, sill);        // sill
+      add(t0, t1, head, height);   // lintel
+      add(t0, t1, sill, head, true); // pane
     }
   }
   return solids;
@@ -109,8 +108,8 @@ export function wallSolids(floorplan, opts) {
 
 /**
  * @returns {{sensors: {x:number,y:number,floorX:number,floorY:number}[]}}
- *          Bildschirmpositionen der Sensoren, damit die Karte ihre Chips
- *          darüber legen kann.
+ *          Screen positions of the sensors, so the card can overlay
+ *          their chips on top.
  */
 export function renderScene(ctx, params) {
   const {
@@ -121,7 +120,7 @@ export function renderScene(ctx, params) {
 
   const sensorZ = GEOMETRY.sensorHeight * pxPerMeter;
 
-  /* --- Boden: Heatmap als affin transformiertes Bild ---------------- */
+  /* --- Floor: heatmap as an affinely transformed image ---------------- */
   if (field && buffer) {
     const cs = field.opts.cellSize;
     ctx.save();
@@ -140,8 +139,8 @@ export function renderScene(ctx, params) {
     ctx.restore();
   }
 
-  /* --- Isothermen: Punkte einzeln projizieren, damit die Strichstärke
-         nicht mitverzerrt wird ----------------------------------------- */
+  /* --- Isotherms: project points individually so the line width
+         isn't distorted along with them ----------------------------------------- */
   if (isotherms && isotherms.length) {
     ctx.save();
     ctx.beginPath();
@@ -159,8 +158,8 @@ export function renderScene(ctx, params) {
     ctx.restore();
   }
 
-  /* --- Raumnamen liegen auf dem Boden und dürfen von nahen Wänden
-         verdeckt werden, deshalb vor den Wänden ------------------------ */
+  /* --- Room names sit on the floor and may be covered by nearby walls,
+         hence drawn before the walls ------------------------ */
   if (showRoomLabels) {
     ctx.save();
     ctx.textAlign = 'center';
@@ -178,7 +177,7 @@ export function renderScene(ctx, params) {
     ctx.restore();
   }
 
-  /* --- Wände ------------------------------------------------------- */
+  /* --- Walls ------------------------------------------------------- */
   if (showWalls) {
     const faces = [];
     for (const s of wallSolids(floorplan, { pxPerMeter, wallHeight })) {
@@ -201,7 +200,7 @@ export function renderScene(ctx, params) {
       }
     }
 
-    // Projizieren, Tiefe mitteln, von hinten nach vorn sortieren.
+    // Project, average the depth, sort back to front.
     const drawables = faces.map(({ face, base, glass }) => {
       let depth = 0;
       const points = face.pts.map(([x, y, z]) => {
@@ -245,9 +244,9 @@ export function renderScene(ctx, params) {
     ctx.restore();
   }
 
-  /* --- Sensoren: Standfuß auf dem Boden, Mast bis auf Messhöhe.
-         Bewusst zuletzt und ohne Tiefentest — die eigenen Messpunkte
-         soll man immer sehen, auch hinter einer Wand. ------------------ */
+  /* --- Sensors: base on the floor, mast up to measurement height.
+         Deliberately drawn last and without depth testing — you should
+         always see your own measurement points, even behind a wall. ------------------ */
   const sensorPoints = [];
   ctx.save();
   for (const s of floorplan.sensors) {

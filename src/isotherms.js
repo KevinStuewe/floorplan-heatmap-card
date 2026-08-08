@@ -1,15 +1,15 @@
 /* ------------------------------------------------------------------ *
- * isotherms.js — Marching Squares über das gelöste Feld.
+ * isotherms.js — Marching squares over the solved field.
  *
- * Liefert Liniensegmente gleicher Temperatur. Die machen den Verlauf
- * ablesbar, ohne dass man Farben schätzen muss — besonders dort, wo die
- * Palette flach wird.
+ * Produces line segments of equal temperature. These make the gradient
+ * readable without having to guess colors — especially where the
+ * palette gets flat.
  * ------------------------------------------------------------------ */
 
 /**
  * @param {HeatField} field
- * @param {number} step Abstand der Isothermen in Messeinheiten (z.B. 0.5 °C)
- * @returns {{level:number, segments:number[][]}[]} Segmente als [x1,y1,x2,y2] in Grundriss-Koordinaten
+ * @param {number} step Spacing of isotherms in measurement units (e.g. 0.5 °C)
+ * @returns {{level:number, segments:number[][]}[]} Segments as [x1,y1,x2,y2] in floor plan coordinates
  */
 export function computeIsotherms(field, step, maxLevels = 40) {
   if (!field || !field.T || !field.stats || !(step > 0)) return [];
@@ -44,7 +44,7 @@ export function computeIsotherms(field, step, maxLevels = 40) {
 
         const x0 = cx(c), x1 = cx(c + 1), y0 = cy(r), y1 = cy(r + 1);
         const interp = (a, b) => (level - a) / (b - a || 1e-9);
-        // Kantenmittelpunkte der Zelle: oben, rechts, unten, links
+        // Edge midpoints of the cell: top, right, bottom, left
         const top = [x0 + (x1 - x0) * interp(v00, v10), y0];
         const right = [x1, y0 + (y1 - y0) * interp(v10, v11)];
         const bottom = [x0 + (x1 - x0) * interp(v01, v11), y1];
