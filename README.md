@@ -12,6 +12,17 @@ durch eine Außenwand praktisch gar nicht.
 
 ## Installation
 
+### Über HACS
+
+1. In HACS unter **Frontend** über das Menü ⋮ → **Benutzerdefinierte
+   Repositories** dieses Repository als Kategorie **Dashboard** hinzufügen
+   (nicht nötig, sobald die Karte im offiziellen HACS-Store gelistet ist).
+2. **Grundriss-Heatmap** installieren und Home Assistant neu laden.
+3. Die Ressource wird von HACS automatisch eingebunden — die Karte steht
+   direkt unter **Karte hinzufügen → Grundriss-Heatmap** zur Verfügung.
+
+### Manuell
+
 1. `dist/floorplan-heatmap-card.js` nach `config/www/` kopieren.
 2. In Home Assistant unter **Einstellungen → Dashboards → ⋮ → Ressourcen**
    eine neue Ressource anlegen:
