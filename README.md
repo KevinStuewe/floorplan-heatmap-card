@@ -1,158 +1,161 @@
-# Grundriss-Heatmap für Home Assistant
+*[Deutsche Version](README.de.md)*
 
-Eine Lovelace-Karte, die aus einzelnen Temperatursensoren ein flächiges
-Temperaturbild über deinen Grundriss rechnet — und dabei Wände, Türen und
-Fenster als Wärmewiderstand behandelt.
+# Floorplan Heatmap for Home Assistant
 
-Ein Sensor hinter einer Wand ist zwar räumlich nah, thermisch aber weit weg.
-Genau das bildet die Karte ab: durch eine offene Tür „fließt" die Wärme,
-durch eine Außenwand praktisch gar nicht.
+A Lovelace card that turns individual temperature sensors into a continuous
+heatmap over your floor plan — treating walls, doors, and windows as
+thermal resistance.
+
+A sensor behind a wall may be spatially close, but thermally it's far away.
+That's exactly what the card shows: heat "flows" through an open door, but
+barely at all through an exterior wall.
 
 ---
 
 ## Installation
 
-### Über HACS
+### Via HACS
 
-1. In HACS unter **Frontend** über das Menü ⋮ → **Benutzerdefinierte
-   Repositories** dieses Repository als Kategorie **Dashboard** hinzufügen
-   (nicht nötig, sobald die Karte im offiziellen HACS-Store gelistet ist).
-2. **Grundriss-Heatmap** installieren und Home Assistant neu laden.
-3. Die Ressource wird von HACS automatisch eingebunden — die Karte steht
-   direkt unter **Karte hinzufügen → Grundriss-Heatmap** zur Verfügung.
+1. In HACS, under **Frontend**, use the ⋮ menu → **Custom repositories** to
+   add this repository as category **Dashboard** (not needed once the card
+   is listed in the official HACS store).
+2. Install **Floorplan Heatmap** and reload Home Assistant.
+3. HACS registers the resource automatically — the card is available
+   directly under **Add card → Floorplan Heatmap**.
 
-### Manuell
+### Manual
 
-1. `dist/floorplan-heatmap-card.js` nach `config/www/` kopieren.
-2. In Home Assistant unter **Einstellungen → Dashboards → ⋮ → Ressourcen**
-   eine neue Ressource anlegen:
+1. Copy `dist/floorplan-heatmap-card.js` to `config/www/`.
+2. In Home Assistant, under **Settings → Dashboards → ⋮ → Resources**,
+   add a new resource:
    - URL: `/local/floorplan-heatmap-card.js`
-   - Typ: **JavaScript-Modul**
-3. Browser-Cache leeren, Karte über **Karte hinzufügen → Grundriss-Heatmap**
-   einfügen.
+   - Type: **JavaScript module**
+3. Clear your browser cache, then add the card via
+   **Add card → Floorplan Heatmap**.
 
-Es gibt keine Abhängigkeiten und keinen Build-Schritt — eine Datei genügt.
+There are no dependencies and no build step — a single file is enough.
 
-Die Bedienoberfläche passt sich automatisch der in Home Assistant
-eingestellten Sprache an (Deutsch oder Englisch, `hass.language`) — dafür
-gibt es keine eigene Karten-Einstellung.
+The UI automatically follows the language configured in Home Assistant
+(German or English, `hass.language`) — there's no separate card setting
+for this.
 
-## Grundriss zeichnen
+## Drawing a floor plan
 
-Im Konfigurationsdialog der Karte gibt es oben den Knopf
-**Grundriss & Sensoren bearbeiten**. Der öffnet einen Vollbild-Editor.
+The card's config dialog has a **Edit floor plan & sensors** button at the
+top, which opens a fullscreen editor.
 
-| Werkzeug | Taste | Was es tut |
+| Tool | Key | What it does |
 |---|---|---|
-| Auswählen | `V` | Objekte anklicken, verschieben, Eckpunkte an den Griffen ziehen, Raummaße rechts eintippen |
-| Raum | `R` | Ziehen ergibt ein Rechteck, einzelne Klicks ein Polygon (Enter schließt) |
-| Wand | `W` | Freistehende Wände, die keinen Raum begrenzen — Raumteiler, Nischen |
-| Tür / Fenster | `D` | Auf eine Wand klicken; die Öffnung rastet darauf ein |
-| Sensor | `S` | Messpunkt setzen und eine Entity zuweisen |
-| Löschen | `X` | Element anklicken zum Entfernen |
-| Maßstab | `M` | Strecke bekannter Länge abklicken und Meterwert eintragen |
+| Select | `V` | Click objects to move them, drag corner handles, type room dimensions on the right |
+| Room | `R` | Drag for a rectangle, individual clicks for a polygon (Enter closes it) |
+| Wall | `W` | Freestanding walls that don't bound a room — room dividers, niches |
+| Door / Window | `D` | Click on a wall; the opening snaps onto it |
+| Sensor | `S` | Place a measurement point and assign an entity |
+| Delete | `X` | Click an element to remove it |
+| Scale | `M` | Click off a stretch of known length and enter its value in meters |
 
-Weiteres: Mausrad zoomt, mittlere Maustaste oder Leertaste schiebt,
-`Cmd/Strg+Z` macht rückgängig, `Entf` löscht die Auswahl, `Esc` bricht ab.
+More: mouse wheel zooms, middle mouse button or spacebar pans,
+`Cmd/Ctrl+Z` undoes, `Del` deletes the selection, `Esc` cancels.
 
-**Zwei Dinge, die Zeit sparen:**
+**Two things that save time:**
 
-- Räume werden als geschlossene Polygone gezeichnet — deren Kanten *sind*
-  die Wände. Du zeichnest also keine Wand doppelt. Ob eine Kante Außen-
-  oder Innenwand ist, erkennt die Karte selbst daran, ob dahinter ein
-  anderer Raum liegt.
-- Türen sind eigenständige Objekte und nicht an eine bestimmte Wand
-  gehängt. Grenzen zwei Räume aneinander, öffnet eine einzelne Tür
-  deshalb automatisch beide Raumkanten.
-- Grob gezeichnete Räume musst du nicht per Griff nachziehen: mit
-  ausgewähltem Raum stehen rechts **Breite** und **Länge** in Metern als
-  Eingabefelder. Der Raum wird auf das eingetippte Maß gestreckt, die
-  linke obere Ecke bleibt stehen. Türen und Fenster wandern dabei nicht
-  mit — nach größeren Korrekturen also kurz prüfen.
+- Rooms are drawn as closed polygons — their edges *are* the walls, so you
+  never draw a wall twice. The card determines whether an edge is an
+  exterior or interior wall automatically, by checking whether another
+  room lies behind it.
+- Doors are standalone objects, not attached to a specific wall. If two
+  rooms share an edge, a single door automatically opens both room edges
+  at once.
+- You don't have to drag handles to fix a roughly drawn room: with a room
+  selected, **Width** and **Length** input fields (in meters) appear on
+  the right. The room is stretched to the typed dimension, keeping its
+  top-left corner fixed. Doors and windows don't move along with it — so
+  double-check after larger corrections.
 
-## Wie gerechnet wird
+## How the calculation works
 
-Die Karte legt ein Gitter über den Grundriss und löst darauf eine
-stationäre Wärmediffusion: **∇·(k∇T) = 0**.
+The card lays a grid over the floor plan and solves steady-state heat
+diffusion on it: **∇·(k∇T) = 0**.
 
-- Die Sensoren sind Festwerte auf einer kleinen Scheibe um ihren Messpunkt.
-- Jede Gitterkante bekommt eine Leitfähigkeit `k`: 1 für freie Luft,
-  weniger, wenn sie eine Wand kreuzt.
-- Gelöst wird mit SOR (Gauß-Seidel mit Überrelaxation). Zwischen zwei
-  Sensor-Updates startet der Löser warm vom vorigen Ergebnis und braucht
-  dann nur noch wenige Durchläufe.
+- Sensors are fixed values on a small disc around their measurement point.
+- Every grid edge gets a conductance `k`: 1 for free air, less where it
+  crosses a wall.
+- The solver uses SOR (Gauss-Seidel with over-relaxation). Between sensor
+  updates it starts warm from the previous solution and then only needs a
+  few more iterations.
 
-Die Durchlässigkeit eines Bauteils wird intern in „so und so viele Meter
-freie Luft" umgerechnet. Das klingt umständlich, ist aber wichtig: eine
-Wand belegt immer genau eine Gitterkante, ein Raum bei feinerem Gitter
-aber immer mehr Zellen. Ohne diese Umrechnung würde eine Wand also umso
-schwächer, je genauer man rechnet.
+A component's transmittance is internally converted into "so many meters
+of free air." That sounds roundabout, but it matters: a wall always
+occupies exactly one grid edge, while a room has more and more cells at
+finer grid resolution. Without this conversion, a wall would get weaker
+the more precisely you compute.
 
-Bei den Voreinstellungen fallen rund vier Fünftel des Temperaturunter­schieds
-an der Wand ab und nicht im Raum davor. Das entspricht der Realität besser
-als eine reine Wärmeleitungsrechnung, weil sich Raumluft durch Konvektion
-viel stärker durchmischt, als Leitung allein es täte.
+With the default settings, roughly four-fifths of the temperature
+difference drops across the wall itself rather than in the room in front
+of it. That matches reality better than pure conduction would, because
+room air mixes far more through convection than conduction alone would
+achieve.
 
-Flächen, die über keinen Pfad einen Sensor erreichen — etwa ein Raum
-hinter einer komplett dichten Wand — bleiben leer, statt einen erfundenen
-Wert anzuzeigen.
+Areas that have no path to any sensor — say, a room behind a completely
+sealed wall — are left blank instead of showing a made-up value.
 
-## 2,5D-Ansicht
+## 2.5D view
 
-Mit `view_mode: tilted` werden die Wände aufgestellt und man blickt schräg
-auf das Modell. **In der Karte selbst lässt sich mit gedrückter Maustaste
-drehen und kippen** — das bleibt eine reine Ansichtssache und überschreibt
-die konfigurierten Winkel nicht; ein kleiner Knopf oben rechts setzt sie
-zurück.
+With `view_mode: tilted`, the walls are raised and you look at the model
+from an angle. **You can rotate and tilt right within the card by
+dragging with the mouse held down** — that stays a pure view interaction
+and doesn't overwrite the configured angles; a small button in the top
+right resets it.
 
-Türen und Fenster sind dabei keine aufgemalten Symbole, sondern fehlende
-Geometrie: eine Tür lässt den Wandquader weg und setzt nur den Sturz
-darüber, ein Fenster bekommt Brüstung, Sturz und eine durchscheinende
-Scheibe. Man sieht der Wohnung also direkt an, wo die Wärme durchkann.
+Doors and windows aren't painted symbols here, but absent geometry: a door
+leaves out the wall box and only places a lintel above it; a window gets a
+sill, a lintel, and a translucent pane. So you can see directly where heat
+can pass through the apartment.
 
-Die Projektion ist **parallel (axonometrisch)**, nicht perspektivisch. Das
-ist nicht nur eine Stilfrage: dadurch ist die Abbildung der Bodenebene eine
-affine Transformation, und die fertig gerechnete Heatmap kann unverzerrt
-als Bild darauf gelegt werden. Eine perspektivische Ansicht bräuchte eine
-Homographie, die Canvas 2D nicht beherrscht — der Boden müsste in Kacheln
-zerlegt und stückweise angenähert werden. Verdeckung entsteht über den
-Maleralgorithmus; ein Z-Buffer ist nicht nötig, weil jedes Wandstück ein
-konvexer Quader ist.
+The projection is **parallel (axonometric)**, not perspective. That's not
+just a stylistic choice: it makes the mapping of the floor plane an affine
+transformation, so the already-computed heatmap can be laid onto it as an
+image without distortion. A perspective view would need a homography,
+which Canvas 2D can't do — the floor would have to be broken into tiles
+and approximated piecewise. Occlusion is handled via the painter's
+algorithm; no z-buffer is needed because every wall segment is a convex
+box.
 
-| Wert | Bedeutung |
+| Value | Meaning |
 |---|---|
-| `yaw` | Drehung um die Hochachse in Grad, −180…180 |
-| `pitch` | Höhenwinkel in Grad: `90` = senkrecht von oben, kleiner = flacher. Unter 12° wird die Bodenmatrix singulär, deshalb dort begrenzt |
-| `wall_height` | Wandhöhe in Metern |
+| `yaw` | Rotation around the vertical axis in degrees, −180…180 |
+| `pitch` | Elevation angle in degrees: `90` = straight down from above, smaller = flatter. Below 12° the floor matrix becomes singular, so it's clamped there |
+| `wall_height` | Wall height in meters |
 
-Die Bauteilmaße (Wanddicke 24/12 cm, Türhöhe 2,0 m, Fensterbrüstung 0,9 m,
-Sturz 2,1 m) sind fest verdrahtet und leiten sich über `px_per_meter` aus
-dem Grundriss ab — **auch dafür lohnt sich das Kalibrieren des Maßstabs.**
+Component dimensions (wall thickness 24/12 cm, door height 2.0 m, window
+sill 0.9 m, lintel 2.1 m) are hardcoded and derived from the floor plan via
+`px_per_meter` — **another reason it's worth calibrating the scale.**
 
-Das Temperaturfeld ändert sich durch die Ansicht nicht; sie ist reine
-Darstellung.
+The temperature field itself doesn't change with the view; it's purely a
+matter of presentation.
 
-## Konfiguration
+## Configuration
 
-Alles ist über den grafischen Editor erreichbar. In YAML sieht es so aus:
+Everything is reachable through the graphical editor. In YAML it looks
+like this:
 
 ```yaml
 type: custom:floorplan-heatmap-card
-title: Temperaturverteilung
+title: Temperature distribution
 unit: °C
-min: 18                 # untere Grenze der Farbskala
-max: 26                 # obere Grenze
-auto_range: false       # true = Skala folgt den Messwerten
+min: 18                 # lower bound of the color scale
+max: 26                 # upper bound
+auto_range: false       # true = scale follows the measured values
 palette: coolwarm       # coolwarm | thermal | viridis | inferno | turbo
 opacity: 0.85
 
-view_mode: flat         # flat = Draufsicht | tilted = 2,5D mit Wänden
-yaw: -22                # Grad, Drehung um die Hochachse
-pitch: 58               # Grad Höhenwinkel; 90 = senkrecht von oben
-wall_height: 2.5        # Meter
+view_mode: flat         # flat = top-down view | tilted = 2.5D with walls
+yaw: -22                # degrees, rotation around the vertical axis
+pitch: 58               # degrees elevation angle; 90 = straight down
+wall_height: 2.5        # meters
 
-cell_size: 8            # Gitterauflösung in px, kleiner = genauer, langsamer
-sensor_radius: 0.4      # Meter; Fläche um den Messpunkt mit festem Wert
+cell_size: 8            # grid resolution in px, smaller = more precise, slower
+sensor_radius: 0.4      # meters; area around the measurement point with a fixed value
 show_isotherms: true
 isotherm_step: 0.5
 show_walls: true
@@ -160,78 +163,78 @@ show_room_labels: true
 show_values: true
 show_legend: true
 px_per_meter: 50
-background: /local/grundriss.png   # optionaler Referenzplan
+background: /local/floorplan.png   # optional reference plan
 background_opacity: 0.25
 
-transmittance:          # Durchlässigkeit 0…1 je Bauteil
-  exterior: 0.02        # Außenwand
-  interior: 0.12        # Innenwand
-  door: 0.5             # Tür
-  window: 0.08          # Fenster
-  passage: 1.0          # offener Durchgang
+transmittance:          # transmittance 0…1 per component
+  exterior: 0.02        # exterior wall
+  interior: 0.12        # interior wall
+  door: 0.5             # door
+  window: 0.08          # window
+  passage: 1.0          # open passage
 
 floorplan:
   rooms:
-    - id: wz
-      name: Wohnzimmer
+    - id: lr
+      name: Living Room
       points: [[0, 0], [350, 0], [350, 300], [0, 300]]
-  walls: []             # nur freistehende Wände
+  walls: []             # only freestanding walls
   openings:
     - { id: o1, x: 150, y: 300, angle: 0, width: 50, type: door }
   sensors:
-    - { id: s1, x: 175, y: 150, entity: sensor.wohnzimmer_temperatur, name: Wohnzimmer }
+    - { id: s1, x: 175, y: 150, entity: sensor.living_room_temperature, name: Living Room }
 ```
 
-Koordinaten sind abstrakte Grundriss-Pixel. `px_per_meter` übersetzt sie in
-Meter — das brauchst du für Beschriftungen, den Sensorradius und die
-Wandstärke-Umrechnung. **Kalibriere den Maßstab einmal** (Werkzeug `M`),
-sonst wirken die Wände zu stark oder zu schwach.
+Coordinates are abstract floor plan pixels. `px_per_meter` translates them
+into meters — you need this for labels, the sensor radius, and the wall
+thickness conversion. **Calibrate the scale once** (tool `M`), otherwise
+walls will look too strong or too weak.
 
-`angle` einer Öffnung ist im Bogenmaß: `0` = waagrecht, `1.5708` = senkrecht.
-Im Editor wird das automatisch gesetzt.
+An opening's `angle` is in radians: `0` = horizontal, `1.5708` = vertical.
+The editor sets this automatically.
 
-## Nicht nur Temperatur
+## Not just temperature
 
-Die Karte liest schlicht den numerischen Zustand der zugewiesenen Entities.
-Für Luftfeuchtigkeit reichen andere `min`/`max`-Werte und eine passende
-`unit`. Lässt du `unit` weg, wird sie aus der ersten Entity übernommen.
+The card simply reads the numeric state of the assigned entities. For
+humidity, just use different `min`/`max` values and a matching `unit`. If
+you omit `unit`, it's taken from the first entity.
 
-## Entwicklung
+## Development
 
 ```bash
 node build.mjs                # src/ → dist/floorplan-heatmap-card.js
-node --test "test/*.test.mjs" # Solver-Tests
+node --test "test/*.test.mjs" # solver tests
 ```
 
-Der Build hängt die Module ohne npm-Abhängigkeit aneinander und bricht ab,
-wenn zwei Module denselben Namen auf oberster Ebene definieren.
+The build concatenates the modules with no npm dependency and fails if two
+modules define the same top-level name.
 
-Zum Ausprobieren ohne Home-Assistant-Instanz:
+To try it out without a Home Assistant instance:
 
 ```bash
 python3 -m http.server 8777
-# dann http://localhost:8777/demo/ öffnen
+# then open http://localhost:8777/demo/
 ```
 
-Die Demo baut `hass` nach, zeigt eine Beispielwohnung mit sechs Sensoren
-und lässt den Vollbild-Editor öffnen.
+The demo fakes a minimal `hass`, shows a sample apartment with six sensors,
+and lets you open the fullscreen editor.
 
-### Aufbau
+### Structure
 
-| Datei | Aufgabe |
+| File | Purpose |
 |---|---|
-| `src/geometry.js` | Vektor- und Polygonhelfer |
-| `src/palette.js` | Farbskalen und Legendenverläufe |
-| `src/model.js` | Datenmodell, Defaults, automatische Wandklassifikation |
-| `src/solver.js` | Gitteraufbau und Diffusionslöser |
-| `src/isotherms.js` | Marching Squares für Linien gleicher Temperatur |
-| `src/renderer.js` | Zeichnen von Feld, Wänden, Türen in der Draufsicht |
-| `src/projection.js` | Axonometrische Projektion für die 2,5D-Ansicht |
-| `src/scene3d.js` | Baukörper aus dem Grundriss und deren Darstellung |
-| `src/card.js` | die Lovelace-Karte |
-| `src/editor.js` | Formular im Konfigurationsdialog |
-| `src/plan-editor.js` | Vollbild-Grundrisseditor (SVG) |
+| `src/geometry.js` | Vector and polygon helpers |
+| `src/palette.js` | Color scales and legend gradients |
+| `src/model.js` | Data model, defaults, automatic wall classification |
+| `src/solver.js` | Grid construction and diffusion solver |
+| `src/isotherms.js` | Marching squares for equal-temperature lines |
+| `src/renderer.js` | Drawing the field, walls, doors in the top-down view |
+| `src/projection.js` | Axonometric projection for the 2.5D view |
+| `src/scene3d.js` | Building volumes from the floor plan and their rendering |
+| `src/card.js` | The Lovelace card |
+| `src/editor.js` | The config dialog form |
+| `src/plan-editor.js` | Fullscreen floor plan editor (SVG) |
 
-## Lizenz
+## License
 
 MIT
