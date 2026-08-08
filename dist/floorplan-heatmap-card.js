@@ -4690,7 +4690,7 @@ class FloorplanHeatmapCard extends HTMLElement {
  * ------------------------------------------------------------------ */
 
 
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 
 if (!customElements.get('floorplan-heatmap-card')) {
   customElements.define('floorplan-heatmap-card', FloorplanHeatmapCard);

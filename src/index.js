@@ -6,7 +6,7 @@ import { FloorplanHeatmapCard } from './card.js';
 import { FloorplanHeatmapCardEditor } from './editor.js';
 import { t, detectLanguageFallback } from './i18n.js';
 
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 
 if (!customElements.get('floorplan-heatmap-card')) {
   customElements.define('floorplan-heatmap-card', FloorplanHeatmapCard);
