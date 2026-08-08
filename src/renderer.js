@@ -176,11 +176,23 @@ export function renderFloorplan(ctx, fp, view, opts) {
 
   for (const wall of walls) {
     ctx.lineWidth = Math.max(2, (wall.type === 'exterior' ? 7 : 4.5) * view.scale);
+    const half = ctx.lineWidth / 2;
     const dxp = wall.x2 - wall.x1, dyp = wall.y2 - wall.y1;
     for (const [t0, t1] of wallGaps(wall, openings, Math.max(6, 8 / view.scale))) {
+      let ax = view.toX(wall.x1 + dxp * t0), ay = view.toY(wall.y1 + dyp * t0);
+      let bx = view.toX(wall.x1 + dxp * t1), by = view.toY(wall.y1 + dyp * t1);
+      // Square off only the ends that are real room-polygon corners (t=0/1),
+      // not ends cut by an opening — otherwise adjoining walls leave a
+      // notch at the joint (butt caps don't fill a right-angle corner).
+      const segLen = Math.hypot(bx - ax, by - ay);
+      if (segLen > 1e-6) {
+        const nx = (bx - ax) / segLen, ny = (by - ay) / segLen;
+        if (t0 <= 1e-9) { ax -= nx * half; ay -= ny * half; }
+        if (t1 >= 1 - 1e-9) { bx += nx * half; by += ny * half; }
+      }
       ctx.beginPath();
-      ctx.moveTo(view.toX(wall.x1 + dxp * t0), view.toY(wall.y1 + dyp * t0));
-      ctx.lineTo(view.toX(wall.x1 + dxp * t1), view.toY(wall.y1 + dyp * t1));
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
       ctx.stroke();
     }
   }

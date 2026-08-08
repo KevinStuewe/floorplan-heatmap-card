@@ -1085,9 +1085,19 @@ class PlanEditor {
     for (const wall of walls) {
       const dx = wall.x2 - wall.x1, dy = wall.y2 - wall.y1;
       const width = wall.type === 'exterior' ? 7 : 4.5;
+      const half = this.px(width / 2);
+      const len = Math.hypot(dx, dy);
+      const ux = len > 1e-6 ? dx / len : 0, uy = len > 1e-6 ? dy / len : 0;
       const selected = wall.free && this._isSelected('wall', wall.id);
       for (const [t0, t1] of wallGaps(wall, openings, Math.max(6, this.px(8)))) {
-        out.push(`<line x1="${wall.x1 + dx * t0}" y1="${wall.y1 + dy * t0}" x2="${wall.x1 + dx * t1}" y2="${wall.y1 + dy * t1}"
+        // Square off only real room-polygon corners (t=0/1), not ends cut
+        // by an opening — stroke-linecap="butt" is needed there for a
+        // clean cut, but leaves a notch where two walls join at a corner.
+        let x1 = wall.x1 + dx * t0, y1 = wall.y1 + dy * t0;
+        let x2 = wall.x1 + dx * t1, y2 = wall.y1 + dy * t1;
+        if (t0 <= 1e-9) { x1 -= ux * half; y1 -= uy * half; }
+        if (t1 >= 1 - 1e-9) { x2 += ux * half; y2 += uy * half; }
+        out.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
           stroke="${selected ? '#3b6df3' : '#8e9bb1'}" stroke-width="${width}" stroke-linecap="butt"
           vector-effect="non-scaling-stroke" style="pointer-events:none"/>`);
       }

@@ -1233,11 +1233,23 @@ function renderFloorplan(ctx, fp, view, opts) {
 
   for (const wall of walls) {
     ctx.lineWidth = Math.max(2, (wall.type === 'exterior' ? 7 : 4.5) * view.scale);
+    const half = ctx.lineWidth / 2;
     const dxp = wall.x2 - wall.x1, dyp = wall.y2 - wall.y1;
     for (const [t0, t1] of wallGaps(wall, openings, Math.max(6, 8 / view.scale))) {
+      let ax = view.toX(wall.x1 + dxp * t0), ay = view.toY(wall.y1 + dyp * t0);
+      let bx = view.toX(wall.x1 + dxp * t1), by = view.toY(wall.y1 + dyp * t1);
+      // Square off only the ends that are real room-polygon corners (t=0/1),
+      // not ends cut by an opening — otherwise adjoining walls leave a
+      // notch at the joint (butt caps don't fill a right-angle corner).
+      const segLen = Math.hypot(bx - ax, by - ay);
+      if (segLen > 1e-6) {
+        const nx = (bx - ax) / segLen, ny = (by - ay) / segLen;
+        if (t0 <= 1e-9) { ax -= nx * half; ay -= ny * half; }
+        if (t1 >= 1 - 1e-9) { bx += nx * half; by += ny * half; }
+      }
       ctx.beginPath();
-      ctx.moveTo(view.toX(wall.x1 + dxp * t0), view.toY(wall.y1 + dyp * t0));
-      ctx.lineTo(view.toX(wall.x1 + dxp * t1), view.toY(wall.y1 + dyp * t1));
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
       ctx.stroke();
     }
   }
@@ -2782,9 +2794,19 @@ class PlanEditor {
     for (const wall of walls) {
       const dx = wall.x2 - wall.x1, dy = wall.y2 - wall.y1;
       const width = wall.type === 'exterior' ? 7 : 4.5;
+      const half = this.px(width / 2);
+      const len = Math.hypot(dx, dy);
+      const ux = len > 1e-6 ? dx / len : 0, uy = len > 1e-6 ? dy / len : 0;
       const selected = wall.free && this._isSelected('wall', wall.id);
       for (const [t0, t1] of wallGaps(wall, openings, Math.max(6, this.px(8)))) {
-        out.push(`<line x1="${wall.x1 + dx * t0}" y1="${wall.y1 + dy * t0}" x2="${wall.x1 + dx * t1}" y2="${wall.y1 + dy * t1}"
+        // Square off only real room-polygon corners (t=0/1), not ends cut
+        // by an opening — stroke-linecap="butt" is needed there for a
+        // clean cut, but leaves a notch where two walls join at a corner.
+        let x1 = wall.x1 + dx * t0, y1 = wall.y1 + dy * t0;
+        let x2 = wall.x1 + dx * t1, y2 = wall.y1 + dy * t1;
+        if (t0 <= 1e-9) { x1 -= ux * half; y1 -= uy * half; }
+        if (t1 >= 1 - 1e-9) { x2 += ux * half; y2 += uy * half; }
+        out.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
           stroke="${selected ? '#3b6df3' : '#8e9bb1'}" stroke-width="${width}" stroke-linecap="butt"
           vector-effect="non-scaling-stroke" style="pointer-events:none"/>`);
       }
