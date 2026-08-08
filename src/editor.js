@@ -8,21 +8,22 @@
 import { DEFAULT_TRANSMITTANCE, normalizeConfig } from './model.js';
 import { PALETTE_NAMES, paletteGradientCss } from './palette.js';
 import { openPlanEditor } from './plan-editor.js';
+import { t, detectLanguage } from './i18n.js';
 
-const PALETTE_LABELS = {
-  coolwarm: 'Kalt–Warm (empfohlen)',
-  thermal: 'Thermal',
-  viridis: 'Viridis',
-  inferno: 'Inferno',
-  turbo: 'Turbo',
+const PALETTE_LABEL_KEYS = {
+  coolwarm: 'editor.paletteCoolwarm',
+  thermal: 'editor.paletteThermal',
+  viridis: 'editor.paletteViridis',
+  inferno: 'editor.paletteInferno',
+  turbo: 'editor.paletteTurbo',
 };
 
-const TRANSMITTANCE_LABELS = {
-  exterior: 'Außenwand',
-  interior: 'Innenwand',
-  door: 'Tür',
-  window: 'Fenster',
-  passage: 'Durchgang',
+const TRANSMITTANCE_LABEL_KEYS = {
+  exterior: 'label.exterior',
+  interior: 'label.interior',
+  door: 'label.door',
+  window: 'label.window',
+  passage: 'label.passage',
 };
 
 const FORM_STYLES = `
@@ -111,7 +112,16 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
   }
 
   set hass(hass) {
+    // Ein Neurendern bei jedem hass-Update würde Regler mitten in der
+    // Bewegung ersetzen (siehe setConfig) — deshalb nur bei tatsächlichem
+    // Sprachwechsel (typischerweise: erstes hass-Update nach dem Erzeugen).
+    const prevLang = this._hass ? this._lang() : null;
     this._hass = hass;
+    if (this._config && this._lang() !== prevLang) this._render();
+  }
+
+  _lang() {
+    return detectLanguage(this._hass);
   }
 
   _emit(patch, rerender = true) {
@@ -126,33 +136,37 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
   _render() {
     const cfg = normalizeConfig(this._config);
     const fp = cfg.floorplan;
-    const counts = `${fp.rooms.length} Räume · ${fp.sensors.length} Sensoren · ${fp.openings.length} Öffnungen`;
+    const lang = this._lang();
+    const tr = (key, vars) => t(lang, key, vars);
+    const counts = tr('editor.counts', {
+      rooms: fp.rooms.length, sensors: fp.sensors.length, openings: fp.openings.length,
+    });
 
     this.shadowRoot.innerHTML = `
       <style>${FORM_STYLES}</style>
       <div class="wrap">
         <button class="plan-button" id="openPlan">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h8M11 4v16"/></svg>
-          <span>Grundriss &amp; Sensoren bearbeiten
+          <span>${tr('editor.openPlanButton')}
             <span class="sub">${counts}</span>
           </span>
         </button>
 
         <div class="card">
-          <h3>Darstellung</h3>
+          <h3>${tr('editor.sectionDisplay')}</h3>
           <div class="field">
-            <label>Titel</label>
-            <input type="text" data-key="title" value="${escapeAttr(cfg.title)}" placeholder="Temperaturverteilung">
+            <label>${tr('editor.fieldTitle')}</label>
+            <input type="text" data-key="title" value="${escapeAttr(cfg.title)}" placeholder="${tr('card.defaultTitle')}">
           </div>
           <div class="row">
             <div class="field">
-              <label>Einheit</label>
+              <label>${tr('editor.fieldUnit')}</label>
               <input type="text" data-key="unit" value="${escapeAttr(cfg.unit)}" placeholder="°C">
             </div>
             <div class="field">
-              <label>Farbskala</label>
+              <label>${tr('editor.fieldPalette')}</label>
               <select data-key="palette">
-                ${PALETTE_NAMES.map((p) => `<option value="${p}" ${cfg.palette === p ? 'selected' : ''}>${PALETTE_LABELS[p] || p}</option>`).join('')}
+                ${PALETTE_NAMES.map((p) => `<option value="${p}" ${cfg.palette === p ? 'selected' : ''}>${tr(PALETTE_LABEL_KEYS[p]) || p}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -160,87 +174,83 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
 
           <div class="field" style="margin-top:12px">
             <label class="check"><input type="checkbox" data-key="auto_range" ${cfg.auto_range ? 'checked' : ''}>
-              Skala automatisch an die Messwerte anpassen</label>
+              ${tr('editor.autoRange')}</label>
           </div>
           <div class="row">
             <div class="field">
-              <label>Minimum</label>
+              <label>${tr('editor.fieldMin')}</label>
               <input type="number" data-key="min" step="0.5" value="${cfg.min}" ${cfg.auto_range ? 'disabled' : ''}>
             </div>
             <div class="field">
-              <label>Maximum</label>
+              <label>${tr('editor.fieldMax')}</label>
               <input type="number" data-key="max" step="0.5" value="${cfg.max}" ${cfg.auto_range ? 'disabled' : ''}>
             </div>
           </div>
           <div class="field">
-            <label>Deckkraft der Fläche <span class="value" data-out="opacity">${Math.round(cfg.opacity * 100)} %</span></label>
+            <label>${tr('editor.fieldOpacity')} <span class="value" data-out="opacity">${Math.round(cfg.opacity * 100)} %</span></label>
             <input type="range" data-key="opacity" min="0.2" max="1" step="0.05" value="${cfg.opacity}">
           </div>
         </div>
 
         <div class="card">
-          <h3>Ansicht</h3>
+          <h3>${tr('editor.sectionView')}</h3>
           <div class="field">
             <div class="seg">
-              <button data-view="flat" class="${cfg.view_mode === 'flat' ? 'active' : ''}">Draufsicht</button>
-              <button data-view="tilted" class="${cfg.view_mode === 'tilted' ? 'active' : ''}">2,5D — Wände aufgestellt</button>
+              <button data-view="flat" class="${cfg.view_mode === 'flat' ? 'active' : ''}">${tr('editor.viewFlat')}</button>
+              <button data-view="tilted" class="${cfg.view_mode === 'tilted' ? 'active' : ''}">${tr('editor.viewTilted')}</button>
             </div>
           </div>
           <div ${cfg.view_mode === 'tilted' ? '' : 'hidden'}>
             <div class="field">
-              <label>Drehung <span class="value" data-out="yaw">${Math.round(cfg.yaw)}°</span></label>
+              <label>${tr('editor.fieldYaw')} <span class="value" data-out="yaw">${Math.round(cfg.yaw)}°</span></label>
               <input type="range" data-key="yaw" min="-180" max="180" step="1" value="${cfg.yaw}">
             </div>
             <div class="field">
-              <label>Höhenwinkel <span class="value" data-out="pitch">${Math.round(cfg.pitch)}°</span></label>
+              <label>${tr('editor.fieldPitch')} <span class="value" data-out="pitch">${Math.round(cfg.pitch)}°</span></label>
               <input type="range" data-key="pitch" min="12" max="90" step="1" value="${cfg.pitch}">
             </div>
             <div class="field">
-              <label>Wandhöhe <span class="value" data-out="wall_height">${cfg.wall_height.toFixed(2)} m</span></label>
+              <label>${tr('editor.fieldWallHeight')} <span class="value" data-out="wall_height">${cfg.wall_height.toFixed(2)} m</span></label>
               <input type="range" data-key="wall_height" min="1" max="4" step="0.05" value="${cfg.wall_height}">
             </div>
-            <div class="note">
-              Diese Winkel sind der Ausgangspunkt. In der Karte selbst lässt sich das
-              Modell jederzeit mit der Maus drehen — das bleibt aber eine reine
-              Ansichtssache und überschreibt die Voreinstellung hier nicht.
-            </div>
+            <div class="note">${tr('editor.viewAngleNote')}</div>
           </div>
         </div>
 
         <div class="card">
-          <h3>Anzeigen</h3>
-          <label class="check"><input type="checkbox" data-key="show_walls" ${cfg.show_walls ? 'checked' : ''}> Wände, Türen und Fenster</label>
-          <label class="check"><input type="checkbox" data-key="show_room_labels" ${cfg.show_room_labels ? 'checked' : ''}> Raumnamen</label>
-          <label class="check"><input type="checkbox" data-key="show_values" ${cfg.show_values ? 'checked' : ''}> Messwerte an den Sensoren</label>
-          <label class="check"><input type="checkbox" data-key="show_legend" ${cfg.show_legend ? 'checked' : ''}> Farblegende</label>
-          <label class="check"><input type="checkbox" data-key="show_isotherms" ${cfg.show_isotherms ? 'checked' : ''}> Isothermen (Linien gleicher Temperatur)</label>
+          <h3>${tr('editor.sectionShow')}</h3>
+          <label class="check"><input type="checkbox" data-key="show_walls" ${cfg.show_walls ? 'checked' : ''}> ${tr('editor.showWalls')}</label>
+          <label class="check"><input type="checkbox" data-key="show_room_labels" ${cfg.show_room_labels ? 'checked' : ''}> ${tr('editor.showRoomLabels')}</label>
+          <label class="check"><input type="checkbox" data-key="show_values" ${cfg.show_values ? 'checked' : ''}> ${tr('editor.showValues')}</label>
+          <label class="check"><input type="checkbox" data-key="show_legend" ${cfg.show_legend ? 'checked' : ''}> ${tr('editor.showLegend')}</label>
+          <label class="check"><input type="checkbox" data-key="show_isotherms" ${cfg.show_isotherms ? 'checked' : ''}> ${tr('editor.showIsotherms')}</label>
           <div class="field" style="margin-top:8px">
-            <label>Abstand der Isothermen <span class="value" data-out="isotherm_step">${cfg.isotherm_step} ${cfg.unit}</span></label>
+            <label>${tr('editor.isothermStep')} <span class="value" data-out="isotherm_step">${cfg.isotherm_step} ${cfg.unit}</span></label>
             <input type="range" data-key="isotherm_step" min="0.1" max="2" step="0.1" value="${cfg.isotherm_step}" ${cfg.show_isotherms ? '' : 'disabled'}>
           </div>
         </div>
 
         <div class="card">
           <details>
-            <summary>Modell &amp; Genauigkeit</summary>
+            <summary>${tr('editor.sectionModel')}</summary>
             <div class="field">
-              <label>Gitterauflösung <span class="value" data-out="cell_size">${cfg.cell_size} px</span></label>
+              <label>${tr('editor.cellSize')} <span class="value" data-out="cell_size">${cfg.cell_size} px</span></label>
               <input type="range" data-key="cell_size" min="3" max="20" step="1" value="${cfg.cell_size}">
-              <div class="note">Kleiner = feiner und genauer, aber rechenintensiver. 6–10 px ist für Wohnungen ein guter Kompromiss.</div>
+              <div class="note">${tr('editor.cellSizeNote')}</div>
             </div>
             <div class="field">
-              <label>Sensorradius <span class="value" data-out="sensor_radius">${cfg.sensor_radius.toFixed(2)} m</span></label>
+              <label>${tr('editor.sensorRadius')} <span class="value" data-out="sensor_radius">${cfg.sensor_radius.toFixed(2)} m</span></label>
               <input type="range" data-key="sensor_radius" min="0.1" max="1.5" step="0.05" value="${cfg.sensor_radius}">
-              <div class="note">Wie groß die Fläche um einen Messpunkt ist, die exakt auf dessen Wert festgehalten wird.</div>
+              <div class="note">${tr('editor.sensorRadiusNote')}</div>
             </div>
 
-            <h3 style="margin-top:16px">Wärmedurchlässigkeit</h3>
+            <h3 style="margin-top:16px">${tr('editor.sectionTransmittance')}</h3>
             ${Object.keys(DEFAULT_TRANSMITTANCE).map((key) => `
               <div class="field">
-                <label>${TRANSMITTANCE_LABELS[key] || key} <span class="value" data-out="trans:${key}">${Math.round(cfg.transmittance[key] * 100)} %</span></label>
+                <label>${tr(TRANSMITTANCE_LABEL_KEYS[key]) || key} <span class="value" data-out="trans:${key}">${Math.round(cfg.transmittance[key] * 100)} %</span></label>
                 <input type="range" data-trans="${key}" min="0" max="1" step="0.01" value="${cfg.transmittance[key]}">
               </div>`).join('')}
-            <div class="note">0 % = perfekte Dämmung, 100 % = wie freie Luft. Diese Werte bestimmen, wie stark Wärme zwischen benachbarten Bereichen ausgetauscht wird.</div>
+            <div class="note">${tr('editor.transmittanceNote')}</div>
           </details>
         </div>
       </div>
@@ -327,10 +337,7 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
     // Formular in der Zwischenzeit abgeräumt hat — dann wäre die ganze
     // Zeichenarbeit lautlos verloren. Lieber sichtbar melden.
     if (!this.isConnected) {
-      console.warn(
-        'floorplan-heatmap-card: Der Konfigurationsdialog wurde geschlossen, während der ' +
-        'Grundriss-Editor offen war. Die Änderungen konnten nicht übernommen werden.'
-      );
+      console.warn(t(this._lang(), 'editor.dialogClosedWarning'));
       return;
     }
     this._emit({

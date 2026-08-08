@@ -8,6 +8,366 @@
 (function () {
 'use strict';
 
+/* ===== src/i18n.js ===== */
+/* ------------------------------------------------------------------ *
+ * i18n.js — Übersetzungstabelle und Spracherkennung.
+ *
+ * Unterstützt Deutsch und Englisch. Die Sprache wird automatisch aus
+ * hass.language übernommen (Home Assistants eigene Spracheinstellung),
+ * es gibt bewusst keine Karten-eigene Sprachoption. Vor dem ersten
+ * hass-Objekt (z. B. beim Registrieren der Karte in index.js) greift
+ * detectLanguageFallback() auf localStorage/navigator zurück.
+ * ------------------------------------------------------------------ */
+
+const TRANSLATIONS = {
+  en: {
+    'customCards.name': 'Floorplan Heatmap',
+    'customCards.description':
+      'Temperature distribution over a floor plan — with walls, doors, and windows as thermal resistance.',
+
+    'card.defaultTitle': 'Temperature Distribution',
+    'card.resetViewTitle': 'Reset view angle',
+    'card.resetViewLabel': 'View',
+    'card.emptyLine1': 'No floor plan yet.',
+    'card.emptyLine2': 'Edit card → open {button} and draw rooms.',
+    'card.spreadTooltip': 'Spread between warmest and coldest sensor',
+
+    'planEditor.title': 'Floor Plan & Sensors',
+
+    'editor.openPlanButton': 'Edit Floor Plan & Sensors',
+    'editor.counts': '{rooms} rooms · {sensors} sensors · {openings} openings',
+    'editor.sectionDisplay': 'Display',
+    'editor.sectionView': 'View',
+    'editor.sectionShow': 'Show',
+    'editor.sectionModel': 'Model & Accuracy',
+    'editor.sectionTransmittance': 'Thermal transmittance',
+    'editor.fieldTitle': 'Title',
+    'editor.fieldUnit': 'Unit',
+    'editor.fieldPalette': 'Color scale',
+    'editor.autoRange': 'Automatically fit scale to sensor readings',
+    'editor.fieldMin': 'Minimum',
+    'editor.fieldMax': 'Maximum',
+    'editor.fieldOpacity': 'Field opacity',
+    'editor.viewFlat': 'Top-down',
+    'editor.viewTilted': '2.5D — walls raised',
+    'editor.fieldYaw': 'Rotation',
+    'editor.fieldPitch': 'Tilt angle',
+    'editor.fieldWallHeight': 'Wall height',
+    'editor.viewAngleNote':
+      "These angles are just the starting point. In the card itself, you can rotate the model with the mouse at any time — that's purely a viewing choice and won't overwrite the default set here.",
+    'editor.showWalls': 'Walls, doors, and windows',
+    'editor.showRoomLabels': 'Room names',
+    'editor.showValues': 'Values at sensors',
+    'editor.showLegend': 'Color legend',
+    'editor.showIsotherms': 'Isotherms (lines of equal temperature)',
+    'editor.isothermStep': 'Isotherm spacing',
+    'editor.cellSize': 'Grid resolution',
+    'editor.cellSizeNote':
+      'Smaller = finer and more accurate, but more compute-intensive. 6–10 px is a good compromise for apartments.',
+    'editor.sensorRadius': 'Sensor radius',
+    'editor.sensorRadiusNote':
+      "How large the area around a sensor point is that's held exactly at its value.",
+    'editor.transmittanceNote':
+      '0% = perfect insulation, 100% = like free air. These values determine how strongly heat is exchanged between adjacent areas.',
+    'editor.dialogClosedWarning':
+      'floorplan-heatmap-card: The configuration dialog was closed while the floor plan editor was open. The changes could not be applied.',
+    'editor.paletteCoolwarm': 'Cool–Warm (recommended)',
+    'editor.paletteThermal': 'Thermal',
+    'editor.paletteViridis': 'Viridis',
+    'editor.paletteInferno': 'Inferno',
+    'editor.paletteTurbo': 'Turbo',
+
+    'label.exterior': 'Exterior wall',
+    'label.interior': 'Interior wall',
+    'label.door': 'Door',
+    'label.window': 'Window',
+    'label.passage': 'Passage',
+
+    'tools.select.label': 'Select',
+    'tools.select.hint':
+      'Click to select · drag to move · drag corner handles · type room dimensions on the right · Del removes',
+    'tools.room.label': 'Room',
+    'tools.room.hint':
+      'Drag for a rectangle · click repeatedly for a polygon (Enter or double-click closes it, Backspace undoes the last point)',
+    'tools.wall.label': 'Wall',
+    'tools.wall.hint':
+      'Click to set the start, click again for the end · type a length on the right and press Enter for an exact size',
+    'tools.opening.label': 'Door / Window',
+    'tools.opening.hint':
+      'Click on a wall — the opening snaps onto it and affects both adjoining rooms',
+    'tools.sensor.label': 'Sensor',
+    'tools.sensor.hint': 'Click to place a measurement point · assign the entity on the right',
+    'tools.erase.label': 'Delete',
+    'tools.erase.hint': 'Click an element to remove it',
+    'tools.measure.label': 'Scale',
+    'tools.measure.hint':
+      'Click a stretch of known length and enter its real length in meters',
+
+    'planEditor.undoTitle': 'Undo (Cmd/Ctrl+Z)',
+    'planEditor.redoTitle': 'Redo (Cmd/Ctrl+Shift+Z)',
+    'planEditor.fitTitle': 'Fit all',
+    'planEditor.toggleGrid': 'Grid',
+    'planEditor.toggleSnapGrid': 'Snap to grid',
+    'planEditor.toggleSnapPoints': 'Snap to corners',
+    'planEditor.toggleAxisSnap': '0°/90°',
+    'planEditor.cancel': 'Cancel',
+    'planEditor.save': 'Apply',
+    'planEditor.hintSuffix': 'Scroll wheel zooms, middle button or spacebar pans.',
+    'planEditor.roomFallback': 'Room {n}',
+    'planEditor.sensorFallback': 'Sensor',
+    'planEditor.panelGeneral': 'General Settings',
+    'planEditor.panelWallDraft': 'Draw Wall',
+    'planEditor.panelMeasure': 'Calibrate Scale',
+    'planEditor.panelRoom': 'Room',
+    'planEditor.panelWall': 'Freestanding Wall',
+    'planEditor.panelOpening': 'Opening',
+    'planEditor.panelSensor': 'Sensor',
+    'planEditor.scaleLabel': 'Scale — pixels per meter',
+    'planEditor.backgroundLabel': 'Background image (path under /local/…)',
+    'planEditor.backgroundPlaceholder': '/local/floorplan.png',
+    'planEditor.backgroundOpacityLabel': 'Background opacity —',
+    'planEditor.scaleNote':
+      'The scale only affects labels and the sensor radius — the temperature field itself is scale-free.',
+    'planEditor.currentLength': 'Current length',
+    'planEditor.exactLengthLabel': 'Set exact length (meters) — Enter confirms',
+    'planEditor.examplePlaceholder': 'e.g. 3.20',
+    'planEditor.finishDrawing': 'Finish drawing (Esc)',
+    'planEditor.measureNote':
+      'Click a stretch whose real length you know — a room wall, for example. Then enter the length in meters.',
+    'planEditor.measuredDistance': 'Measured distance',
+    'planEditor.notMeasuredYet': 'nothing measured yet',
+    'planEditor.realLengthLabel': 'Real length (meters) — Enter applies',
+    'planEditor.current': 'Current',
+    'planEditor.name': 'Name',
+    'planEditor.width': 'Width (m)',
+    'planEditor.length': 'Length (m)',
+    'planEditor.area': 'Area',
+    'planEditor.corners': 'Corners',
+    'planEditor.roomSizeNote':
+      "Dimensions are the outer edges — Enter or clicking elsewhere applies them. The top-left corner stays fixed; doors and windows don't move with it. Corner points can still be dragged at the white handles.",
+    'planEditor.type': 'Type',
+    'planEditor.wallLength': 'Length',
+    'planEditor.wallTypeNote':
+      'Room edges are automatically detected as exterior or interior walls; this type only applies to freestanding walls.',
+    'planEditor.kind': 'Kind',
+    'planEditor.openingWidthLabel': 'Width —',
+    'planEditor.openingNote':
+      'Passage = open, door = clearly damped, window = almost sealed. The opening affects every wall at this spot — so both rooms, if two adjoin here.',
+    'planEditor.displayNameLabel': 'Display name (empty = entity name)',
+    'planEditor.exampleRoomPlaceholder': 'e.g. Living Room',
+    'planEditor.currentValue': 'Current value',
+    'planEditor.notAvailable': 'not available',
+    'planEditor.entityPlaceholder': 'sensor.living_room_temperature',
+    'planEditor.deleteButton': 'Delete (Del)',
+    'planEditor.noEntity': 'No entity',
+    'planEditor.noEntityAssigned': 'no entity assigned',
+    'planEditor.noSensorsYet': 'No sensors placed yet.',
+    'planEditor.noRoomsYet': 'No rooms drawn yet.',
+    'planEditor.sensorsHeader': 'Sensors ({n})',
+    'planEditor.roomsHeader': 'Rooms ({n})',
+    'planEditor.overview': 'Overview',
+    'planEditor.summaryLine':
+      '{rooms} rooms · {walls} freestanding walls · {openings} openings · {sensors} sensors',
+  },
+
+  de: {
+    'customCards.name': 'Grundriss-Heatmap',
+    'customCards.description':
+      'Temperaturverteilung über einen Grundriss — mit Wänden, Türen und Fenstern als Wärmewiderstand.',
+
+    'card.defaultTitle': 'Temperaturverteilung',
+    'card.resetViewTitle': 'Blickwinkel zurücksetzen',
+    'card.resetViewLabel': 'Ansicht',
+    'card.emptyLine1': 'Noch kein Grundriss angelegt.',
+    'card.emptyLine2': 'Karte bearbeiten → {button} öffnen und Räume zeichnen.',
+    'card.spreadTooltip': 'Spreizung zwischen wärmstem und kältestem Sensor',
+
+    'planEditor.title': 'Grundriss & Sensoren',
+
+    'editor.openPlanButton': 'Grundriss & Sensoren bearbeiten',
+    'editor.counts': '{rooms} Räume · {sensors} Sensoren · {openings} Öffnungen',
+    'editor.sectionDisplay': 'Darstellung',
+    'editor.sectionView': 'Ansicht',
+    'editor.sectionShow': 'Anzeigen',
+    'editor.sectionModel': 'Modell & Genauigkeit',
+    'editor.sectionTransmittance': 'Wärmedurchlässigkeit',
+    'editor.fieldTitle': 'Titel',
+    'editor.fieldUnit': 'Einheit',
+    'editor.fieldPalette': 'Farbskala',
+    'editor.autoRange': 'Skala automatisch an die Messwerte anpassen',
+    'editor.fieldMin': 'Minimum',
+    'editor.fieldMax': 'Maximum',
+    'editor.fieldOpacity': 'Deckkraft der Fläche',
+    'editor.viewFlat': 'Draufsicht',
+    'editor.viewTilted': '2,5D — Wände aufgestellt',
+    'editor.fieldYaw': 'Drehung',
+    'editor.fieldPitch': 'Höhenwinkel',
+    'editor.fieldWallHeight': 'Wandhöhe',
+    'editor.viewAngleNote':
+      'Diese Winkel sind der Ausgangspunkt. In der Karte selbst lässt sich das Modell jederzeit mit der Maus drehen — das bleibt aber eine reine Ansichtssache und überschreibt die Voreinstellung hier nicht.',
+    'editor.showWalls': 'Wände, Türen und Fenster',
+    'editor.showRoomLabels': 'Raumnamen',
+    'editor.showValues': 'Messwerte an den Sensoren',
+    'editor.showLegend': 'Farblegende',
+    'editor.showIsotherms': 'Isothermen (Linien gleicher Temperatur)',
+    'editor.isothermStep': 'Abstand der Isothermen',
+    'editor.cellSize': 'Gitterauflösung',
+    'editor.cellSizeNote':
+      'Kleiner = feiner und genauer, aber rechenintensiver. 6–10 px ist für Wohnungen ein guter Kompromiss.',
+    'editor.sensorRadius': 'Sensorradius',
+    'editor.sensorRadiusNote':
+      'Wie groß die Fläche um einen Messpunkt ist, die exakt auf dessen Wert festgehalten wird.',
+    'editor.transmittanceNote':
+      '0 % = perfekte Dämmung, 100 % = wie freie Luft. Diese Werte bestimmen, wie stark Wärme zwischen benachbarten Bereichen ausgetauscht wird.',
+    'editor.dialogClosedWarning':
+      'floorplan-heatmap-card: Der Konfigurationsdialog wurde geschlossen, während der Grundriss-Editor offen war. Die Änderungen konnten nicht übernommen werden.',
+    'editor.paletteCoolwarm': 'Kalt–Warm (empfohlen)',
+    'editor.paletteThermal': 'Thermal',
+    'editor.paletteViridis': 'Viridis',
+    'editor.paletteInferno': 'Inferno',
+    'editor.paletteTurbo': 'Turbo',
+
+    'label.exterior': 'Außenwand',
+    'label.interior': 'Innenwand',
+    'label.door': 'Tür',
+    'label.window': 'Fenster',
+    'label.passage': 'Durchgang',
+
+    'tools.select.label': 'Auswählen',
+    'tools.select.hint':
+      'Klicken zum Auswählen · ziehen zum Verschieben · Eckpunkte an den Griffen ziehen · Raummaße rechts eintippen · Entf löscht',
+    'tools.room.label': 'Raum',
+    'tools.room.hint':
+      'Ziehen ergibt ein Rechteck · einzelne Klicks ergeben ein Polygon (Enter oder Doppelklick schließt, Rücktaste nimmt zurück)',
+    'tools.wall.label': 'Wand',
+    'tools.wall.hint':
+      'Klick setzt den Anfang, zweiter Klick das Ende · Länge rechts eintippen und Enter für ein exaktes Maß',
+    'tools.opening.label': 'Tür / Fenster',
+    'tools.opening.hint':
+      'Auf eine Wand klicken — die Öffnung rastet darauf ein und wirkt auf beide angrenzenden Räume',
+    'tools.sensor.label': 'Sensor',
+    'tools.sensor.hint': 'Klick setzt einen Messpunkt · rechts die Entity zuweisen',
+    'tools.erase.label': 'Löschen',
+    'tools.erase.hint': 'Auf ein Element klicken, um es zu entfernen',
+    'tools.measure.label': 'Maßstab',
+    'tools.measure.hint':
+      'Eine Strecke bekannter Länge abklicken und die echte Länge in Metern eintragen',
+
+    'planEditor.undoTitle': 'Rückgängig (Cmd/Ctrl+Z)',
+    'planEditor.redoTitle': 'Wiederholen (Cmd/Ctrl+Shift+Z)',
+    'planEditor.fitTitle': 'Alles einpassen',
+    'planEditor.toggleGrid': 'Raster',
+    'planEditor.toggleSnapGrid': 'Am Raster',
+    'planEditor.toggleSnapPoints': 'An Ecken',
+    'planEditor.toggleAxisSnap': '0°/90°',
+    'planEditor.cancel': 'Abbrechen',
+    'planEditor.save': 'Übernehmen',
+    'planEditor.hintSuffix': 'Mausrad zoomt, mittlere Taste oder Leertaste schiebt.',
+    'planEditor.roomFallback': 'Raum {n}',
+    'planEditor.sensorFallback': 'Sensor',
+    'planEditor.panelGeneral': 'Grundeinstellungen',
+    'planEditor.panelWallDraft': 'Wand zeichnen',
+    'planEditor.panelMeasure': 'Maßstab kalibrieren',
+    'planEditor.panelRoom': 'Raum',
+    'planEditor.panelWall': 'Freistehende Wand',
+    'planEditor.panelOpening': 'Öffnung',
+    'planEditor.panelSensor': 'Sensor',
+    'planEditor.scaleLabel': 'Maßstab — Pixel pro Meter',
+    'planEditor.backgroundLabel': 'Hintergrundbild (Pfad unter /local/…)',
+    'planEditor.backgroundPlaceholder': '/local/grundriss.png',
+    'planEditor.backgroundOpacityLabel': 'Deckkraft Hintergrund —',
+    'planEditor.scaleNote':
+      'Der Maßstab wirkt sich nur auf Beschriftungen und den Sensorradius aus — das Temperaturfeld selbst ist maßstabsfrei.',
+    'planEditor.currentLength': 'Aktuelle Länge',
+    'planEditor.exactLengthLabel': 'Länge exakt setzen (Meter) — Enter bestätigt',
+    'planEditor.examplePlaceholder': 'z. B. 3.20',
+    'planEditor.finishDrawing': 'Zeichnen beenden (Esc)',
+    'planEditor.measureNote':
+      'Eine Strecke abklicken, deren echte Länge du kennst — etwa eine Zimmerwand. Danach die Länge in Metern eintragen.',
+    'planEditor.measuredDistance': 'Gemessene Strecke',
+    'planEditor.notMeasuredYet': 'noch nichts gemessen',
+    'planEditor.realLengthLabel': 'Echte Länge (Meter) — Enter übernimmt',
+    'planEditor.current': 'Aktuell',
+    'planEditor.name': 'Name',
+    'planEditor.width': 'Breite (m)',
+    'planEditor.length': 'Länge (m)',
+    'planEditor.area': 'Fläche',
+    'planEditor.corners': 'Ecken',
+    'planEditor.roomSizeNote':
+      'Maße sind die Außenkanten — Enter oder ein Klick daneben übernimmt. Die linke obere Ecke bleibt dabei stehen, Türen und Fenster wandern nicht mit. Eckpunkte lassen sich weiterhin an den weißen Griffen ziehen.',
+    'planEditor.type': 'Typ',
+    'planEditor.wallLength': 'Länge',
+    'planEditor.wallTypeNote':
+      'Raumkanten werden automatisch als Außen- oder Innenwand erkannt; dieser Typ gilt nur für freistehende Wände.',
+    'planEditor.kind': 'Art',
+    'planEditor.openingWidthLabel': 'Breite —',
+    'planEditor.openingNote':
+      'Durchgang = offen, Tür = deutlich gedämpft, Fenster = fast dicht. Die Öffnung wirkt auf jede Wand an dieser Stelle — bei zwei aneinandergrenzenden Räumen also auf beide.',
+    'planEditor.displayNameLabel': 'Anzeigename (leer = Entity-Name)',
+    'planEditor.exampleRoomPlaceholder': 'z. B. Wohnzimmer',
+    'planEditor.currentValue': 'Aktueller Wert',
+    'planEditor.notAvailable': 'nicht verfügbar',
+    'planEditor.entityPlaceholder': 'sensor.wohnzimmer_temperatur',
+    'planEditor.deleteButton': 'Löschen (Entf)',
+    'planEditor.noEntity': 'Ohne Entity',
+    'planEditor.noEntityAssigned': 'keine Entity zugewiesen',
+    'planEditor.noSensorsYet': 'Noch keine Sensoren gesetzt.',
+    'planEditor.noRoomsYet': 'Noch keine Räume gezeichnet.',
+    'planEditor.sensorsHeader': 'Sensoren ({n})',
+    'planEditor.roomsHeader': 'Räume ({n})',
+    'planEditor.overview': 'Übersicht',
+    'planEditor.summaryLine':
+      '{rooms} Räume · {walls} freie Wände · {openings} Öffnungen · {sensors} Sensoren',
+  },
+};
+
+const ROOM_NAME_SUGGESTIONS = {
+  en: ['Living Room', 'Kitchen', 'Bedroom', 'Bathroom', 'Hallway', 'Office', 'Kids Room', 'Guest WC'],
+  de: ['Wohnzimmer', 'Küche', 'Schlafzimmer', 'Bad', 'Flur', 'Büro', 'Kinderzimmer', 'Gäste-WC'],
+};
+
+/** Übersetzt `key` in `lang`, fällt auf Englisch und dann auf den Key selbst zurück. */
+function t(lang, key, vars) {
+  const dict = TRANSLATIONS[lang] || TRANSLATIONS.en;
+  let str = dict[key] != null ? dict[key] : TRANSLATIONS.en[key];
+  if (str == null) return key;
+  if (vars) {
+    for (const name of Object.keys(vars)) {
+      str = str.replace(new RegExp(`\\{${name}\\}`, 'g'), vars[name]);
+    }
+  }
+  return str;
+}
+
+function roomNameSuggestions(lang) {
+  return ROOM_NAME_SUGGESTIONS[lang] || ROOM_NAME_SUGGESTIONS.en;
+}
+
+/**
+ * Sprache ohne hass-Objekt raten — für Stellen, die vor dem ersten
+ * hass-Update laufen (Registrierung in index.js, statische Stub-Config).
+ */
+function detectLanguageFallback() {
+  let stored = '';
+  try {
+    stored = (typeof localStorage !== 'undefined' && localStorage.getItem('selectedLanguage')) || '';
+  } catch (e) {
+    stored = '';
+  }
+  const raw = stored.replace(/^"|"$/g, '') || (typeof navigator !== 'undefined' && navigator.language) || 'en';
+  return normalizeLanguage(raw);
+}
+
+/** Liest hass.language aus, sonst Fallback über detectLanguageFallback(). */
+function detectLanguage(hass) {
+  return normalizeLanguage((hass && hass.language) || detectLanguageFallback());
+}
+
+/** Nur Deutsch und Englisch werden unterstützt; alles andere landet auf Englisch. */
+function normalizeLanguage(raw) {
+  return String(raw || '').toLowerCase().startsWith('de') ? 'de' : 'en';
+}
+
 /* ===== src/geometry.js ===== */
 /* ------------------------------------------------------------------ *
  * geometry.js — kleine Vektor-/Polygon-Helfer.
@@ -294,9 +654,7 @@ const DEFAULT_TRANSMITTANCE = {
 };
 
 const OPENING_TYPES = ['passage', 'door', 'window'];
-const OPENING_LABELS = { passage: 'Durchgang', door: 'Tür', window: 'Fenster' };
 const WALL_TYPES = ['interior', 'exterior'];
-const WALL_LABELS = { interior: 'Innenwand', exterior: 'Außenwand' };
 
 let uidCounter = 0;
 function uid(prefix = 'id') {
@@ -1646,6 +2004,9 @@ function renderScene(ctx, params) {
  * ------------------------------------------------------------------ */
 
 
+const OPENING_LABEL_KEYS = { passage: 'label.passage', door: 'label.door', window: 'label.window' };
+const WALL_LABEL_KEYS = { interior: 'label.interior', exterior: 'label.exterior' };
+
 const ICONS = {
   select: '<polygon points="5,2 5,19 9.2,14.8 12,21 14.6,19.9 11.8,13.9 18,13.9"/>',
   room: '<rect x="3.5" y="5.5" width="17" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>',
@@ -1660,13 +2021,13 @@ const ICONS = {
 };
 
 const TOOLS = [
-  { id: 'select', label: 'Auswählen', key: 'V', hint: 'Klicken zum Auswählen · ziehen zum Verschieben · Eckpunkte an den Griffen ziehen · Raummaße rechts eintippen · Entf löscht' },
-  { id: 'room', label: 'Raum', key: 'R', hint: 'Ziehen ergibt ein Rechteck · einzelne Klicks ergeben ein Polygon (Enter oder Doppelklick schließt, Rücktaste nimmt zurück)' },
-  { id: 'wall', label: 'Wand', key: 'W', hint: 'Klick setzt den Anfang, zweiter Klick das Ende · Länge rechts eintippen und Enter für ein exaktes Maß' },
-  { id: 'opening', label: 'Tür / Fenster', key: 'D', hint: 'Auf eine Wand klicken — die Öffnung rastet darauf ein und wirkt auf beide angrenzenden Räume' },
-  { id: 'sensor', label: 'Sensor', key: 'S', hint: 'Klick setzt einen Messpunkt · rechts die Entity zuweisen' },
-  { id: 'erase', label: 'Löschen', key: 'X', hint: 'Auf ein Element klicken, um es zu entfernen' },
-  { id: 'measure', label: 'Maßstab', key: 'M', hint: 'Eine Strecke bekannter Länge abklicken und die echte Länge in Metern eintragen' },
+  { id: 'select', key: 'V' },
+  { id: 'room', key: 'R' },
+  { id: 'wall', key: 'W' },
+  { id: 'opening', key: 'D' },
+  { id: 'sensor', key: 'S' },
+  { id: 'erase', key: 'X' },
+  { id: 'measure', key: 'M' },
 ];
 
 const PLAN_STYLES = `
@@ -1803,6 +2164,7 @@ class PlanEditor {
   constructor(options, resolve) {
     this.resolve = resolve;
     this.hass = options.hass;
+    this.lang = detectLanguage(this.hass);
     this.state = JSON.parse(JSON.stringify(options.floorplan));
     this.pxPerMeter = options.pxPerMeter || 50;
     this.background = options.background || '';
@@ -2426,9 +2788,8 @@ class PlanEditor {
 
   _nextRoomName() {
     const used = new Set(this.state.rooms.map((r) => r.name));
-    const suggestions = ['Wohnzimmer', 'Küche', 'Schlafzimmer', 'Bad', 'Flur', 'Büro', 'Kinderzimmer', 'Gäste-WC'];
-    for (const s of suggestions) if (!used.has(s)) return s;
-    return `Raum ${this.state.rooms.length + 1}`;
+    for (const s of roomNameSuggestions(this.lang)) if (!used.has(s)) return s;
+    return t(this.lang, 'planEditor.roomFallback', { n: this.state.rooms.length + 1 });
   }
 
   _wallDown(world) {
@@ -2573,7 +2934,7 @@ class PlanEditor {
       this.renderSide();
       return;
     }
-    const tool = TOOLS.find((t) => t.key.toLowerCase() === event.key.toLowerCase());
+    const tool = TOOLS.find((entry) => entry.key.toLowerCase() === event.key.toLowerCase());
     if (tool) { event.preventDefault(); this.setTool(tool.id); }
   }
 
@@ -2591,25 +2952,27 @@ class PlanEditor {
   /* ----------------------------- Rendern -------------------------- */
 
   _buildBar() {
-    const toolButtons = TOOLS.map(
-      (t) => `<button data-tool="${t.id}" class="${this.tool === t.id ? 'active' : ''}" title="${esc(t.label)} (${t.key})">${icon(t.id)}<span>${esc(t.label)}</span></button>`
-    ).join('');
+    const lang = this.lang;
+    const toolButtons = TOOLS.map((entry) => {
+      const label = t(lang, `tools.${entry.id}.label`);
+      return `<button data-tool="${entry.id}" class="${this.tool === entry.id ? 'active' : ''}" title="${esc(label)} (${entry.key})">${icon(entry.id)}<span>${esc(label)}</span></button>`;
+    }).join('');
 
     this.bar.innerHTML = `
-      <h1>Grundriss &amp; Sensoren</h1>
+      <h1>${esc(t(lang, 'planEditor.title'))}</h1>
       <div class="group">${toolButtons}</div>
       <div class="group">
-        <button data-act="undo" title="Rückgängig (Cmd/Ctrl+Z)" ${this.undoStack.length ? '' : 'disabled'}>${icon('undo')}</button>
-        <button data-act="redo" title="Wiederholen (Cmd/Ctrl+Shift+Z)" ${this.redoStack.length ? '' : 'disabled'}>${icon('redo')}</button>
-        <button data-act="fit" title="Alles einpassen">${icon('fit')}</button>
+        <button data-act="undo" title="${esc(t(lang, 'planEditor.undoTitle'))}" ${this.undoStack.length ? '' : 'disabled'}>${icon('undo')}</button>
+        <button data-act="redo" title="${esc(t(lang, 'planEditor.redoTitle'))}" ${this.redoStack.length ? '' : 'disabled'}>${icon('redo')}</button>
+        <button data-act="fit" title="${esc(t(lang, 'planEditor.fitTitle'))}">${icon('fit')}</button>
       </div>
-      <label class="toggle"><input type="checkbox" data-flag="showGrid" ${this.showGrid ? 'checked' : ''}> Raster</label>
-      <label class="toggle"><input type="checkbox" data-flag="snapGrid" ${this.snapGrid ? 'checked' : ''}> Am Raster</label>
-      <label class="toggle"><input type="checkbox" data-flag="snapPoints" ${this.snapPoints ? 'checked' : ''}> An Ecken</label>
-      <label class="toggle"><input type="checkbox" data-flag="snapAxisOn" ${this.snapAxisOn ? 'checked' : ''}> 0°/90°</label>
+      <label class="toggle"><input type="checkbox" data-flag="showGrid" ${this.showGrid ? 'checked' : ''}> ${t(lang, 'planEditor.toggleGrid')}</label>
+      <label class="toggle"><input type="checkbox" data-flag="snapGrid" ${this.snapGrid ? 'checked' : ''}> ${t(lang, 'planEditor.toggleSnapGrid')}</label>
+      <label class="toggle"><input type="checkbox" data-flag="snapPoints" ${this.snapPoints ? 'checked' : ''}> ${t(lang, 'planEditor.toggleSnapPoints')}</label>
+      <label class="toggle"><input type="checkbox" data-flag="snapAxisOn" ${this.snapAxisOn ? 'checked' : ''}> ${t(lang, 'planEditor.toggleAxisSnap')}</label>
       <div class="spacer"></div>
-      <button class="ghost" data-act="cancel">Abbrechen</button>
-      <button class="primary" data-act="save">Übernehmen</button>
+      <button class="ghost" data-act="cancel">${t(lang, 'planEditor.cancel')}</button>
+      <button class="primary" data-act="save">${t(lang, 'planEditor.save')}</button>
     `;
 
     this.bar.querySelectorAll('[data-tool]').forEach((btn) => {
@@ -2768,7 +3131,7 @@ class PlanEditor {
     return this.state.sensors.map((s) => {
       const selected = this._isSelected('sensor', s.id);
       const value = this._entityValue(s.entity);
-      const label = [s.name || s.entity || 'Sensor', value].filter(Boolean).join(' · ');
+      const label = [s.name || s.entity || t(this.lang, 'planEditor.sensorFallback'), value].filter(Boolean).join(' · ');
       return `<g>
         <circle cx="${s.x}" cy="${s.y}" r="${r}" fill="${selected ? '#3b6df3' : '#ff6b6b'}"
           stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke"
@@ -2852,9 +3215,12 @@ class PlanEditor {
   }
 
   _updateHint() {
-    const tool = TOOLS.find((t) => t.id === this.tool);
-    const base = tool ? `<b>${esc(tool.label)}</b> — ${esc(tool.hint)}` : '';
-    this.hintEl.innerHTML = `${base} &nbsp;·&nbsp; Mausrad zoomt, mittlere Taste oder Leertaste schiebt.`;
+    const lang = this.lang;
+    const tool = TOOLS.find((entry) => entry.id === this.tool);
+    const base = tool
+      ? `<b>${esc(t(lang, `tools.${tool.id}.label`))}</b> — ${esc(t(lang, `tools.${tool.id}.hint`))}`
+      : '';
+    this.hintEl.innerHTML = `${base} &nbsp;·&nbsp; ${esc(t(lang, 'planEditor.hintSuffix'))}`;
   }
 
   _updateReadout() {
@@ -2881,20 +3247,21 @@ class PlanEditor {
   }
 
   _panelGeneral() {
-    const panel = this._panel('Grundeinstellungen', `
+    const lang = this.lang;
+    const panel = this._panel(t(lang, 'planEditor.panelGeneral'), `
       <div class="field">
-        <label>Maßstab — Pixel pro Meter</label>
+        <label>${t(lang, 'planEditor.scaleLabel')}</label>
         <input type="number" data-f="pxPerMeter" value="${this.pxPerMeter}" step="0.1" min="1">
       </div>
       <div class="field">
-        <label>Hintergrundbild (Pfad unter /local/…)</label>
-        <input type="text" data-f="background" value="${esc(this.background)}" placeholder="/local/grundriss.png">
+        <label>${t(lang, 'planEditor.backgroundLabel')}</label>
+        <input type="text" data-f="background" value="${esc(this.background)}" placeholder="${t(lang, 'planEditor.backgroundPlaceholder')}">
       </div>
       <div class="field">
-        <label>Deckkraft Hintergrund — <span data-out="bgOpacity">${Math.round(this.backgroundOpacity * 100)} %</span></label>
+        <label>${t(lang, 'planEditor.backgroundOpacityLabel')} <span data-out="bgOpacity">${Math.round(this.backgroundOpacity * 100)} %</span></label>
         <input type="range" data-f="backgroundOpacity" min="0" max="1" step="0.05" value="${this.backgroundOpacity}">
       </div>
-      <div class="empty-note">Der Maßstab wirkt sich nur auf Beschriftungen und den Sensorradius aus — das Temperaturfeld selbst ist maßstabsfrei.</div>
+      <div class="empty-note">${t(lang, 'planEditor.scaleNote')}</div>
     `);
 
     panel.querySelector('[data-f="pxPerMeter"]').oninput = (e) => {
@@ -2911,19 +3278,20 @@ class PlanEditor {
   }
 
   _panelWallDraft() {
+    const lang = this.lang;
     const end = this.draft.cursor || this.draft.start;
     const len = Math.hypot(end.x - this.draft.start.x, end.y - this.draft.start.y);
     const angle = Math.round((Math.atan2(end.y - this.draft.start.y, end.x - this.draft.start.x) * 180) / Math.PI);
-    const panel = this._panel('Wand zeichnen', `
+    const panel = this._panel(t(lang, 'planEditor.panelWallDraft'), `
       <div class="field">
-        <label>Aktuelle Länge</label>
+        <label>${t(lang, 'planEditor.currentLength')}</label>
         <input type="text" data-out="draftLength" value="${(len / this.pxPerMeter).toFixed(2)} m · ${angle}°" readonly>
       </div>
       <div class="field">
-        <label>Länge exakt setzen (Meter) — Enter bestätigt</label>
-        <input type="number" data-f="len" step="0.01" placeholder="z. B. 3.20" autofocus>
+        <label>${t(lang, 'planEditor.exactLengthLabel')}</label>
+        <input type="number" data-f="len" step="0.01" placeholder="${t(lang, 'planEditor.examplePlaceholder')}" autofocus>
       </div>
-      <button class="ghost" data-act="cancel" style="width:100%;justify-content:center">Zeichnen beenden (Esc)</button>
+      <button class="ghost" data-act="cancel" style="width:100%;justify-content:center">${t(lang, 'planEditor.finishDrawing')}</button>
     `);
 
     const input = panel.querySelector('[data-f="len"]');
@@ -2944,20 +3312,21 @@ class PlanEditor {
   }
 
   _panelMeasure() {
+    const lang = this.lang;
     const d = this.draft;
     const hasBoth = d && d.end;
     const pxDist = hasBoth ? Math.hypot(d.end.x - d.start.x, d.end.y - d.start.y) : 0;
-    const panel = this._panel('Maßstab kalibrieren', `
-      <div class="empty-note" style="margin-bottom:10px">Eine Strecke abklicken, deren echte Länge du kennst — etwa eine Zimmerwand. Danach die Länge in Metern eintragen.</div>
+    const panel = this._panel(t(lang, 'planEditor.panelMeasure'), `
+      <div class="empty-note" style="margin-bottom:10px">${t(lang, 'planEditor.measureNote')}</div>
       <div class="field">
-        <label>Gemessene Strecke</label>
-        <input type="text" value="${hasBoth ? Math.round(pxDist) + ' px' : 'noch nichts gemessen'}" readonly>
+        <label>${t(lang, 'planEditor.measuredDistance')}</label>
+        <input type="text" value="${hasBoth ? Math.round(pxDist) + ' px' : t(lang, 'planEditor.notMeasuredYet')}" readonly>
       </div>
       <div class="field">
-        <label>Echte Länge (Meter) — Enter übernimmt</label>
-        <input type="number" data-f="meters" step="0.01" placeholder="z. B. 3.20" ${hasBoth ? '' : 'disabled'}>
+        <label>${t(lang, 'planEditor.realLengthLabel')}</label>
+        <input type="number" data-f="meters" step="0.01" placeholder="${t(lang, 'planEditor.examplePlaceholder')}" ${hasBoth ? '' : 'disabled'}>
       </div>
-      <div class="field"><label>Aktuell</label><input type="text" value="${this.pxPerMeter.toFixed(2)} px / m" readonly></div>
+      <div class="field"><label>${t(lang, 'planEditor.current')}</label><input type="text" value="${this.pxPerMeter.toFixed(2)} px / m" readonly></div>
     `);
 
     const input = panel.querySelector('[data-f="meters"]');
@@ -2990,7 +3359,7 @@ class PlanEditor {
     const btn = document.createElement('button');
     btn.className = 'danger';
     btn.style.cssText = 'width:100%;justify-content:center;margin-top:10px';
-    btn.innerHTML = `${icon('erase')}<span>Löschen (Entf)</span>`;
+    btn.innerHTML = `${icon('erase')}<span>${esc(t(this.lang, 'planEditor.deleteButton'))}</span>`;
     btn.onclick = () => {
       this.snapshot();
       this._deleteObject(kind, id);
@@ -3002,23 +3371,24 @@ class PlanEditor {
   }
 
   _panelRoom(id) {
+    const lang = this.lang;
     const room = this.state.rooms.find((r) => r.id === id);
     if (!room) return this._panelGeneral();
     const size = roomSizeMeters(room, this.pxPerMeter);
-    const panel = this._panel('Raum', `
-      <div class="field"><label>Name</label><input type="text" data-f="name" value="${esc(room.name)}"></div>
+    const panel = this._panel(t(lang, 'planEditor.panelRoom'), `
+      <div class="field"><label>${t(lang, 'planEditor.name')}</label><input type="text" data-f="name" value="${esc(room.name)}"></div>
       <div class="row">
-        <div class="field"><label>Breite (m)</label>
+        <div class="field"><label>${t(lang, 'planEditor.width')}</label>
           <input type="number" data-f="width" value="${size.width.toFixed(2)}" step="0.05" min="0.1"></div>
-        <div class="field"><label>Länge (m)</label>
+        <div class="field"><label>${t(lang, 'planEditor.length')}</label>
           <input type="number" data-f="height" value="${size.height.toFixed(2)}" step="0.05" min="0.1"></div>
       </div>
       <div class="row">
-        <div class="field"><label>Fläche</label>
+        <div class="field"><label>${t(lang, 'planEditor.area')}</label>
           <input type="text" data-out="area" value="${roomAreaSqm(room, this.pxPerMeter).toFixed(2)} m²" readonly></div>
-        <div class="field"><label>Ecken</label><input type="text" value="${room.points.length}" readonly></div>
+        <div class="field"><label>${t(lang, 'planEditor.corners')}</label><input type="text" value="${room.points.length}" readonly></div>
       </div>
-      <div class="empty-note">Maße sind die Außenkanten — Enter oder ein Klick daneben übernimmt. Die linke obere Ecke bleibt dabei stehen, Türen und Fenster wandern nicht mit. Eckpunkte lassen sich weiterhin an den weißen Griffen ziehen.</div>
+      <div class="empty-note">${t(lang, 'planEditor.roomSizeNote')}</div>
     `);
 
     panel.querySelector('[data-f="name"]').oninput = (e) => {
@@ -3069,15 +3439,16 @@ class PlanEditor {
   }
 
   _panelWall(id) {
+    const lang = this.lang;
     const wall = this.state.walls.find((w) => w.id === id);
     if (!wall) return this._panelGeneral();
     const len = Math.hypot(wall.x2 - wall.x1, wall.y2 - wall.y1) / this.pxPerMeter;
-    const panel = this._panel('Freistehende Wand', `
-      <div class="field"><label>Typ</label>
-        <div class="seg">${WALL_TYPES.map((t) => `<button data-type="${t}" class="${wall.type === t ? 'active' : ''}">${WALL_LABELS[t]}</button>`).join('')}</div>
+    const panel = this._panel(t(lang, 'planEditor.panelWall'), `
+      <div class="field"><label>${t(lang, 'planEditor.type')}</label>
+        <div class="seg">${WALL_TYPES.map((type) => `<button data-type="${type}" class="${wall.type === type ? 'active' : ''}">${t(lang, WALL_LABEL_KEYS[type])}</button>`).join('')}</div>
       </div>
-      <div class="field"><label>Länge</label><input type="number" data-f="len" value="${len.toFixed(2)}" step="0.01" min="0.05"></div>
-      <div class="empty-note">Raumkanten werden automatisch als Außen- oder Innenwand erkannt; dieser Typ gilt nur für freistehende Wände.</div>
+      <div class="field"><label>${t(lang, 'planEditor.wallLength')}</label><input type="number" data-f="len" value="${len.toFixed(2)}" step="0.01" min="0.05"></div>
+      <div class="empty-note">${t(lang, 'planEditor.wallTypeNote')}</div>
     `);
     panel.querySelectorAll('[data-type]').forEach((btn) => {
       btn.onclick = () => { this.snapshot(); wall.type = btn.dataset.type; this.render(); this.renderSide(); };
@@ -3095,17 +3466,18 @@ class PlanEditor {
   }
 
   _panelOpening(id) {
+    const lang = this.lang;
     const o = this.state.openings.find((x) => x.id === id);
     if (!o) return this._panelGeneral();
-    const panel = this._panel('Öffnung', `
-      <div class="field"><label>Art</label>
-        <div class="seg">${OPENING_TYPES.map((t) => `<button data-type="${t}" class="${o.type === t ? 'active' : ''}">${OPENING_LABELS[t]}</button>`).join('')}</div>
+    const panel = this._panel(t(lang, 'planEditor.panelOpening'), `
+      <div class="field"><label>${t(lang, 'planEditor.kind')}</label>
+        <div class="seg">${OPENING_TYPES.map((type) => `<button data-type="${type}" class="${o.type === type ? 'active' : ''}">${t(lang, OPENING_LABEL_KEYS[type])}</button>`).join('')}</div>
       </div>
       <div class="field">
-        <label>Breite — <span data-out="w">${(o.width / this.pxPerMeter).toFixed(2)} m</span></label>
+        <label>${t(lang, 'planEditor.openingWidthLabel')} <span data-out="w">${(o.width / this.pxPerMeter).toFixed(2)} m</span></label>
         <input type="range" data-f="width" min="${this.pxPerMeter * 0.3}" max="${this.pxPerMeter * 4}" step="1" value="${o.width}">
       </div>
-      <div class="empty-note">Durchgang = offen, Tür = deutlich gedämpft, Fenster = fast dicht. Die Öffnung wirkt auf jede Wand an dieser Stelle — bei zwei aneinandergrenzenden Räumen also auf beide.</div>
+      <div class="empty-note">${t(lang, 'planEditor.openingNote')}</div>
     `);
     panel.querySelectorAll('[data-type]').forEach((btn) => {
       btn.onclick = () => { this.snapshot(); o.type = btn.dataset.type; this.render(); this.renderSide(); };
@@ -3119,14 +3491,15 @@ class PlanEditor {
   }
 
   _panelSensor(id) {
+    const lang = this.lang;
     const sensor = this.state.sensors.find((s) => s.id === id);
     if (!sensor) return this._panelGeneral();
-    const panel = this._panel('Sensor', `
+    const panel = this._panel(t(lang, 'planEditor.panelSensor'), `
       <div class="field"><label>Entity</label><div class="combo"></div></div>
-      <div class="field"><label>Anzeigename (leer = Entity-Name)</label>
-        <input type="text" data-f="name" value="${esc(sensor.name)}" placeholder="z. B. Wohnzimmer"></div>
-      <div class="field"><label>Aktueller Wert</label>
-        <input type="text" value="${esc(this._entityValue(sensor.entity) || 'nicht verfügbar')}" readonly></div>
+      <div class="field"><label>${t(lang, 'planEditor.displayNameLabel')}</label>
+        <input type="text" data-f="name" value="${esc(sensor.name)}" placeholder="${t(lang, 'planEditor.exampleRoomPlaceholder')}"></div>
+      <div class="field"><label>${t(lang, 'planEditor.currentValue')}</label>
+        <input type="text" value="${esc(this._entityValue(sensor.entity) || t(lang, 'planEditor.notAvailable'))}" readonly></div>
     `);
     panel.querySelector('[data-f="name"]').oninput = (e) => { sensor.name = e.target.value; this.render(); };
     panel.querySelector('.combo').replaceWith(this._entityCombo(sensor));
@@ -3137,7 +3510,7 @@ class PlanEditor {
   _entityCombo(sensor) {
     const wrap = document.createElement('div');
     wrap.className = 'combo';
-    wrap.innerHTML = `<input type="text" placeholder="sensor.wohnzimmer_temperatur" value="${esc(sensor.entity)}">
+    wrap.innerHTML = `<input type="text" placeholder="${t(this.lang, 'planEditor.entityPlaceholder')}" value="${esc(sensor.entity)}">
       <div class="options" hidden></div>`;
     const input = wrap.querySelector('input');
     const list = wrap.querySelector('.options');
@@ -3202,31 +3575,34 @@ class PlanEditor {
   }
 
   _panelLists() {
+    const lang = this.lang;
     const wrap = document.createElement('div');
     const sensorItems = this.state.sensors.map((s) => `
       <div class="item ${this._isSelected('sensor', s.id) ? 'selected' : ''}" data-kind="sensor" data-id="${s.id}">
         <div class="grow">
-          <div>${esc(s.name || s.entity || 'Ohne Entity')}</div>
-          <div class="sub">${esc(s.entity ? this._entityValue(s.entity) || s.entity : 'keine Entity zugewiesen')}</div>
+          <div>${esc(s.name || s.entity || t(lang, 'planEditor.noEntity'))}</div>
+          <div class="sub">${esc(s.entity ? this._entityValue(s.entity) || s.entity : t(lang, 'planEditor.noEntityAssigned'))}</div>
         </div>
-      </div>`).join('') || '<div class="empty-note">Noch keine Sensoren gesetzt.</div>';
+      </div>`).join('') || `<div class="empty-note">${t(lang, 'planEditor.noSensorsYet')}</div>`;
 
     const roomItems = this.state.rooms.map((r) => `
       <div class="item ${this._isSelected('room', r.id) ? 'selected' : ''}" data-kind="room" data-id="${r.id}">
         <div class="grow"><div>${esc(r.name)}</div>
         <div class="sub">${esc(this._roomSubLabel(r))}</div></div>
-      </div>`).join('') || '<div class="empty-note">Noch keine Räume gezeichnet.</div>';
+      </div>`).join('') || `<div class="empty-note">${t(lang, 'planEditor.noRoomsYet')}</div>`;
 
     wrap.innerHTML = `
-      <h2>Sensoren (${this.state.sensors.length})</h2>
+      <h2>${t(lang, 'planEditor.sensorsHeader', { n: this.state.sensors.length })}</h2>
       <div class="list">${sensorItems}</div>
-      <h2 style="margin-top:16px">Räume (${this.state.rooms.length})</h2>
+      <h2 style="margin-top:16px">${t(lang, 'planEditor.roomsHeader', { n: this.state.rooms.length })}</h2>
       <div class="list">${roomItems}</div>
-      <h2 style="margin-top:16px">Übersicht</h2>
+      <h2 style="margin-top:16px">${t(lang, 'planEditor.overview')}</h2>
       <div class="panel">
         <div class="empty-note">
-          ${this.state.rooms.length} Räume · ${this.state.walls.length} freie Wände ·
-          ${this.state.openings.length} Öffnungen · ${this.state.sensors.length} Sensoren
+          ${t(lang, 'planEditor.summaryLine', {
+            rooms: this.state.rooms.length, walls: this.state.walls.length,
+            openings: this.state.openings.length, sensors: this.state.sensors.length,
+          })}
         </div>
       </div>`;
 
@@ -3251,20 +3627,20 @@ class PlanEditor {
  * ------------------------------------------------------------------ */
 
 
-const PALETTE_LABELS = {
-  coolwarm: 'Kalt–Warm (empfohlen)',
-  thermal: 'Thermal',
-  viridis: 'Viridis',
-  inferno: 'Inferno',
-  turbo: 'Turbo',
+const PALETTE_LABEL_KEYS = {
+  coolwarm: 'editor.paletteCoolwarm',
+  thermal: 'editor.paletteThermal',
+  viridis: 'editor.paletteViridis',
+  inferno: 'editor.paletteInferno',
+  turbo: 'editor.paletteTurbo',
 };
 
-const TRANSMITTANCE_LABELS = {
-  exterior: 'Außenwand',
-  interior: 'Innenwand',
-  door: 'Tür',
-  window: 'Fenster',
-  passage: 'Durchgang',
+const TRANSMITTANCE_LABEL_KEYS = {
+  exterior: 'label.exterior',
+  interior: 'label.interior',
+  door: 'label.door',
+  window: 'label.window',
+  passage: 'label.passage',
 };
 
 const FORM_STYLES = `
@@ -3353,7 +3729,16 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
   }
 
   set hass(hass) {
+    // Ein Neurendern bei jedem hass-Update würde Regler mitten in der
+    // Bewegung ersetzen (siehe setConfig) — deshalb nur bei tatsächlichem
+    // Sprachwechsel (typischerweise: erstes hass-Update nach dem Erzeugen).
+    const prevLang = this._hass ? this._lang() : null;
     this._hass = hass;
+    if (this._config && this._lang() !== prevLang) this._render();
+  }
+
+  _lang() {
+    return detectLanguage(this._hass);
   }
 
   _emit(patch, rerender = true) {
@@ -3368,33 +3753,37 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
   _render() {
     const cfg = normalizeConfig(this._config);
     const fp = cfg.floorplan;
-    const counts = `${fp.rooms.length} Räume · ${fp.sensors.length} Sensoren · ${fp.openings.length} Öffnungen`;
+    const lang = this._lang();
+    const tr = (key, vars) => t(lang, key, vars);
+    const counts = tr('editor.counts', {
+      rooms: fp.rooms.length, sensors: fp.sensors.length, openings: fp.openings.length,
+    });
 
     this.shadowRoot.innerHTML = `
       <style>${FORM_STYLES}</style>
       <div class="wrap">
         <button class="plan-button" id="openPlan">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h8M11 4v16"/></svg>
-          <span>Grundriss &amp; Sensoren bearbeiten
+          <span>${tr('editor.openPlanButton')}
             <span class="sub">${counts}</span>
           </span>
         </button>
 
         <div class="card">
-          <h3>Darstellung</h3>
+          <h3>${tr('editor.sectionDisplay')}</h3>
           <div class="field">
-            <label>Titel</label>
-            <input type="text" data-key="title" value="${escapeAttr(cfg.title)}" placeholder="Temperaturverteilung">
+            <label>${tr('editor.fieldTitle')}</label>
+            <input type="text" data-key="title" value="${escapeAttr(cfg.title)}" placeholder="${tr('card.defaultTitle')}">
           </div>
           <div class="row">
             <div class="field">
-              <label>Einheit</label>
+              <label>${tr('editor.fieldUnit')}</label>
               <input type="text" data-key="unit" value="${escapeAttr(cfg.unit)}" placeholder="°C">
             </div>
             <div class="field">
-              <label>Farbskala</label>
+              <label>${tr('editor.fieldPalette')}</label>
               <select data-key="palette">
-                ${PALETTE_NAMES.map((p) => `<option value="${p}" ${cfg.palette === p ? 'selected' : ''}>${PALETTE_LABELS[p] || p}</option>`).join('')}
+                ${PALETTE_NAMES.map((p) => `<option value="${p}" ${cfg.palette === p ? 'selected' : ''}>${tr(PALETTE_LABEL_KEYS[p]) || p}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -3402,87 +3791,83 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
 
           <div class="field" style="margin-top:12px">
             <label class="check"><input type="checkbox" data-key="auto_range" ${cfg.auto_range ? 'checked' : ''}>
-              Skala automatisch an die Messwerte anpassen</label>
+              ${tr('editor.autoRange')}</label>
           </div>
           <div class="row">
             <div class="field">
-              <label>Minimum</label>
+              <label>${tr('editor.fieldMin')}</label>
               <input type="number" data-key="min" step="0.5" value="${cfg.min}" ${cfg.auto_range ? 'disabled' : ''}>
             </div>
             <div class="field">
-              <label>Maximum</label>
+              <label>${tr('editor.fieldMax')}</label>
               <input type="number" data-key="max" step="0.5" value="${cfg.max}" ${cfg.auto_range ? 'disabled' : ''}>
             </div>
           </div>
           <div class="field">
-            <label>Deckkraft der Fläche <span class="value" data-out="opacity">${Math.round(cfg.opacity * 100)} %</span></label>
+            <label>${tr('editor.fieldOpacity')} <span class="value" data-out="opacity">${Math.round(cfg.opacity * 100)} %</span></label>
             <input type="range" data-key="opacity" min="0.2" max="1" step="0.05" value="${cfg.opacity}">
           </div>
         </div>
 
         <div class="card">
-          <h3>Ansicht</h3>
+          <h3>${tr('editor.sectionView')}</h3>
           <div class="field">
             <div class="seg">
-              <button data-view="flat" class="${cfg.view_mode === 'flat' ? 'active' : ''}">Draufsicht</button>
-              <button data-view="tilted" class="${cfg.view_mode === 'tilted' ? 'active' : ''}">2,5D — Wände aufgestellt</button>
+              <button data-view="flat" class="${cfg.view_mode === 'flat' ? 'active' : ''}">${tr('editor.viewFlat')}</button>
+              <button data-view="tilted" class="${cfg.view_mode === 'tilted' ? 'active' : ''}">${tr('editor.viewTilted')}</button>
             </div>
           </div>
           <div ${cfg.view_mode === 'tilted' ? '' : 'hidden'}>
             <div class="field">
-              <label>Drehung <span class="value" data-out="yaw">${Math.round(cfg.yaw)}°</span></label>
+              <label>${tr('editor.fieldYaw')} <span class="value" data-out="yaw">${Math.round(cfg.yaw)}°</span></label>
               <input type="range" data-key="yaw" min="-180" max="180" step="1" value="${cfg.yaw}">
             </div>
             <div class="field">
-              <label>Höhenwinkel <span class="value" data-out="pitch">${Math.round(cfg.pitch)}°</span></label>
+              <label>${tr('editor.fieldPitch')} <span class="value" data-out="pitch">${Math.round(cfg.pitch)}°</span></label>
               <input type="range" data-key="pitch" min="12" max="90" step="1" value="${cfg.pitch}">
             </div>
             <div class="field">
-              <label>Wandhöhe <span class="value" data-out="wall_height">${cfg.wall_height.toFixed(2)} m</span></label>
+              <label>${tr('editor.fieldWallHeight')} <span class="value" data-out="wall_height">${cfg.wall_height.toFixed(2)} m</span></label>
               <input type="range" data-key="wall_height" min="1" max="4" step="0.05" value="${cfg.wall_height}">
             </div>
-            <div class="note">
-              Diese Winkel sind der Ausgangspunkt. In der Karte selbst lässt sich das
-              Modell jederzeit mit der Maus drehen — das bleibt aber eine reine
-              Ansichtssache und überschreibt die Voreinstellung hier nicht.
-            </div>
+            <div class="note">${tr('editor.viewAngleNote')}</div>
           </div>
         </div>
 
         <div class="card">
-          <h3>Anzeigen</h3>
-          <label class="check"><input type="checkbox" data-key="show_walls" ${cfg.show_walls ? 'checked' : ''}> Wände, Türen und Fenster</label>
-          <label class="check"><input type="checkbox" data-key="show_room_labels" ${cfg.show_room_labels ? 'checked' : ''}> Raumnamen</label>
-          <label class="check"><input type="checkbox" data-key="show_values" ${cfg.show_values ? 'checked' : ''}> Messwerte an den Sensoren</label>
-          <label class="check"><input type="checkbox" data-key="show_legend" ${cfg.show_legend ? 'checked' : ''}> Farblegende</label>
-          <label class="check"><input type="checkbox" data-key="show_isotherms" ${cfg.show_isotherms ? 'checked' : ''}> Isothermen (Linien gleicher Temperatur)</label>
+          <h3>${tr('editor.sectionShow')}</h3>
+          <label class="check"><input type="checkbox" data-key="show_walls" ${cfg.show_walls ? 'checked' : ''}> ${tr('editor.showWalls')}</label>
+          <label class="check"><input type="checkbox" data-key="show_room_labels" ${cfg.show_room_labels ? 'checked' : ''}> ${tr('editor.showRoomLabels')}</label>
+          <label class="check"><input type="checkbox" data-key="show_values" ${cfg.show_values ? 'checked' : ''}> ${tr('editor.showValues')}</label>
+          <label class="check"><input type="checkbox" data-key="show_legend" ${cfg.show_legend ? 'checked' : ''}> ${tr('editor.showLegend')}</label>
+          <label class="check"><input type="checkbox" data-key="show_isotherms" ${cfg.show_isotherms ? 'checked' : ''}> ${tr('editor.showIsotherms')}</label>
           <div class="field" style="margin-top:8px">
-            <label>Abstand der Isothermen <span class="value" data-out="isotherm_step">${cfg.isotherm_step} ${cfg.unit}</span></label>
+            <label>${tr('editor.isothermStep')} <span class="value" data-out="isotherm_step">${cfg.isotherm_step} ${cfg.unit}</span></label>
             <input type="range" data-key="isotherm_step" min="0.1" max="2" step="0.1" value="${cfg.isotherm_step}" ${cfg.show_isotherms ? '' : 'disabled'}>
           </div>
         </div>
 
         <div class="card">
           <details>
-            <summary>Modell &amp; Genauigkeit</summary>
+            <summary>${tr('editor.sectionModel')}</summary>
             <div class="field">
-              <label>Gitterauflösung <span class="value" data-out="cell_size">${cfg.cell_size} px</span></label>
+              <label>${tr('editor.cellSize')} <span class="value" data-out="cell_size">${cfg.cell_size} px</span></label>
               <input type="range" data-key="cell_size" min="3" max="20" step="1" value="${cfg.cell_size}">
-              <div class="note">Kleiner = feiner und genauer, aber rechenintensiver. 6–10 px ist für Wohnungen ein guter Kompromiss.</div>
+              <div class="note">${tr('editor.cellSizeNote')}</div>
             </div>
             <div class="field">
-              <label>Sensorradius <span class="value" data-out="sensor_radius">${cfg.sensor_radius.toFixed(2)} m</span></label>
+              <label>${tr('editor.sensorRadius')} <span class="value" data-out="sensor_radius">${cfg.sensor_radius.toFixed(2)} m</span></label>
               <input type="range" data-key="sensor_radius" min="0.1" max="1.5" step="0.05" value="${cfg.sensor_radius}">
-              <div class="note">Wie groß die Fläche um einen Messpunkt ist, die exakt auf dessen Wert festgehalten wird.</div>
+              <div class="note">${tr('editor.sensorRadiusNote')}</div>
             </div>
 
-            <h3 style="margin-top:16px">Wärmedurchlässigkeit</h3>
+            <h3 style="margin-top:16px">${tr('editor.sectionTransmittance')}</h3>
             ${Object.keys(DEFAULT_TRANSMITTANCE).map((key) => `
               <div class="field">
-                <label>${TRANSMITTANCE_LABELS[key] || key} <span class="value" data-out="trans:${key}">${Math.round(cfg.transmittance[key] * 100)} %</span></label>
+                <label>${tr(TRANSMITTANCE_LABEL_KEYS[key]) || key} <span class="value" data-out="trans:${key}">${Math.round(cfg.transmittance[key] * 100)} %</span></label>
                 <input type="range" data-trans="${key}" min="0" max="1" step="0.01" value="${cfg.transmittance[key]}">
               </div>`).join('')}
-            <div class="note">0 % = perfekte Dämmung, 100 % = wie freie Luft. Diese Werte bestimmen, wie stark Wärme zwischen benachbarten Bereichen ausgetauscht wird.</div>
+            <div class="note">${tr('editor.transmittanceNote')}</div>
           </details>
         </div>
       </div>
@@ -3569,10 +3954,7 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
     // Formular in der Zwischenzeit abgeräumt hat — dann wäre die ganze
     // Zeichenarbeit lautlos verloren. Lieber sichtbar melden.
     if (!this.isConnected) {
-      console.warn(
-        'floorplan-heatmap-card: Der Konfigurationsdialog wurde geschlossen, während der ' +
-        'Grundriss-Editor offen war. Die Änderungen konnten nicht übernommen werden.'
-      );
+      console.warn(t(this._lang(), 'editor.dialogClosedWarning'));
       return;
     }
     this._emit({
@@ -3754,7 +4136,7 @@ class FloorplanHeatmapCard extends HTMLElement {
   static getStubConfig() {
     return {
       type: 'custom:floorplan-heatmap-card',
-      title: 'Temperaturverteilung',
+      title: t(detectLanguageFallback(), 'card.defaultTitle'),
       ...DEFAULTS,
       floorplan: { rooms: [], walls: [], openings: [], sensors: [] },
     };
@@ -3788,7 +4170,13 @@ class FloorplanHeatmapCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    this._applyStaticText();
     this._update(false);
+  }
+
+  /** Sprache aus hass.language — vor dem ersten hass-Update Browser-Fallback. */
+  _lang() {
+    return detectLanguage(this._hass);
   }
 
   getCardSize() {
@@ -3824,7 +4212,7 @@ class FloorplanHeatmapCard extends HTMLElement {
           <canvas></canvas>
           <div class="chips"></div>
           <div class="tooltip"></div>
-          <button class="reset" title="Blickwinkel zurücksetzen">↺ Ansicht</button>
+          <button class="reset"></button>
         </div>
         <div class="legend">
           <span class="lo"></span>
@@ -3833,8 +4221,7 @@ class FloorplanHeatmapCard extends HTMLElement {
         </div>
         <div class="empty" hidden>
           <div class="big">🏠</div>
-          <div>Noch kein Grundriss angelegt.<br>
-          Karte bearbeiten → <b>Grundriss &amp; Sensoren</b> öffnen und Räume zeichnen.</div>
+          <div class="empty-text"></div>
         </div>
       </ha-card>
     `;
@@ -3848,6 +4235,8 @@ class FloorplanHeatmapCard extends HTMLElement {
     this._tooltip = this.shadowRoot.querySelector('.tooltip');
     this._legend = this.shadowRoot.querySelector('.legend');
     this._empty = this.shadowRoot.querySelector('.empty');
+    this._emptyText = this.shadowRoot.querySelector('.empty-text');
+    this._resetBtn = this.shadowRoot.querySelector('.reset');
 
     const header = this.shadowRoot.querySelector('.header');
     header.hidden = !cfg.title;
@@ -3879,6 +4268,20 @@ class FloorplanHeatmapCard extends HTMLElement {
     } else {
       this._bgImage = null;
     }
+
+    this._applyStaticText();
+  }
+
+  /** Zieht die sprachabhängigen, statisch aufgebauten Texte nach — auch
+   *  aufgerufen, wenn hass erst nach _build() eintrifft. */
+  _applyStaticText() {
+    if (!this._resetBtn) return;
+    const lang = this._lang();
+    this._resetBtn.title = t(lang, 'card.resetViewTitle');
+    this._resetBtn.textContent = `↺ ${t(lang, 'card.resetViewLabel')}`;
+    this._emptyText.innerHTML =
+      `${t(lang, 'card.emptyLine1')}<br>` +
+      `${t(lang, 'card.emptyLine2', { button: `<b>${t(lang, 'planEditor.title')}</b>` })}`;
   }
 
   /** Aktuelle Messwerte in der Reihenfolge von floorplan.sensors. */
@@ -4214,7 +4617,7 @@ class FloorplanHeatmapCard extends HTMLElement {
     this._summaryEl.innerHTML =
       `Ø <b>${stats.sensorMean.toFixed(1)} ${unit}</b> · ` +
       `${stats.sensorMin.toFixed(1)}–${stats.sensorMax.toFixed(1)} ` +
-      `<span title="Spreizung zwischen wärmstem und kältestem Sensor">(Δ ${spread.toFixed(1)})</span>`;
+      `<span title="${t(this._lang(), 'card.spreadTooltip')}">(Δ ${spread.toFixed(1)})</span>`;
   }
 
   _onPointerDown(event) {
@@ -4298,10 +4701,13 @@ if (!customElements.get('floorplan-heatmap-card-editor')) {
 
 window.customCards = window.customCards || [];
 if (!window.customCards.some((c) => c.type === 'floorplan-heatmap-card')) {
+  // Beim Registrieren gibt es noch kein hass-Objekt — die Sprache kommt
+  // hier aus dem Browser/localStorage statt aus hass.language.
+  const lang = detectLanguageFallback();
   window.customCards.push({
     type: 'floorplan-heatmap-card',
-    name: 'Grundriss-Heatmap',
-    description: 'Temperaturverteilung über einen Grundriss — mit Wänden, Türen und Fenstern als Wärmewiderstand.',
+    name: t(lang, 'customCards.name'),
+    description: t(lang, 'customCards.description'),
     preview: true,
     documentationURL: 'https://github.com/kevinst/floorplan-heatmap-card',
   });

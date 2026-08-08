@@ -18,6 +18,7 @@ import { createProjection, projectedAspect, clampPitch, DEG } from './projection
 import { renderScene } from './scene3d.js';
 import { paletteGradientCss, paletteColorCss, readableTextOn, paletteLUT } from './palette.js';
 import { clamp } from './geometry.js';
+import { t, detectLanguage, detectLanguageFallback } from './i18n.js';
 
 const CARD_STYLES = `
   :host { display: block; }
@@ -170,7 +171,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
   static getStubConfig() {
     return {
       type: 'custom:floorplan-heatmap-card',
-      title: 'Temperaturverteilung',
+      title: t(detectLanguageFallback(), 'card.defaultTitle'),
       ...DEFAULTS,
       floorplan: { rooms: [], walls: [], openings: [], sensors: [] },
     };
@@ -204,7 +205,13 @@ export class FloorplanHeatmapCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    this._applyStaticText();
     this._update(false);
+  }
+
+  /** Sprache aus hass.language — vor dem ersten hass-Update Browser-Fallback. */
+  _lang() {
+    return detectLanguage(this._hass);
   }
 
   getCardSize() {
@@ -240,7 +247,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
           <canvas></canvas>
           <div class="chips"></div>
           <div class="tooltip"></div>
-          <button class="reset" title="Blickwinkel zurücksetzen">↺ Ansicht</button>
+          <button class="reset"></button>
         </div>
         <div class="legend">
           <span class="lo"></span>
@@ -249,8 +256,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
         </div>
         <div class="empty" hidden>
           <div class="big">🏠</div>
-          <div>Noch kein Grundriss angelegt.<br>
-          Karte bearbeiten → <b>Grundriss &amp; Sensoren</b> öffnen und Räume zeichnen.</div>
+          <div class="empty-text"></div>
         </div>
       </ha-card>
     `;
@@ -264,6 +270,8 @@ export class FloorplanHeatmapCard extends HTMLElement {
     this._tooltip = this.shadowRoot.querySelector('.tooltip');
     this._legend = this.shadowRoot.querySelector('.legend');
     this._empty = this.shadowRoot.querySelector('.empty');
+    this._emptyText = this.shadowRoot.querySelector('.empty-text');
+    this._resetBtn = this.shadowRoot.querySelector('.reset');
 
     const header = this.shadowRoot.querySelector('.header');
     header.hidden = !cfg.title;
@@ -295,6 +303,20 @@ export class FloorplanHeatmapCard extends HTMLElement {
     } else {
       this._bgImage = null;
     }
+
+    this._applyStaticText();
+  }
+
+  /** Zieht die sprachabhängigen, statisch aufgebauten Texte nach — auch
+   *  aufgerufen, wenn hass erst nach _build() eintrifft. */
+  _applyStaticText() {
+    if (!this._resetBtn) return;
+    const lang = this._lang();
+    this._resetBtn.title = t(lang, 'card.resetViewTitle');
+    this._resetBtn.textContent = `↺ ${t(lang, 'card.resetViewLabel')}`;
+    this._emptyText.innerHTML =
+      `${t(lang, 'card.emptyLine1')}<br>` +
+      `${t(lang, 'card.emptyLine2', { button: `<b>${t(lang, 'planEditor.title')}</b>` })}`;
   }
 
   /** Aktuelle Messwerte in der Reihenfolge von floorplan.sensors. */
@@ -630,7 +652,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
     this._summaryEl.innerHTML =
       `Ø <b>${stats.sensorMean.toFixed(1)} ${unit}</b> · ` +
       `${stats.sensorMin.toFixed(1)}–${stats.sensorMax.toFixed(1)} ` +
-      `<span title="Spreizung zwischen wärmstem und kältestem Sensor">(Δ ${spread.toFixed(1)})</span>`;
+      `<span title="${t(this._lang(), 'card.spreadTooltip')}">(Δ ${spread.toFixed(1)})</span>`;
   }
 
   _onPointerDown(event) {

@@ -18,6 +18,7 @@ const root = dirname(fileURLToPath(import.meta.url));
 
 // Reihenfolge = Abhängigkeitsreihenfolge.
 const MODULES = [
+  'i18n.js',
   'geometry.js',
   'palette.js',
   'model.js',

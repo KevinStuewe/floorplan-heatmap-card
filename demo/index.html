@@ -124,6 +124,15 @@
   </div>
 
   <div class="panel">
+    <h2>Sprache</h2>
+    <div class="seg">
+      <button data-lang="de" class="active">Deutsch</button>
+      <button data-lang="en">English</button>
+    </div>
+    <div class="note">Simuliert hass.language — genau so erkennt die Karte die Sprache in Home Assistant.</div>
+  </div>
+
+  <div class="panel">
     <h2>Konfiguration</h2>
     <button id="dumpYaml">YAML in der Konsole ausgeben</button>
     <div class="note">Die vollständige Card-Konfiguration als YAML — genau so kommt sie in Lovelace.</div>
@@ -204,6 +213,7 @@ const CONFIG = {
 };
 
 let config = structuredClone(CONFIG);
+let lang = 'de';
 
 function buildHass() {
   const states = {};
@@ -218,7 +228,7 @@ function buildHass() {
       },
     };
   }
-  return { states };
+  return { states, language: lang };
 }
 
 const card = document.createElement('floorplan-heatmap-card');
@@ -268,6 +278,16 @@ const bindAngle = (id, key, outId, format) => {
 bindAngle('yaw', 'yaw', 'yawOut', (v) => `${Math.round(v)}\u00b0`);
 bindAngle('pitch', 'pitch', 'pitchOut', (v) => `${Math.round(v)}\u00b0`);
 bindAngle('wallHeight', 'wall_height', 'wallOut', (v) => `${v.toFixed(2)} m`);
+
+// --- Sprache ----------------------------------------------------------
+document.querySelectorAll('[data-lang]').forEach((btn) => {
+  btn.onclick = () => {
+    document.querySelectorAll('[data-lang]').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    lang = btn.dataset.lang;
+    refresh();
+  };
+});
 
 // --- Darstellung ----------------------------------------------------
 document.getElementById('palette').onchange = (e) => { config.palette = e.target.value; refresh(); };

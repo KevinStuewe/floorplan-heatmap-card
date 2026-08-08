@@ -11,11 +11,15 @@
  * ------------------------------------------------------------------ */
 
 import {
-  buildWalls, uid, OPENING_TYPES, OPENING_LABELS, WALL_TYPES, WALL_LABELS,
+  buildWalls, uid, OPENING_TYPES, WALL_TYPES,
   roomAreaSqm, roomSizeMeters, resizeRoomPoints,
 } from './model.js';
 import { wallGaps, wallCovers } from './renderer.js';
 import { axisSnap, closestPointOnSegment, distToSegment, pointInPolygon, polygonCentroid, bboxOfPoints, clamp } from './geometry.js';
+import { t, detectLanguage, roomNameSuggestions } from './i18n.js';
+
+const OPENING_LABEL_KEYS = { passage: 'label.passage', door: 'label.door', window: 'label.window' };
+const WALL_LABEL_KEYS = { interior: 'label.interior', exterior: 'label.exterior' };
 
 const ICONS = {
   select: '<polygon points="5,2 5,19 9.2,14.8 12,21 14.6,19.9 11.8,13.9 18,13.9"/>',
@@ -31,13 +35,13 @@ const ICONS = {
 };
 
 const TOOLS = [
-  { id: 'select', label: 'Auswählen', key: 'V', hint: 'Klicken zum Auswählen · ziehen zum Verschieben · Eckpunkte an den Griffen ziehen · Raummaße rechts eintippen · Entf löscht' },
-  { id: 'room', label: 'Raum', key: 'R', hint: 'Ziehen ergibt ein Rechteck · einzelne Klicks ergeben ein Polygon (Enter oder Doppelklick schließt, Rücktaste nimmt zurück)' },
-  { id: 'wall', label: 'Wand', key: 'W', hint: 'Klick setzt den Anfang, zweiter Klick das Ende · Länge rechts eintippen und Enter für ein exaktes Maß' },
-  { id: 'opening', label: 'Tür / Fenster', key: 'D', hint: 'Auf eine Wand klicken — die Öffnung rastet darauf ein und wirkt auf beide angrenzenden Räume' },
-  { id: 'sensor', label: 'Sensor', key: 'S', hint: 'Klick setzt einen Messpunkt · rechts die Entity zuweisen' },
-  { id: 'erase', label: 'Löschen', key: 'X', hint: 'Auf ein Element klicken, um es zu entfernen' },
-  { id: 'measure', label: 'Maßstab', key: 'M', hint: 'Eine Strecke bekannter Länge abklicken und die echte Länge in Metern eintragen' },
+  { id: 'select', key: 'V' },
+  { id: 'room', key: 'R' },
+  { id: 'wall', key: 'W' },
+  { id: 'opening', key: 'D' },
+  { id: 'sensor', key: 'S' },
+  { id: 'erase', key: 'X' },
+  { id: 'measure', key: 'M' },
 ];
 
 const PLAN_STYLES = `
@@ -174,6 +178,7 @@ class PlanEditor {
   constructor(options, resolve) {
     this.resolve = resolve;
     this.hass = options.hass;
+    this.lang = detectLanguage(this.hass);
     this.state = JSON.parse(JSON.stringify(options.floorplan));
     this.pxPerMeter = options.pxPerMeter || 50;
     this.background = options.background || '';
@@ -797,9 +802,8 @@ class PlanEditor {
 
   _nextRoomName() {
     const used = new Set(this.state.rooms.map((r) => r.name));
-    const suggestions = ['Wohnzimmer', 'Küche', 'Schlafzimmer', 'Bad', 'Flur', 'Büro', 'Kinderzimmer', 'Gäste-WC'];
-    for (const s of suggestions) if (!used.has(s)) return s;
-    return `Raum ${this.state.rooms.length + 1}`;
+    for (const s of roomNameSuggestions(this.lang)) if (!used.has(s)) return s;
+    return t(this.lang, 'planEditor.roomFallback', { n: this.state.rooms.length + 1 });
   }
 
   _wallDown(world) {
@@ -944,7 +948,7 @@ class PlanEditor {
       this.renderSide();
       return;
     }
-    const tool = TOOLS.find((t) => t.key.toLowerCase() === event.key.toLowerCase());
+    const tool = TOOLS.find((entry) => entry.key.toLowerCase() === event.key.toLowerCase());
     if (tool) { event.preventDefault(); this.setTool(tool.id); }
   }
 
@@ -962,25 +966,27 @@ class PlanEditor {
   /* ----------------------------- Rendern -------------------------- */
 
   _buildBar() {
-    const toolButtons = TOOLS.map(
-      (t) => `<button data-tool="${t.id}" class="${this.tool === t.id ? 'active' : ''}" title="${esc(t.label)} (${t.key})">${icon(t.id)}<span>${esc(t.label)}</span></button>`
-    ).join('');
+    const lang = this.lang;
+    const toolButtons = TOOLS.map((entry) => {
+      const label = t(lang, `tools.${entry.id}.label`);
+      return `<button data-tool="${entry.id}" class="${this.tool === entry.id ? 'active' : ''}" title="${esc(label)} (${entry.key})">${icon(entry.id)}<span>${esc(label)}</span></button>`;
+    }).join('');
 
     this.bar.innerHTML = `
-      <h1>Grundriss &amp; Sensoren</h1>
+      <h1>${esc(t(lang, 'planEditor.title'))}</h1>
       <div class="group">${toolButtons}</div>
       <div class="group">
-        <button data-act="undo" title="Rückgängig (Cmd/Ctrl+Z)" ${this.undoStack.length ? '' : 'disabled'}>${icon('undo')}</button>
-        <button data-act="redo" title="Wiederholen (Cmd/Ctrl+Shift+Z)" ${this.redoStack.length ? '' : 'disabled'}>${icon('redo')}</button>
-        <button data-act="fit" title="Alles einpassen">${icon('fit')}</button>
+        <button data-act="undo" title="${esc(t(lang, 'planEditor.undoTitle'))}" ${this.undoStack.length ? '' : 'disabled'}>${icon('undo')}</button>
+        <button data-act="redo" title="${esc(t(lang, 'planEditor.redoTitle'))}" ${this.redoStack.length ? '' : 'disabled'}>${icon('redo')}</button>
+        <button data-act="fit" title="${esc(t(lang, 'planEditor.fitTitle'))}">${icon('fit')}</button>
       </div>
-      <label class="toggle"><input type="checkbox" data-flag="showGrid" ${this.showGrid ? 'checked' : ''}> Raster</label>
-      <label class="toggle"><input type="checkbox" data-flag="snapGrid" ${this.snapGrid ? 'checked' : ''}> Am Raster</label>
-      <label class="toggle"><input type="checkbox" data-flag="snapPoints" ${this.snapPoints ? 'checked' : ''}> An Ecken</label>
-      <label class="toggle"><input type="checkbox" data-flag="snapAxisOn" ${this.snapAxisOn ? 'checked' : ''}> 0°/90°</label>
+      <label class="toggle"><input type="checkbox" data-flag="showGrid" ${this.showGrid ? 'checked' : ''}> ${t(lang, 'planEditor.toggleGrid')}</label>
+      <label class="toggle"><input type="checkbox" data-flag="snapGrid" ${this.snapGrid ? 'checked' : ''}> ${t(lang, 'planEditor.toggleSnapGrid')}</label>
+      <label class="toggle"><input type="checkbox" data-flag="snapPoints" ${this.snapPoints ? 'checked' : ''}> ${t(lang, 'planEditor.toggleSnapPoints')}</label>
+      <label class="toggle"><input type="checkbox" data-flag="snapAxisOn" ${this.snapAxisOn ? 'checked' : ''}> ${t(lang, 'planEditor.toggleAxisSnap')}</label>
       <div class="spacer"></div>
-      <button class="ghost" data-act="cancel">Abbrechen</button>
-      <button class="primary" data-act="save">Übernehmen</button>
+      <button class="ghost" data-act="cancel">${t(lang, 'planEditor.cancel')}</button>
+      <button class="primary" data-act="save">${t(lang, 'planEditor.save')}</button>
     `;
 
     this.bar.querySelectorAll('[data-tool]').forEach((btn) => {
@@ -1139,7 +1145,7 @@ class PlanEditor {
     return this.state.sensors.map((s) => {
       const selected = this._isSelected('sensor', s.id);
       const value = this._entityValue(s.entity);
-      const label = [s.name || s.entity || 'Sensor', value].filter(Boolean).join(' · ');
+      const label = [s.name || s.entity || t(this.lang, 'planEditor.sensorFallback'), value].filter(Boolean).join(' · ');
       return `<g>
         <circle cx="${s.x}" cy="${s.y}" r="${r}" fill="${selected ? '#3b6df3' : '#ff6b6b'}"
           stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke"
@@ -1223,9 +1229,12 @@ class PlanEditor {
   }
 
   _updateHint() {
-    const tool = TOOLS.find((t) => t.id === this.tool);
-    const base = tool ? `<b>${esc(tool.label)}</b> — ${esc(tool.hint)}` : '';
-    this.hintEl.innerHTML = `${base} &nbsp;·&nbsp; Mausrad zoomt, mittlere Taste oder Leertaste schiebt.`;
+    const lang = this.lang;
+    const tool = TOOLS.find((entry) => entry.id === this.tool);
+    const base = tool
+      ? `<b>${esc(t(lang, `tools.${tool.id}.label`))}</b> — ${esc(t(lang, `tools.${tool.id}.hint`))}`
+      : '';
+    this.hintEl.innerHTML = `${base} &nbsp;·&nbsp; ${esc(t(lang, 'planEditor.hintSuffix'))}`;
   }
 
   _updateReadout() {
@@ -1252,20 +1261,21 @@ class PlanEditor {
   }
 
   _panelGeneral() {
-    const panel = this._panel('Grundeinstellungen', `
+    const lang = this.lang;
+    const panel = this._panel(t(lang, 'planEditor.panelGeneral'), `
       <div class="field">
-        <label>Maßstab — Pixel pro Meter</label>
+        <label>${t(lang, 'planEditor.scaleLabel')}</label>
         <input type="number" data-f="pxPerMeter" value="${this.pxPerMeter}" step="0.1" min="1">
       </div>
       <div class="field">
-        <label>Hintergrundbild (Pfad unter /local/…)</label>
-        <input type="text" data-f="background" value="${esc(this.background)}" placeholder="/local/grundriss.png">
+        <label>${t(lang, 'planEditor.backgroundLabel')}</label>
+        <input type="text" data-f="background" value="${esc(this.background)}" placeholder="${t(lang, 'planEditor.backgroundPlaceholder')}">
       </div>
       <div class="field">
-        <label>Deckkraft Hintergrund — <span data-out="bgOpacity">${Math.round(this.backgroundOpacity * 100)} %</span></label>
+        <label>${t(lang, 'planEditor.backgroundOpacityLabel')} <span data-out="bgOpacity">${Math.round(this.backgroundOpacity * 100)} %</span></label>
         <input type="range" data-f="backgroundOpacity" min="0" max="1" step="0.05" value="${this.backgroundOpacity}">
       </div>
-      <div class="empty-note">Der Maßstab wirkt sich nur auf Beschriftungen und den Sensorradius aus — das Temperaturfeld selbst ist maßstabsfrei.</div>
+      <div class="empty-note">${t(lang, 'planEditor.scaleNote')}</div>
     `);
 
     panel.querySelector('[data-f="pxPerMeter"]').oninput = (e) => {
@@ -1282,19 +1292,20 @@ class PlanEditor {
   }
 
   _panelWallDraft() {
+    const lang = this.lang;
     const end = this.draft.cursor || this.draft.start;
     const len = Math.hypot(end.x - this.draft.start.x, end.y - this.draft.start.y);
     const angle = Math.round((Math.atan2(end.y - this.draft.start.y, end.x - this.draft.start.x) * 180) / Math.PI);
-    const panel = this._panel('Wand zeichnen', `
+    const panel = this._panel(t(lang, 'planEditor.panelWallDraft'), `
       <div class="field">
-        <label>Aktuelle Länge</label>
+        <label>${t(lang, 'planEditor.currentLength')}</label>
         <input type="text" data-out="draftLength" value="${(len / this.pxPerMeter).toFixed(2)} m · ${angle}°" readonly>
       </div>
       <div class="field">
-        <label>Länge exakt setzen (Meter) — Enter bestätigt</label>
-        <input type="number" data-f="len" step="0.01" placeholder="z. B. 3.20" autofocus>
+        <label>${t(lang, 'planEditor.exactLengthLabel')}</label>
+        <input type="number" data-f="len" step="0.01" placeholder="${t(lang, 'planEditor.examplePlaceholder')}" autofocus>
       </div>
-      <button class="ghost" data-act="cancel" style="width:100%;justify-content:center">Zeichnen beenden (Esc)</button>
+      <button class="ghost" data-act="cancel" style="width:100%;justify-content:center">${t(lang, 'planEditor.finishDrawing')}</button>
     `);
 
     const input = panel.querySelector('[data-f="len"]');
@@ -1315,20 +1326,21 @@ class PlanEditor {
   }
 
   _panelMeasure() {
+    const lang = this.lang;
     const d = this.draft;
     const hasBoth = d && d.end;
     const pxDist = hasBoth ? Math.hypot(d.end.x - d.start.x, d.end.y - d.start.y) : 0;
-    const panel = this._panel('Maßstab kalibrieren', `
-      <div class="empty-note" style="margin-bottom:10px">Eine Strecke abklicken, deren echte Länge du kennst — etwa eine Zimmerwand. Danach die Länge in Metern eintragen.</div>
+    const panel = this._panel(t(lang, 'planEditor.panelMeasure'), `
+      <div class="empty-note" style="margin-bottom:10px">${t(lang, 'planEditor.measureNote')}</div>
       <div class="field">
-        <label>Gemessene Strecke</label>
-        <input type="text" value="${hasBoth ? Math.round(pxDist) + ' px' : 'noch nichts gemessen'}" readonly>
+        <label>${t(lang, 'planEditor.measuredDistance')}</label>
+        <input type="text" value="${hasBoth ? Math.round(pxDist) + ' px' : t(lang, 'planEditor.notMeasuredYet')}" readonly>
       </div>
       <div class="field">
-        <label>Echte Länge (Meter) — Enter übernimmt</label>
-        <input type="number" data-f="meters" step="0.01" placeholder="z. B. 3.20" ${hasBoth ? '' : 'disabled'}>
+        <label>${t(lang, 'planEditor.realLengthLabel')}</label>
+        <input type="number" data-f="meters" step="0.01" placeholder="${t(lang, 'planEditor.examplePlaceholder')}" ${hasBoth ? '' : 'disabled'}>
       </div>
-      <div class="field"><label>Aktuell</label><input type="text" value="${this.pxPerMeter.toFixed(2)} px / m" readonly></div>
+      <div class="field"><label>${t(lang, 'planEditor.current')}</label><input type="text" value="${this.pxPerMeter.toFixed(2)} px / m" readonly></div>
     `);
 
     const input = panel.querySelector('[data-f="meters"]');
@@ -1361,7 +1373,7 @@ class PlanEditor {
     const btn = document.createElement('button');
     btn.className = 'danger';
     btn.style.cssText = 'width:100%;justify-content:center;margin-top:10px';
-    btn.innerHTML = `${icon('erase')}<span>Löschen (Entf)</span>`;
+    btn.innerHTML = `${icon('erase')}<span>${esc(t(this.lang, 'planEditor.deleteButton'))}</span>`;
     btn.onclick = () => {
       this.snapshot();
       this._deleteObject(kind, id);
@@ -1373,23 +1385,24 @@ class PlanEditor {
   }
 
   _panelRoom(id) {
+    const lang = this.lang;
     const room = this.state.rooms.find((r) => r.id === id);
     if (!room) return this._panelGeneral();
     const size = roomSizeMeters(room, this.pxPerMeter);
-    const panel = this._panel('Raum', `
-      <div class="field"><label>Name</label><input type="text" data-f="name" value="${esc(room.name)}"></div>
+    const panel = this._panel(t(lang, 'planEditor.panelRoom'), `
+      <div class="field"><label>${t(lang, 'planEditor.name')}</label><input type="text" data-f="name" value="${esc(room.name)}"></div>
       <div class="row">
-        <div class="field"><label>Breite (m)</label>
+        <div class="field"><label>${t(lang, 'planEditor.width')}</label>
           <input type="number" data-f="width" value="${size.width.toFixed(2)}" step="0.05" min="0.1"></div>
-        <div class="field"><label>Länge (m)</label>
+        <div class="field"><label>${t(lang, 'planEditor.length')}</label>
           <input type="number" data-f="height" value="${size.height.toFixed(2)}" step="0.05" min="0.1"></div>
       </div>
       <div class="row">
-        <div class="field"><label>Fläche</label>
+        <div class="field"><label>${t(lang, 'planEditor.area')}</label>
           <input type="text" data-out="area" value="${roomAreaSqm(room, this.pxPerMeter).toFixed(2)} m²" readonly></div>
-        <div class="field"><label>Ecken</label><input type="text" value="${room.points.length}" readonly></div>
+        <div class="field"><label>${t(lang, 'planEditor.corners')}</label><input type="text" value="${room.points.length}" readonly></div>
       </div>
-      <div class="empty-note">Maße sind die Außenkanten — Enter oder ein Klick daneben übernimmt. Die linke obere Ecke bleibt dabei stehen, Türen und Fenster wandern nicht mit. Eckpunkte lassen sich weiterhin an den weißen Griffen ziehen.</div>
+      <div class="empty-note">${t(lang, 'planEditor.roomSizeNote')}</div>
     `);
 
     panel.querySelector('[data-f="name"]').oninput = (e) => {
@@ -1440,15 +1453,16 @@ class PlanEditor {
   }
 
   _panelWall(id) {
+    const lang = this.lang;
     const wall = this.state.walls.find((w) => w.id === id);
     if (!wall) return this._panelGeneral();
     const len = Math.hypot(wall.x2 - wall.x1, wall.y2 - wall.y1) / this.pxPerMeter;
-    const panel = this._panel('Freistehende Wand', `
-      <div class="field"><label>Typ</label>
-        <div class="seg">${WALL_TYPES.map((t) => `<button data-type="${t}" class="${wall.type === t ? 'active' : ''}">${WALL_LABELS[t]}</button>`).join('')}</div>
+    const panel = this._panel(t(lang, 'planEditor.panelWall'), `
+      <div class="field"><label>${t(lang, 'planEditor.type')}</label>
+        <div class="seg">${WALL_TYPES.map((type) => `<button data-type="${type}" class="${wall.type === type ? 'active' : ''}">${t(lang, WALL_LABEL_KEYS[type])}</button>`).join('')}</div>
       </div>
-      <div class="field"><label>Länge</label><input type="number" data-f="len" value="${len.toFixed(2)}" step="0.01" min="0.05"></div>
-      <div class="empty-note">Raumkanten werden automatisch als Außen- oder Innenwand erkannt; dieser Typ gilt nur für freistehende Wände.</div>
+      <div class="field"><label>${t(lang, 'planEditor.wallLength')}</label><input type="number" data-f="len" value="${len.toFixed(2)}" step="0.01" min="0.05"></div>
+      <div class="empty-note">${t(lang, 'planEditor.wallTypeNote')}</div>
     `);
     panel.querySelectorAll('[data-type]').forEach((btn) => {
       btn.onclick = () => { this.snapshot(); wall.type = btn.dataset.type; this.render(); this.renderSide(); };
@@ -1466,17 +1480,18 @@ class PlanEditor {
   }
 
   _panelOpening(id) {
+    const lang = this.lang;
     const o = this.state.openings.find((x) => x.id === id);
     if (!o) return this._panelGeneral();
-    const panel = this._panel('Öffnung', `
-      <div class="field"><label>Art</label>
-        <div class="seg">${OPENING_TYPES.map((t) => `<button data-type="${t}" class="${o.type === t ? 'active' : ''}">${OPENING_LABELS[t]}</button>`).join('')}</div>
+    const panel = this._panel(t(lang, 'planEditor.panelOpening'), `
+      <div class="field"><label>${t(lang, 'planEditor.kind')}</label>
+        <div class="seg">${OPENING_TYPES.map((type) => `<button data-type="${type}" class="${o.type === type ? 'active' : ''}">${t(lang, OPENING_LABEL_KEYS[type])}</button>`).join('')}</div>
       </div>
       <div class="field">
-        <label>Breite — <span data-out="w">${(o.width / this.pxPerMeter).toFixed(2)} m</span></label>
+        <label>${t(lang, 'planEditor.openingWidthLabel')} <span data-out="w">${(o.width / this.pxPerMeter).toFixed(2)} m</span></label>
         <input type="range" data-f="width" min="${this.pxPerMeter * 0.3}" max="${this.pxPerMeter * 4}" step="1" value="${o.width}">
       </div>
-      <div class="empty-note">Durchgang = offen, Tür = deutlich gedämpft, Fenster = fast dicht. Die Öffnung wirkt auf jede Wand an dieser Stelle — bei zwei aneinandergrenzenden Räumen also auf beide.</div>
+      <div class="empty-note">${t(lang, 'planEditor.openingNote')}</div>
     `);
     panel.querySelectorAll('[data-type]').forEach((btn) => {
       btn.onclick = () => { this.snapshot(); o.type = btn.dataset.type; this.render(); this.renderSide(); };
@@ -1490,14 +1505,15 @@ class PlanEditor {
   }
 
   _panelSensor(id) {
+    const lang = this.lang;
     const sensor = this.state.sensors.find((s) => s.id === id);
     if (!sensor) return this._panelGeneral();
-    const panel = this._panel('Sensor', `
+    const panel = this._panel(t(lang, 'planEditor.panelSensor'), `
       <div class="field"><label>Entity</label><div class="combo"></div></div>
-      <div class="field"><label>Anzeigename (leer = Entity-Name)</label>
-        <input type="text" data-f="name" value="${esc(sensor.name)}" placeholder="z. B. Wohnzimmer"></div>
-      <div class="field"><label>Aktueller Wert</label>
-        <input type="text" value="${esc(this._entityValue(sensor.entity) || 'nicht verfügbar')}" readonly></div>
+      <div class="field"><label>${t(lang, 'planEditor.displayNameLabel')}</label>
+        <input type="text" data-f="name" value="${esc(sensor.name)}" placeholder="${t(lang, 'planEditor.exampleRoomPlaceholder')}"></div>
+      <div class="field"><label>${t(lang, 'planEditor.currentValue')}</label>
+        <input type="text" value="${esc(this._entityValue(sensor.entity) || t(lang, 'planEditor.notAvailable'))}" readonly></div>
     `);
     panel.querySelector('[data-f="name"]').oninput = (e) => { sensor.name = e.target.value; this.render(); };
     panel.querySelector('.combo').replaceWith(this._entityCombo(sensor));
@@ -1508,7 +1524,7 @@ class PlanEditor {
   _entityCombo(sensor) {
     const wrap = document.createElement('div');
     wrap.className = 'combo';
-    wrap.innerHTML = `<input type="text" placeholder="sensor.wohnzimmer_temperatur" value="${esc(sensor.entity)}">
+    wrap.innerHTML = `<input type="text" placeholder="${t(this.lang, 'planEditor.entityPlaceholder')}" value="${esc(sensor.entity)}">
       <div class="options" hidden></div>`;
     const input = wrap.querySelector('input');
     const list = wrap.querySelector('.options');
@@ -1573,31 +1589,34 @@ class PlanEditor {
   }
 
   _panelLists() {
+    const lang = this.lang;
     const wrap = document.createElement('div');
     const sensorItems = this.state.sensors.map((s) => `
       <div class="item ${this._isSelected('sensor', s.id) ? 'selected' : ''}" data-kind="sensor" data-id="${s.id}">
         <div class="grow">
-          <div>${esc(s.name || s.entity || 'Ohne Entity')}</div>
-          <div class="sub">${esc(s.entity ? this._entityValue(s.entity) || s.entity : 'keine Entity zugewiesen')}</div>
+          <div>${esc(s.name || s.entity || t(lang, 'planEditor.noEntity'))}</div>
+          <div class="sub">${esc(s.entity ? this._entityValue(s.entity) || s.entity : t(lang, 'planEditor.noEntityAssigned'))}</div>
         </div>
-      </div>`).join('') || '<div class="empty-note">Noch keine Sensoren gesetzt.</div>';
+      </div>`).join('') || `<div class="empty-note">${t(lang, 'planEditor.noSensorsYet')}</div>`;
 
     const roomItems = this.state.rooms.map((r) => `
       <div class="item ${this._isSelected('room', r.id) ? 'selected' : ''}" data-kind="room" data-id="${r.id}">
         <div class="grow"><div>${esc(r.name)}</div>
         <div class="sub">${esc(this._roomSubLabel(r))}</div></div>
-      </div>`).join('') || '<div class="empty-note">Noch keine Räume gezeichnet.</div>';
+      </div>`).join('') || `<div class="empty-note">${t(lang, 'planEditor.noRoomsYet')}</div>`;
 
     wrap.innerHTML = `
-      <h2>Sensoren (${this.state.sensors.length})</h2>
+      <h2>${t(lang, 'planEditor.sensorsHeader', { n: this.state.sensors.length })}</h2>
       <div class="list">${sensorItems}</div>
-      <h2 style="margin-top:16px">Räume (${this.state.rooms.length})</h2>
+      <h2 style="margin-top:16px">${t(lang, 'planEditor.roomsHeader', { n: this.state.rooms.length })}</h2>
       <div class="list">${roomItems}</div>
-      <h2 style="margin-top:16px">Übersicht</h2>
+      <h2 style="margin-top:16px">${t(lang, 'planEditor.overview')}</h2>
       <div class="panel">
         <div class="empty-note">
-          ${this.state.rooms.length} Räume · ${this.state.walls.length} freie Wände ·
-          ${this.state.openings.length} Öffnungen · ${this.state.sensors.length} Sensoren
+          ${t(lang, 'planEditor.summaryLine', {
+            rooms: this.state.rooms.length, walls: this.state.walls.length,
+            openings: this.state.openings.length, sensors: this.state.sensors.length,
+          })}
         </div>
       </div>`;
 

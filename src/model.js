@@ -61,9 +61,7 @@ export const DEFAULT_TRANSMITTANCE = {
 };
 
 export const OPENING_TYPES = ['passage', 'door', 'window'];
-export const OPENING_LABELS = { passage: 'Durchgang', door: 'Tür', window: 'Fenster' };
 export const WALL_TYPES = ['interior', 'exterior'];
-export const WALL_LABELS = { interior: 'Innenwand', exterior: 'Außenwand' };
 
 let uidCounter = 0;
 export function uid(prefix = 'id') {

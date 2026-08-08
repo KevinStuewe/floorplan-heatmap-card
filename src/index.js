@@ -4,6 +4,7 @@
 
 import { FloorplanHeatmapCard } from './card.js';
 import { FloorplanHeatmapCardEditor } from './editor.js';
+import { t, detectLanguageFallback } from './i18n.js';
 
 const VERSION = '1.0.1';
 
@@ -16,10 +17,13 @@ if (!customElements.get('floorplan-heatmap-card-editor')) {
 
 window.customCards = window.customCards || [];
 if (!window.customCards.some((c) => c.type === 'floorplan-heatmap-card')) {
+  // Beim Registrieren gibt es noch kein hass-Objekt — die Sprache kommt
+  // hier aus dem Browser/localStorage statt aus hass.language.
+  const lang = detectLanguageFallback();
   window.customCards.push({
     type: 'floorplan-heatmap-card',
-    name: 'Grundriss-Heatmap',
-    description: 'Temperaturverteilung über einen Grundriss — mit Wänden, Türen und Fenstern als Wärmewiderstand.',
+    name: t(lang, 'customCards.name'),
+    description: t(lang, 'customCards.description'),
     preview: true,
     documentationURL: 'https://github.com/kevinst/floorplan-heatmap-card',
   });

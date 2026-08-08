@@ -22,6 +22,10 @@ durch eine Außenwand praktisch gar nicht.
 
 Es gibt keine Abhängigkeiten und keinen Build-Schritt — eine Datei genügt.
 
+Die Bedienoberfläche passt sich automatisch der in Home Assistant
+eingestellten Sprache an (Deutsch oder Englisch, `hass.language`) — dafür
+gibt es keine eigene Karten-Einstellung.
+
 ## Grundriss zeichnen
 
 Im Konfigurationsdialog der Karte gibt es oben den Knopf
