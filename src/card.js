@@ -70,15 +70,14 @@ const CARD_STYLES = `
   .chips { position: absolute; inset: 0; pointer-events: none; }
   .chip {
     position: absolute;
-    transform: translate(-50%, -50%);
-    pointer-events: auto;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
+    pointer-events: none;
   }
   .chip .pill {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    margin-bottom: 2px;
+    transform: translate(-50%, 0);
     display: flex;
     align-items: baseline;
     gap: 5px;
@@ -91,16 +90,24 @@ const CARD_STYLES = `
     box-shadow: 0 1px 4px rgba(0,0,0,0.28);
     backdrop-filter: blur(2px);
     transition: transform 120ms ease;
+    pointer-events: auto;
+    cursor: pointer;
   }
   .chip .pill .name { font-weight: 500; opacity: 0.75; }
   .chip .pill .value { font-variant-numeric: tabular-nums; }
-  .chip:hover .pill { transform: translateY(-1px) scale(1.04); }
+  .chip:hover .pill { transform: translate(-50%, -1px) scale(1.04); }
   .chip .dot {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
     width: 9px;
     height: 9px;
     border-radius: 50%;
     border: 2px solid rgba(255,255,255,0.9);
     box-shadow: 0 0 0 1px rgba(0,0,0,0.35);
+    pointer-events: auto;
+    cursor: pointer;
   }
   .chip.unavailable .pill { opacity: 0.55; font-style: italic; }
   .tooltip {
