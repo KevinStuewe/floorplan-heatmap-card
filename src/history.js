@@ -1,13 +1,12 @@
 /* ------------------------------------------------------------------ *
- * history.js — historische Sensorwerte für die Zeitleiste.
+ * history.js — historical sensor values for the timeline.
  *
- * Home Assistant liefert History kompakt über
- * history/history_during_period. Die Werte werden einmal normalisiert
- * und anschließend per Binärsuche für einen beliebigen Zeitpunkt
- * abgefragt.
+ * Home Assistant delivers compact history via
+ * history/history_during_period. The values are normalized once and
+ * then looked up by binary search for any point in time.
  * ------------------------------------------------------------------ */
 
-/** Eindeutige, nicht-leere Entity-IDs in Sensor-Reihenfolge. */
+/** Unique, non-empty entity IDs in sensor order. */
 export function uniqueHistoryEntityIds(sensors = []) {
   const seen = new Set();
   const result = [];
@@ -23,11 +22,10 @@ export function uniqueHistoryEntityIds(sensors = []) {
 }
 
 /**
- * Zeitstempel eines HA-History-Eintrags in Millisekunden.
+ * Timestamp of an HA history entry in milliseconds.
  *
- * Kompakte History verwendet normalerweise lu/lc als Unix-Sekunden.
- * Die langen Feldnamen werden ebenfalls akzeptiert, damit die Funktion
- * auch mit nicht-kompakten Test- oder API-Daten umgehen kann.
+ * Compact history normally uses lu/lc as Unix seconds. The long field
+ * names are accepted too, so non-compact test or API data also works.
  */
 export function historyTimestampMs(state) {
   if (!state) return NaN;
@@ -61,7 +59,7 @@ export function historyTimestampMs(state) {
   return NaN;
 }
 
-/** Numerischer Zustand eines History-Eintrags. */
+/** Numeric state of a history entry. */
 export function historyNumericValue(state) {
   if (!state) return NaN;
 
@@ -76,9 +74,9 @@ export function historyNumericValue(state) {
 }
 
 /**
- * HA-History in ein kleines, sortiertes Format umwandeln.
+ * Convert HA history into a small, sorted format.
  *
- * Ergebnis:
+ * Result:
  * {
  *   "sensor.room_temperature": [
  *     { time: 1234567890000, value: 21.4 },
@@ -108,9 +106,9 @@ export function normalizeHistory(rawHistory = {}) {
 }
 
 /**
- * Letzter bekannter Zustand am oder vor dem gewünschten Zeitpunkt.
+ * Last known state at or before the requested time.
  *
- * Es wird absichtlich NICHT zwischen Messwerten interpoliert.
+ * Deliberately does NOT interpolate between readings.
  */
 export function historyValueAt(history, entityId, targetTime) {
   const series = history && history[entityId];
@@ -142,10 +140,10 @@ export function historyValueAt(history, entityId, targetTime) {
 }
 
 /**
- * Historische Werte in exakt derselben Reihenfolge wie floorplan.sensors.
+ * Historical values in exactly the same order as floorplan.sensors.
  *
- * Mehrere Punkte dürfen dieselbe Entity verwenden; sie erhalten dann
- * erwartungsgemäß denselben historischen Wert.
+ * Several points may share one entity; they then get the same
+ * historical value, as expected.
  */
 export function sensorValuesAt(history, sensors = [], targetTime) {
   return sensors.map((sensor) => {
@@ -157,15 +155,15 @@ export function sensorValuesAt(history, sensors = [], targetTime) {
 }
 
 /**
- * Sonnenauf- und -untergänge aus der History von sun.sun ableiten.
+ * Derive sunrises and sunsets from the history of sun.sun.
  *
- * Ein Ereignis entsteht nur bei einem echten Zustandswechsel:
+ * An event is only produced by an actual state change:
  *   below_horizon -> above_horizon = sunrise
  *   above_horizon -> below_horizon = sunset
  *
- * Der erste bekannte Zustand dient nur als Ausgangswert und wird nicht
- * selbst als Ereignis gezählt. Dadurch bleibt auch der von Home Assistant
- * am Beginn eines History-Zeitraums mitgelieferte Startzustand korrekt.
+ * The first known state only serves as the baseline and is not itself
+ * counted as an event. This keeps the initial state that Home Assistant
+ * includes at the start of a history period from producing a bogus event.
  */
 export function extractSunEvents(
   rawHistory = {},
@@ -234,7 +232,7 @@ export function extractSunEvents(
 }
 
 /**
- * Historische Zustände direkt über Home Assistants WebSocket-API laden.
+ * Load historical states directly via Home Assistant's WebSocket API.
  */
 export function fetchHistory(hass, startTime, endTime, entityIds = []) {
   if (!hass || typeof hass.callWS !== 'function') {

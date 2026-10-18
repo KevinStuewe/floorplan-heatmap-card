@@ -1,22 +1,22 @@
 /* ------------------------------------------------------------------ *
- * model.js — Datenmodell, Defaults und Ableitungen aus dem Grundriss.
+ * model.js — Data model, defaults, and derivations from the floor plan.
  *
- * Der Grundriss besteht aus vier Objektarten:
+ * The floor plan consists of four object types:
  *
- *   rooms     Polygone. Ihre Kanten SIND Wände — man zeichnet keine
- *             Außenlinie doppelt. Ob eine Kante Außen- oder Innenwand
- *             ist, wird automatisch bestimmt (siehe buildWalls).
- *   walls     Freistehende Wandsegmente für Teilungen, die keinen Raum
- *             begrenzen (Raumteiler, Nische, Schrankwand).
- *   openings  Türen, Durchgänge und Fenster. Bewusst EIGENSTÄNDIGE
- *             Geometrie (Mittelpunkt + Winkel + Breite) statt an eine
- *             bestimmte Wand gehängt: liegen zwei Raumkanten aufeinander,
- *             öffnet eine Tür so automatisch beide.
- *   sensors   Messpunkte mit HA-Entity.
+ *   rooms     Polygons. Their edges ARE walls — you don't draw an
+ *             outline twice. Whether an edge is an exterior or interior
+ *             wall is determined automatically (see buildWalls).
+ *   walls     Freestanding wall segments for dividers that don't bound
+ *             a room (room divider, alcove, closet wall).
+ *   openings  Doors, passages, and windows. Deliberately STANDALONE
+ *             geometry (center + angle + width) instead of attached to
+ *             a specific wall: if two room edges coincide, a door
+ *             automatically opens both.
+ *   sensors   Measurement points with an HA entity.
  *
- * Koordinaten sind abstrakte "Grundriss-Pixel". px_per_meter übersetzt
- * sie in Meter — nur für Beschriftungen und Sensor-Radien relevant, das
- * Feld selbst ist maßstabsfrei.
+ * Coordinates are abstract "floor plan pixels". px_per_meter translates
+ * them into meters — relevant only for labels and sensor radii, the
+ * field itself is scale-free.
  * ------------------------------------------------------------------ */
 
 import { pointInPolygon, polygonArea, bboxOfPoints } from './geometry.js';
@@ -28,6 +28,7 @@ export const DEFAULTS = {
   max: 26,
   auto_range: false,
   palette: 'coolwarm',
+  palette_stops: [],
   opacity: 0.85,
   cell_size: 8,
   sensor_radius: 0.4,
@@ -42,21 +43,21 @@ export const DEFAULTS = {
   background_opacity: 0.25,
   aspect_ratio: '',
 
-  // Zeitleiste / historische Wiedergabe
+  // Timeline / historical playback
   show_timeline: false,
   history_hours: 24,
   history_step_minutes: 15,
 
-  // 2,5D-Ansicht
-  view_mode: 'flat',   // 'flat' = Draufsicht, 'tilted' = aufgestellte Wände
-  yaw: -22,            // Grad, Drehung um die Hochachse
-  pitch: 58,           // Grad Höhenwinkel; 90 = senkrecht von oben
-  wall_height: 2.5,    // Meter
+  // 2.5D view
+  view_mode: 'flat',   // 'flat' = top-down view, 'tilted' = raised walls
+  yaw: -22,            // degrees, rotation around the vertical axis
+  pitch: 58,           // degrees of elevation angle; 90 = straight down from above
+  wall_height: 2.5,    // meters
 };
 
 export const VIEW_MODES = ['flat', 'tilted'];
 
-/** Durchlässigkeit 0…1 pro Bauteil. 1 = freie Luft, 0 = perfekte Dämmung. */
+/** Transmittance 0…1 per building component. 1 = free air, 0 = perfect insulation. */
 export const DEFAULT_TRANSMITTANCE = {
   exterior: 0.02,
   interior: 0.12,
@@ -78,7 +79,7 @@ export function emptyFloorplan() {
   return { rooms: [], walls: [], openings: [], sensors: [] };
 }
 
-/** Füllt fehlende Felder auf und repariert alte/unvollständige Configs. */
+/** Fills in missing fields and repairs old/incomplete configs. */
 export function normalizeConfig(raw) {
   const config = { ...DEFAULTS, ...(raw || {}) };
   const fp = { ...emptyFloorplan(), ...(raw && raw.floorplan ? raw.floorplan : {}) };
@@ -107,6 +108,11 @@ export function normalizeConfig(raw) {
     angle: Number(o.angle) || 0,
     width: Math.max(4, Number(o.width) || 45),
     type: OPENING_TYPES.includes(o.type) ? o.type : 'door',
+    // Door swing only — which end of the opening is the hinge, and
+    // which side of the wall the leaf swings into. Purely cosmetic,
+    // the solver treats an opening the same regardless.
+    flip_hinge: Boolean(o.flip_hinge),
+    flip_swing: Boolean(o.flip_swing),
   }));
 
   fp.sensors = (fp.sensors || []).map((s) => ({
@@ -135,14 +141,14 @@ export function normalizeConfig(raw) {
   const num = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
   config.view_mode = VIEW_MODES.includes(config.view_mode) ? config.view_mode : DEFAULTS.view_mode;
   config.yaw = num(config.yaw, DEFAULTS.yaw);
-  // Unter ~12° wird die Bodenebene so flach, dass ihre Matrix nicht mehr
-  // umkehrbar ist — dann ließe sich kein Hover-Wert mehr zuordnen.
+  // Below ~12° the floor plane becomes so flat that its matrix is no
+  // longer invertible — hover values could then no longer be resolved.
   config.pitch = Math.min(90, Math.max(12, num(config.pitch, DEFAULTS.pitch)));
   config.wall_height = Math.min(8, Math.max(0.5, num(config.wall_height, DEFAULTS.wall_height)));
   return config;
 }
 
-/** Alle Punkte des Grundrisses — für Bounding-Box und Auto-Fit. */
+/** All points of the floor plan — for bounding box and auto-fit. */
 export function floorplanPoints(fp) {
   const pts = [];
   for (const room of fp.rooms) pts.push(...room.points);
@@ -160,15 +166,15 @@ export function isEmptyFloorplan(fp) {
 }
 
 /**
- * Baut die effektive Wandliste: jede Raumkante plus jede freistehende Wand.
+ * Builds the effective wall list: every room edge plus every freestanding wall.
  *
- * Raumkanten werden automatisch klassifiziert: liegt der Punkt knapp
- * außerhalb der Kante (entlang der Außennormalen) in einem anderen Raum,
- * ist es eine Innenwand — sonst eine Außenwand. Dadurch muss man beim
- * Zeichnen nicht über Wandtypen nachdenken.
+ * Room edges are classified automatically: if the point just outside the
+ * edge (along the outward normal) lies inside another room, it's an
+ * interior wall — otherwise an exterior wall. This means you don't have
+ * to think about wall types while drawing.
  *
- * Deckungsgleiche Kanten (zwei Räume, exakt dieselbe Wand) werden
- * dedupliziert, damit dieselbe Wand nicht doppelt dämpft.
+ * Coincident edges (two rooms, exactly the same wall) are deduplicated so
+ * the same wall doesn't dampen twice.
  */
 export function buildWalls(fp) {
   const walls = [];
@@ -194,10 +200,10 @@ export function buildWalls(fp) {
       const probe = 6;
       const nx = (dy / len) * probe;
       const ny = (-dx / len) * probe;
-      // Beide Seiten der Kante abtasten statt sich auf die Umlaufrichtung
-      // des Polygons zu verlassen: Räume überlappen sich nicht, also kann
-      // nur die Außenseite in einem anderen Raum landen — und das
-      // funktioniert unabhängig davon, wie herum gezeichnet wurde.
+      // Probe both sides of the edge instead of relying on the polygon's
+      // winding direction: rooms don't overlap, so only the outside can
+      // land inside another room — and this works regardless of which
+      // way the polygon was drawn.
       const neighbouring = fp.rooms.some(
         (other) =>
           other.id !== room.id &&
@@ -225,7 +231,7 @@ export function buildWalls(fp) {
   return walls;
 }
 
-/** Endpunkte für das Einrasten beim Zeichnen. */
+/** Endpoints for snapping while drawing. */
 export function snapCandidates(fp) {
   const pts = [];
   for (const room of fp.rooms) for (const p of room.points) pts.push({ x: p[0], y: p[1] });
@@ -237,7 +243,7 @@ export function roomAreaSqm(room, pxPerMeter) {
   return Math.abs(polygonArea(room.points)) / (pxPerMeter * pxPerMeter);
 }
 
-/** Außenmaße eines Raums (umschließendes Rechteck) in Metern. */
+/** Outer dimensions of a room (bounding rectangle) in meters. */
 export function roomSizeMeters(room, pxPerMeter) {
   const b = bboxOfPoints(room.points);
   return {
@@ -247,14 +253,13 @@ export function roomSizeMeters(room, pxPerMeter) {
 }
 
 /**
- * Streckt ein Raumpolygon auf die gewünschten Außenmaße in Grundriss-Pixeln.
+ * Stretches a room polygon to the desired outer dimensions in floor plan pixels.
  *
- * Die linke obere Ecke bleibt stehen — so wandert der Raum beim Tippen
- * einer neuen Länge nicht unter dem Blick weg, und ein an dieser Ecke
- * anschließender Nachbarraum bleibt bündig. Bei nicht rechteckigen Räumen
- * wird das ganze Polygon proportional mitgezogen. Achsen ohne Ausdehnung
- * (entartetes Polygon) bleiben unverändert: aus 0 lässt sich nichts
- * skalieren.
+ * The top-left corner stays fixed — so the room doesn't shift out from
+ * under the cursor while typing a new length, and a neighboring room
+ * attached at this corner stays flush. For non-rectangular rooms, the
+ * whole polygon is scaled proportionally. Axes with no extent
+ * (degenerate polygon) are left unchanged: nothing can be scaled from 0.
  */
 export function resizeRoomPoints(points, widthPx, heightPx) {
   const b = bboxOfPoints(points);

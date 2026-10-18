@@ -1,10 +1,10 @@
 /* ------------------------------------------------------------------ *
- * palette.js — Farbskalen für das Temperaturfeld.
+ * palette.js — Color scales for the temperature field.
  *
- * "coolwarm" ist die Voreinstellung: eine divergierende Blau→Grau→Rot-
- * Skala (Moreland), deren Helligkeit zu beiden Enden hin gleichmäßig
- * abfällt. Sie liest sich sofort als kalt/warm und hat — anders als eine
- * Regenbogenskala — keine falschen Kanten in der Mitte.
+ * "coolwarm" is the default: a diverging blue→gray→red scale
+ * (Moreland) whose brightness falls off evenly toward both ends.
+ * It reads instantly as cold/warm and — unlike a rainbow scale — has
+ * no false edges in the middle.
  * ------------------------------------------------------------------ */
 
 import { clamp } from './geometry.js';
@@ -17,7 +17,7 @@ const STOPS = {
     [0.75, [230, 126, 100]],
     [1.00, [180, 4, 38]],
   ],
-  // Kalt→warm ohne hellen Mittelpunkt; kräftiger auf dunklen Grundrissen.
+  // Cold→warm without a bright midpoint; more vivid on dark floor plans.
   thermal: [
     [0.00, [16, 48, 120]],
     [0.22, [22, 130, 168]],
@@ -55,19 +55,119 @@ const STOPS = {
   ],
 };
 
-export const PALETTE_NAMES = Object.keys(STOPS);
+export const PALETTE_NAMES = [...Object.keys(STOPS), 'custom'];
 
 const lutCache = new Map();
 
-/** 256×4 Lookup-Tabelle (RGBA, Alpha immer 255) für eine Palette. */
-export function paletteLUT(name) {
+/** Converts a supported colour value to [r, g, b]. */
+function parseColor(value) {
+  if (Array.isArray(value) && value.length >= 3) {
+    const rgb = value.slice(0, 3).map(Number);
+    if (rgb.every(Number.isFinite)) {
+      return rgb.map((v) => Math.round(clamp(v, 0, 255)));
+    }
+    return null;
+  }
+
+  if (typeof value !== 'string') return null;
+
+  const hex = value.trim();
+
+  const short = /^#([0-9a-f]{3})$/i.exec(hex);
+  if (short) {
+    return short[1].split('').map((c) => parseInt(c + c, 16));
+  }
+
+  const full = /^#([0-9a-f]{6})$/i.exec(hex);
+  if (full) {
+    const n = parseInt(full[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+
+  return null;
+}
+
+/**
+ * Converts user-defined palette stops to the internal format.
+ *
+ * Input:
+ *   [
+ *     [0.0, "#482382"],
+ *     [0.5, "#2db464"],
+ *     [1.0, "#b91923"]
+ *   ]
+ *
+ * Invalid stops are ignored. Stops are sorted by position.
+ * Missing 0/1 endpoints inherit the nearest supplied colour.
+ */
+export function normalizePaletteStops(stops) {
+  if (!Array.isArray(stops)) return null;
+
+  const byPosition = new Map();
+
+  for (const stop of stops) {
+    if (!Array.isArray(stop) || stop.length < 2) continue;
+
+    const position = Number(stop[0]);
+    const color = parseColor(stop[1]);
+
+    if (!Number.isFinite(position) || position < 0 || position > 1 || !color) continue;
+
+    // If a position is supplied more than once, the last one wins.
+    byPosition.set(position, [position, color]);
+  }
+
+  const result = [...byPosition.values()].sort((a, b) => a[0] - b[0]);
+
+  if (result.length < 2) return null;
+
+  if (result[0][0] > 0) {
+    result.unshift([0, [...result[0][1]]]);
+  }
+
+  const last = result[result.length - 1];
+  if (last[0] < 1) {
+    result.push([1, [...last[1]]]);
+  }
+
+  return result;
+}
+
+function resolvePalette(name, customStops) {
+  if (name === 'custom') {
+    const stops = normalizePaletteStops(customStops);
+
+    if (stops) {
+      return {
+        key: `custom:${JSON.stringify(stops)}`,
+        stops,
+      };
+    }
+  }
+
   const key = STOPS[name] ? name : 'coolwarm';
-  if (lutCache.has(key)) return lutCache.get(key);
-  const stops = STOPS[key];
+
+  return {
+    key,
+    stops: STOPS[key],
+  };
+}
+
+/** 256×4 lookup table (RGBA, alpha always 255) for a palette. */
+export function paletteLUT(name, customStops) {
+  const palette = resolvePalette(name, customStops);
+
+  if (lutCache.has(palette.key)) return lutCache.get(palette.key);
+
+  const stops = palette.stops;
   const lut = new Uint8ClampedArray(256 * 4);
+
   for (let i = 0; i < 256; i++) {
     const ratio = i / 255;
-    let lo = stops[0], hi = stops[stops.length - 1];
+
+    let lo = stops[0];
+    let hi = stops[stops.length - 1];
+
     for (let s = 0; s < stops.length - 1; s++) {
       if (ratio >= stops[s][0] && ratio <= stops[s + 1][0]) {
         lo = stops[s];
@@ -75,34 +175,49 @@ export function paletteLUT(name) {
         break;
       }
     }
+
     const span = hi[0] - lo[0] || 1;
     const f = (ratio - lo[0]) / span;
+
     lut[i * 4 + 0] = Math.round(lo[1][0] + f * (hi[1][0] - lo[1][0]));
     lut[i * 4 + 1] = Math.round(lo[1][1] + f * (hi[1][1] - lo[1][1]));
     lut[i * 4 + 2] = Math.round(lo[1][2] + f * (hi[1][2] - lo[1][2]));
     lut[i * 4 + 3] = 255;
   }
-  lutCache.set(key, lut);
+
+  lutCache.set(palette.key, lut);
   return lut;
 }
 
-/** CSS-Gradient für die Legende. */
-export function paletteGradientCss(name, direction = '90deg') {
-  const stops = STOPS[STOPS[name] ? name : 'coolwarm'];
-  const parts = stops.map(([pos, [r, g, b]]) => `rgb(${r},${g},${b}) ${(pos * 100).toFixed(0)}%`);
+/** CSS gradient for the legend. */
+export function paletteGradientCss(name, direction = '90deg', customStops) {
+  const { stops } = resolvePalette(name, customStops);
+
+  const parts = stops.map(
+    ([pos, [r, g, b]]) =>
+      `rgb(${r},${g},${b}) ${(pos * 100).toFixed(0)}%`
+  );
+
   return `linear-gradient(${direction}, ${parts.join(', ')})`;
 }
 
-export function paletteColorCss(name, ratio) {
-  const lut = paletteLUT(name);
+export function paletteColorCss(name, ratio, customStops) {
+  const lut = paletteLUT(name, customStops);
   const i = Math.round(clamp(ratio, 0, 1) * 255) * 4;
+
   return `rgb(${lut[i]}, ${lut[i + 1]}, ${lut[i + 2]})`;
 }
 
-/** Schwarz oder Weiß — je nachdem, was auf der Palettenfarbe besser lesbar ist. */
-export function readableTextOn(name, ratio) {
-  const lut = paletteLUT(name);
+/** Black or white — whichever reads better on top of the palette color. */
+export function readableTextOn(name, ratio, customStops) {
+  const lut = paletteLUT(name, customStops);
   const i = Math.round(clamp(ratio, 0, 1) * 255) * 4;
-  const luminance = (0.2126 * lut[i] + 0.7152 * lut[i + 1] + 0.0722 * lut[i + 2]) / 255;
+
+  const luminance =
+    (0.2126 * lut[i] +
+      0.7152 * lut[i + 1] +
+      0.0722 * lut[i + 2]) /
+    255;
+
   return luminance > 0.55 ? '#11151c' : '#ffffff';
 }

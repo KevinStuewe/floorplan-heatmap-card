@@ -1,12 +1,17 @@
 /* ------------------------------------------------------------------ *
- * editor.js — das Formular im Lovelace-Konfigurationsdialog.
+ * editor.js — the form in the Lovelace configuration dialog.
  *
- * Bewusst schlank gehalten: alles Räumliche passiert im Vollbild-Editor
- * (plan-editor.js), hier stehen nur die Darstellungs- und Modellwerte.
+ * Deliberately kept lean: everything spatial happens in the fullscreen
+ * editor (plan-editor.js), only display and model values live here.
  * ------------------------------------------------------------------ */
 
 import { DEFAULT_TRANSMITTANCE, normalizeConfig } from './model.js';
-import { PALETTE_NAMES, paletteGradientCss } from './palette.js';
+import {
+  PALETTE_NAMES,
+  normalizePaletteStops,
+  paletteColorCss,
+  paletteGradientCss,
+} from './palette.js';
 import { openPlanEditor } from './plan-editor.js';
 import { t, detectLanguage } from './i18n.js';
 
@@ -16,7 +21,14 @@ const PALETTE_LABEL_KEYS = {
   viridis: 'editor.paletteViridis',
   inferno: 'editor.paletteInferno',
   turbo: 'editor.paletteTurbo',
+  custom: 'editor.paletteCustom',
 };
+
+const DEFAULT_CUSTOM_PALETTE_STOPS = [
+  [0.00, '#2166AC'],
+  [0.50, '#F7F7F7'],
+  [1.00, '#B2182B'],
+];
 
 const TRANSMITTANCE_LABEL_KEYS = {
   exterior: 'label.exterior',
@@ -52,7 +64,79 @@ const FORM_STYLES = `
     border: 1px solid var(--divider-color, rgba(127,140,158,.35));
     border-radius: 8px; padding: 8px 10px; font-size: 14px; font-family: inherit;
   }
-  input:focus, select:focus { outline: none; border-color: var(--primary-color); }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+
+  .palette-stop-head,
+  .palette-stop {
+    display: grid;
+    grid-template-columns: 76px 36px minmax(0, 1fr) 32px;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .palette-stop-head {
+    margin: 8px 0 5px;
+    font-size: 11px;
+    color: var(--secondary-text-color);
+  }
+
+  .palette-stop-head .color-head {
+    grid-column: 2 / 4;
+  }
+
+  .palette-stop-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .palette-stop input[type=color] {
+    width: 36px;
+    height: 34px;
+    padding: 2px;
+    border: 1px solid var(--divider-color, rgba(127,140,158,.35));
+    border-radius: 7px;
+    background: var(--card-background-color, #fff);
+    cursor: pointer;
+  }
+
+  .palette-stop-remove {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 7px;
+    background: var(--divider-color, rgba(127,140,158,.18));
+    color: var(--primary-text-color);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .palette-stop-remove:hover {
+    background: var(--divider-color, rgba(127,140,158,.32));
+  }
+
+  .palette-stop-remove:disabled {
+    opacity: .3;
+    cursor: default;
+  }
+
+  .palette-add {
+    margin-top: 9px;
+    padding: 7px 11px;
+    border: 1px solid var(--divider-color, rgba(127,140,158,.35));
+    border-radius: 8px;
+    background: transparent;
+    color: var(--primary-text-color);
+    font-family: inherit;
+    cursor: pointer;
+  }
+
   input[type=range] { width: 100%; accent-color: var(--primary-color); }
   input:disabled { opacity: .5; }
   .check {
@@ -100,10 +184,10 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
   }
 
   setConfig(config) {
-    // Home Assistant spiegelt jede von uns gemeldete Änderung sofort
-    // wieder herein. Würden wir darauf neu rendern, wäre der gerade
-    // gezogene Regler mitten in der Bewegung durch ein frisches Element
-    // ersetzt — das Ziehen bräche nach dem ersten Schritt ab.
+    // Home Assistant immediately reflects back every change we report.
+    // If we re-rendered on that, a slider currently being dragged would
+    // be replaced by a fresh element mid-drag — the drag would stop
+    // dead after the first step.
     const serialized = JSON.stringify(config);
     if (serialized === this._configJson) return;
     this._configJson = serialized;
@@ -112,9 +196,9 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
   }
 
   set hass(hass) {
-    // Ein Neurendern bei jedem hass-Update würde Regler mitten in der
-    // Bewegung ersetzen (siehe setConfig) — deshalb nur bei tatsächlichem
-    // Sprachwechsel (typischerweise: erstes hass-Update nach dem Erzeugen).
+    // Re-rendering on every hass update would replace sliders mid-drag
+    // (see setConfig) — so only re-render on an actual language change
+    // (typically: the first hass update after creation).
     const prevLang = this._hass ? this._lang() : null;
     this._hass = hass;
     if (this._config && this._lang() !== prevLang) this._render();
@@ -137,6 +221,7 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
     const cfg = normalizeConfig(this._config);
     const fp = cfg.floorplan;
     const lang = this._lang();
+    const paletteStops = paletteStopsForEditor(cfg.palette_stops);
     const tr = (key, vars) => t(lang, key, vars);
     const counts = tr('editor.counts', {
       rooms: fp.rooms.length, sensors: fp.sensors.length, openings: fp.openings.length,
@@ -170,7 +255,59 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
               </select>
             </div>
           </div>
-          <div class="swatch" style="background:${paletteGradientCss(cfg.palette)}"></div>
+          <div class="swatch" style="background:${paletteGradientCss(cfg.palette, '90deg', cfg.palette_stops)}"></div>
+          <div class="field" ${cfg.palette === 'custom' ? '' : 'hidden'} style="margin-top:12px">
+            <label>${tr('editor.paletteStops')}</label>
+
+            <div class="palette-stop-head">
+              <span>${tr('editor.palettePosition')}</span>
+              <span class="color-head">${tr('editor.paletteColor')}</span>
+              <span></span>
+            </div>
+
+            <div class="palette-stop-list">
+              ${paletteStops.map(([position, color]) => `
+                <div class="palette-stop" data-palette-stop>
+                  <input
+                    type="number"
+                    data-palette-position
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="${position}"
+                  >
+
+                  <input
+                    type="color"
+                    data-palette-picker
+                    value="${escapeAttr(color)}"
+                    title="${tr('editor.paletteColor')}"
+                  >
+
+                  <input
+                    type="text"
+                    data-palette-color
+                    value="${escapeAttr(color)}"
+                    spellcheck="false"
+                  >
+
+                  <button
+                    type="button"
+                    class="palette-stop-remove"
+                    data-remove-palette-stop
+                    title="${tr('editor.paletteRemoveStop')}"
+                    ${paletteStops.length <= 2 ? 'disabled' : ''}
+                  >×</button>
+                </div>
+              `).join('')}
+            </div>
+
+            <button type="button" class="palette-add" data-add-palette-stop>
+              + ${tr('editor.paletteAddStop')}
+            </button>
+
+            <div class="note">${tr('editor.paletteStopsNote')}</div>
+          </div>
 
           <div class="field" style="margin-top:12px">
             <label class="check"><input type="checkbox" data-key="auto_range" ${cfg.auto_range ? 'checked' : ''}>
@@ -305,19 +442,41 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
         else if (input.type === 'number' || input.type === 'range') value = parseFloat(input.value);
         else value = input.value;
         if (typeof value === 'number' && !Number.isFinite(value)) return;
+        if (
+          key === 'palette' &&
+          value === 'custom' &&
+          !normalizePaletteStops(this._config.palette_stops)
+        ) {
+          this._emit({
+            palette: 'custom',
+            palette_stops: DEFAULT_CUSTOM_PALETTE_STOPS.map(
+              ([position, color]) => [position, color]
+            ),
+          });
+          return;
+        }
 
-        // Schieberegler dürfen kein Neurendern auslösen — sonst wird das
-        // Element beim Ziehen ersetzt. Stattdessen nur die Zahl daneben
-        // nachziehen; das übrige Formular hängt nicht an diesen Werten.
+        // Sliders must not trigger a re-render — otherwise the element
+        // gets replaced while being dragged. Instead just update the
+        // number next to it; the rest of the form doesn't depend on
+        // these values.
         if (input.type === 'range') {
           this._setReadout(key, value, cfg.unit);
           this._emit({ [key]: value }, false);
           return;
         }
+        // Number fields fire oninput on every keystroke; a re-render
+        // would replace the field mid-input and kick out focus (see
+        // auto_range: nothing in the form depends live on min/max, so a
+        // re-render here isn't needed anyway).
+        if (input.type === 'number') {
+          this._emit({ [key]: value }, false);
+          return;
+        }
         this._emit({ [key]: value });
       };
-      // Textfelder erst beim Verlassen übernehmen, damit der Fokus nicht
-      // nach jedem Tastendruck verloren geht.
+      // Only apply text fields on blur, so focus isn't lost after every
+      // keystroke.
       if (input.type === 'text') input.onchange = handler;
       else input.oninput = handler;
     });
@@ -331,9 +490,134 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
         this._emit({ transmittance: { ...this._readTransmittance() } }, false);
       };
     });
+
+    const commitPaletteStops = (source) => {
+      const stops = this._readPaletteStops();
+
+      if (!normalizePaletteStops(stops)) {
+        if (source) {
+          source.setCustomValidity(tr('editor.paletteStopsInvalid'));
+          source.reportValidity();
+        }
+        return;
+      }
+
+      this.shadowRoot
+        .querySelectorAll('[data-palette-position], [data-palette-color]')
+        .forEach((input) => input.setCustomValidity(''));
+
+      this._emit({ palette_stops: stops });
+    };
+
+    this.shadowRoot.querySelectorAll('[data-palette-position]').forEach((input) => {
+      input.onchange = () => {
+        const value = parseFloat(input.value);
+
+        if (!Number.isFinite(value) || value < 0 || value > 1) {
+          input.setCustomValidity(tr('editor.paletteStopsInvalid'));
+          input.reportValidity();
+          return;
+        }
+
+        input.setCustomValidity('');
+        commitPaletteStops(input);
+      };
+    });
+
+    this.shadowRoot.querySelectorAll('[data-palette-color]').forEach((input) => {
+      input.onchange = () => {
+        const color = editorColorHex(input.value);
+
+        if (!color) {
+          input.setCustomValidity(tr('editor.paletteStopsInvalid'));
+          input.reportValidity();
+          return;
+        }
+
+        input.setCustomValidity('');
+        input.value = color;
+
+        const row = input.closest('[data-palette-stop]');
+        const picker = row && row.querySelector('[data-palette-picker]');
+        if (picker) picker.value = color;
+
+        commitPaletteStops(input);
+      };
+    });
+
+    this.shadowRoot.querySelectorAll('[data-palette-picker]').forEach((picker) => {
+      const row = picker.closest('[data-palette-stop]');
+      const text = row && row.querySelector('[data-palette-color]');
+
+      picker.oninput = () => {
+        if (text) text.value = picker.value.toUpperCase();
+      };
+
+      picker.onchange = () => {
+        if (text) text.value = picker.value.toUpperCase();
+        commitPaletteStops(picker);
+      };
+    });
+
+    this.shadowRoot.querySelectorAll('[data-remove-palette-stop]').forEach((button) => {
+      button.onclick = () => {
+        const rows = [...this.shadowRoot.querySelectorAll('[data-palette-stop]')];
+        if (rows.length <= 2) return;
+
+        const row = button.closest('[data-palette-stop]');
+        const index = rows.indexOf(row);
+        if (index < 0) return;
+
+        const stops = this._readPaletteStops();
+        stops.splice(index, 1);
+
+        this._emit({ palette_stops: stops });
+      };
+    });
+
+    const addPaletteStop = this.shadowRoot.querySelector('[data-add-palette-stop]');
+
+    if (addPaletteStop) {
+      addPaletteStop.onclick = () => {
+        const stops = paletteStopsForEditor(this._readPaletteStops());
+
+        let position = 0.5;
+        let largestGap = -1;
+
+        for (let i = 0; i < stops.length - 1; i++) {
+          const gap = stops[i + 1][0] - stops[i][0];
+
+          if (gap > largestGap) {
+            largestGap = gap;
+            position = (stops[i][0] + stops[i + 1][0]) / 2;
+          }
+        }
+
+        position = Number(position.toFixed(2));
+
+        // Use the colour already represented at the new position, so merely
+        // adding a stop doesn't change the appearance of the gradient.
+        const color =
+          rgbCssToHex(paletteColorCss('custom', position, stops)) || '#808080';
+
+        stops.push([position, color]);
+        stops.sort((a, b) => a[0] - b[0]);
+
+        this._emit({ palette_stops: stops });
+      };
+    }
   }
 
-  /** Liest alle Durchlässigkeits-Regler aus dem Formular. */
+  _readPaletteStops() {
+    return [...this.shadowRoot.querySelectorAll('[data-palette-stop]')].map(
+      (row) => [
+        parseFloat(row.querySelector('[data-palette-position]').value),
+        row.querySelector('[data-palette-color]').value.trim(),
+      ]
+    );
+  }
+
+  /** Reads all transmittance sliders from the form. */
   _readTransmittance() {
     const out = { ...DEFAULT_TRANSMITTANCE, ...(this._config.transmittance || {}) };
     this.shadowRoot.querySelectorAll('[data-trans]').forEach((input) => {
@@ -368,9 +652,9 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
       hass: this._hass,
     });
     if (!result) return;
-    // `config-changed` verpufft, wenn Home Assistant den Dialog samt
-    // Formular in der Zwischenzeit abgeräumt hat — dann wäre die ganze
-    // Zeichenarbeit lautlos verloren. Lieber sichtbar melden.
+    // `config-changed` fizzles out if Home Assistant has torn down the
+    // dialog and form in the meantime — all that drawing work would be
+    // lost silently. Better to report it visibly.
     if (!this.isConnected) {
       console.warn(t(this._lang(), 'editor.dialogClosedWarning'));
       return;
@@ -387,4 +671,77 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
 function escapeAttr(value) {
   return String(value == null ? '' : value).replace(/[&<>"']/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function editorColorHex(value) {
+  if (Array.isArray(value) && value.length >= 3) {
+    const rgb = value.slice(0, 3).map(Number);
+    if (!rgb.every(Number.isFinite)) return null;
+
+    return `#${rgb.map((v) =>
+      Math.round(Math.min(255, Math.max(0, v)))
+        .toString(16)
+        .padStart(2, '0')
+    ).join('').toUpperCase()}`;
+  }
+
+  if (typeof value !== 'string') return null;
+
+  const text = value.trim();
+
+  const short = /^#([0-9a-f]{3})$/i.exec(text);
+  if (short) {
+    return `#${short[1]
+      .split('')
+      .map((c) => c + c)
+      .join('')
+      .toUpperCase()}`;
+  }
+
+  const full = /^#([0-9a-f]{6})$/i.exec(text);
+  if (full) return `#${full[1].toUpperCase()}`;
+
+  return null;
+}
+
+function paletteStopsForEditor(stops) {
+  const result = Array.isArray(stops)
+    ? stops
+        .map((stop) => {
+          if (!Array.isArray(stop) || stop.length < 2) return null;
+
+          const position = Number(stop[0]);
+          const color = editorColorHex(stop[1]);
+
+          if (
+            !Number.isFinite(position) ||
+            position < 0 ||
+            position > 1 ||
+            !color
+          ) {
+            return null;
+          }
+
+          return [position, color];
+        })
+        .filter(Boolean)
+        .sort((a, b) => a[0] - b[0])
+    : [];
+
+  if (result.length >= 2) return result;
+
+  return DEFAULT_CUSTOM_PALETTE_STOPS.map(
+    ([position, color]) => [position, color]
+  );
+}
+
+function rgbCssToHex(value) {
+  const match = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/.exec(value);
+  if (!match) return null;
+
+  return `#${match
+    .slice(1)
+    .map((v) => Number(v).toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()}`;
 }

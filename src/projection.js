@@ -1,34 +1,34 @@
 /* ------------------------------------------------------------------ *
- * projection.js — axonometrische 2,5D-Projektion.
+ * projection.js — axonometric 2.5D projection.
  *
- * Zwei Winkel steuern die Ansicht:
- *   yaw    Drehung um die Hochachse — man läuft um das Modell herum
- *   pitch  Höhenwinkel: 90° = senkrecht von oben, kleiner = flacher
+ * Two angles control the view:
+ *   yaw    rotation around the vertical axis — walking around the model
+ *   pitch  elevation angle: 90° = straight down, smaller = flatter
  *
- * Bewusst eine PARALLELE Projektion, keine perspektivische. Der Grund
- * ist nicht nur Geschmack: die Abbildung der Bodenebene (z = 0) ist
- * dadurch eine affine Transformation und lässt sich als 2×3-Matrix an
- * ctx.transform() übergeben. Die fertig gerechnete Heatmap kann also
- * unverändert als Bild auf den Boden gelegt werden. Eine perspektivische
- * Ansicht bräuchte eine Homographie, die Canvas 2D nicht beherrscht —
- * man müsste den Boden in Kacheln zerlegen und stückweise annähern.
+ * Deliberately a PARALLEL projection, not a perspective one. The reason
+ * isn't just taste: it makes the mapping of the floor plane (z = 0) an
+ * affine transformation, expressible as a 2×3 matrix passed to
+ * ctx.transform(). The pre-computed heatmap can then be stamped onto the
+ * floor unmodified. A perspective view would need a homography, which
+ * Canvas 2D doesn't support — the floor would have to be split into
+ * tiles and approximated piecewise.
  *
- * Bildschirmkoordinaten (y zeigt nach unten):
+ * Screen coordinates (y points down):
  *   rx =  (x−ox)·cos θ − (y−oy)·sin θ
  *   ry =  (x−ox)·sin θ + (y−oy)·cos θ
  *   sx =  rx
  *   sy =  ry·sin φ − z·cos φ
  *
- * Bei φ = 90° fällt der z-Term weg und es bleibt exakt die Draufsicht.
- * `ry` ist zugleich der Tiefenschlüssel: je größer, desto näher am
- * Betrachter — danach wird für den Maleralgorithmus sortiert.
+ * At φ = 90° the z term drops out, leaving exactly the top-down view.
+ * `ry` is also the depth key: the larger it is, the closer to the
+ * viewer — used to sort for the painter's algorithm.
  * ------------------------------------------------------------------ */
 
 import { floorplanPoints } from './model.js';
 
 export const DEG = Math.PI / 180;
 
-/** Flacher als das wird die Bodenmatrix singulär und nicht mehr umkehrbar. */
+/** Below this, the floor matrix becomes singular and can no longer be inverted. */
 export const MIN_PITCH_DEG = 12;
 export const MAX_PITCH_DEG = 90;
 
@@ -55,8 +55,8 @@ function rawExtent({ floorplan, yaw, pitch, wallHeight }) {
   const sp = Math.sin(pitch), cp = Math.cos(pitch);
 
   let pMinX = Infinity, pMinY = Infinity, pMaxX = -Infinity, pMaxY = -Infinity;
-  // Ober- und Unterkante mitnehmen: die Wandkronen ragen nach oben aus
-  // dem Grundriss heraus und gehören mit ins Bild.
+  // Include the top and bottom edge: the wall tops rise above the
+  // floor plan outline and need to be part of the image.
   for (const [x, y] of points) {
     const rx = (x - ox) * cy - (y - oy) * sy;
     const ry = (x - ox) * sy + (y - oy) * cy;
@@ -77,14 +77,14 @@ function rawExtent({ floorplan, yaw, pitch, wallHeight }) {
   };
 }
 
-/** Seitenverhältnis der projizierten Szene — für die Höhe der Bühne. */
+/** Aspect ratio of the projected scene — used for the stage height. */
 export function projectedAspect(options) {
   const extent = rawExtent(options);
   return extent.width / extent.height;
 }
 
 /**
- * @param {object} options floorplan, yaw/pitch (Bogenmaß), wallHeight, width, height, padding
+ * @param {object} options floorplan, yaw/pitch (radians), wallHeight, width, height, padding
  */
 export function createProjection(options) {
   const { width, height, padding = 8 } = options;
@@ -108,7 +108,7 @@ export function createProjection(options) {
     };
   };
 
-  // Affine Matrix der Bodenebene für ctx.transform(a, b, c, d, e, f):
+  // Affine matrix of the floor plane for ctx.transform(a, b, c, d, e, f):
   //   sx = a·x + c·y + e     sy = b·x + d·y + f
   const a = cy * scale;
   const b = sy * sp * scale;
@@ -120,15 +120,15 @@ export function createProjection(options) {
 
   return {
     scale,
-    // Wie stark die Bodenebene gestaucht erscheint: 1 = Draufsicht,
-    // gegen 0 = fast waagrechter Blick. Kreise auf dem Boden werden
-    // damit zu Ellipsen.
+    // How strongly the floor plane appears compressed: 1 = top-down
+    // view, toward 0 = nearly horizontal view. Circles on the floor
+    // become ellipses as a result.
     flatness: sp,
     project,
     depthOf: (x, y) => (x - ox) * sy + (y - oy) * cy,
     floorMatrix: [a, b, c, d, matE, matF],
     floorPoint: (x, y) => [a * x + c * y + matE, b * x + d * y + matF],
-    /** Bildschirmpunkt zurück auf die Bodenebene — für den Hover-Wert. */
+    /** Screen point back onto the floor plane — for the hover value. */
     unprojectFloor: (sx, sy2) => {
       if (Math.abs(det) < 1e-9) return null;
       const px = sx - matE, py = sy2 - matF;

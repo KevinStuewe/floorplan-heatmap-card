@@ -1,20 +1,21 @@
 /* ------------------------------------------------------------------ *
- * solver.js — stationäre Wärmediffusion über den Grundriss.
+ * solver.js — steady-state heat diffusion across the floor plan.
  *
- * Modell: ∇·(k∇T) = 0 auf einem regelmäßigen Gitter. Die Sensoren sind
- * Dirichlet-Randbedingungen (feste Werte auf einer kleinen Scheibe um
- * den Messpunkt), jede Gitterkante zwischen zwei Zellen bekommt eine
- * Leitfähigkeit k: 1 für freie Luft, weniger, wenn die Kante eine Wand
- * kreuzt — je nach Bauteil (Außenwand, Innenwand, Tür, Fenster).
+ * Model: ∇·(k∇T) = 0 on a regular grid. The sensors are Dirichlet
+ * boundary conditions (fixed values on a small disc around the
+ * measurement point); every grid edge between two cells gets a
+ * conductance k: 1 for free air, less if the edge crosses a wall —
+ * depending on the component (exterior wall, interior wall, door,
+ * window).
  *
- * Dadurch fällt die Temperatur nicht mit der Luftlinie ab, sondern
- * "fließt" um Wände herum durch die Öffnungen — und ein Nachbarraum
- * hinter einer geschlossenen Tür bleibt spürbar entkoppelt, statt
- * einfach nur weit weg zu sein.
+ * As a result, temperature doesn't drop off with straight-line distance,
+ * but "flows" around walls through the openings — and a neighboring room
+ * behind a closed door stays noticeably decoupled, instead of just being
+ * far away.
  *
- * Gelöst wird mit SOR (Gauß-Seidel mit Überrelaxation). Weil das Feld
- * zwischen zwei Sensor-Updates fast gleich bleibt, startet jeder Lauf
- * warm vom vorigen Ergebnis und braucht dann nur noch wenige Iterationen.
+ * Solved with SOR (Gauss-Seidel with over-relaxation). Because the field
+ * barely changes between two sensor updates, each run starts warm from
+ * the previous result and then only needs a few more iterations.
  * ------------------------------------------------------------------ */
 
 import { pointInPolygon, segIntersectParams, clamp } from './geometry.js';
@@ -23,24 +24,24 @@ import { buildWalls, floorplanBounds, DEFAULT_TRANSMITTANCE } from './model.js';
 const MIN_CONDUCTANCE = 1e-4;
 
 /**
- * Wie viele Meter freie Luft ein Bauteil mit Durchlässigkeit t ersetzt:
- *   Luft-Äquivalent = (1/t − 1) · WALL_AIR_EQUIVALENT_M
+ * How many meters of free air a component with transmittance t replaces:
+ *   air equivalent = (1/t − 1) · WALL_AIR_EQUIVALENT_M
  *
- * Ohne diese Umrechnung hinge die Wirkung einer Wand an der
- * Gitterauflösung: eine Wand belegt immer genau eine Gitterkante, aber
- * ein Raum besteht bei feinem Gitter aus mehr Zellen — die Luft im Raum
- * bekäme also immer mehr Widerstand, die Wand aber nicht. Über den
- * Umweg "entspricht so und so vielen Metern Luft" bleibt das Verhältnis
- * konstant, egal wie fein gerechnet wird.
+ * Without this conversion, a wall's effect would depend on grid
+ * resolution: a wall always occupies exactly one grid edge, but a room
+ * consists of more cells at a finer grid — so the air in the room would
+ * keep gaining resistance while the wall wouldn't. Going via "equivalent
+ * to this many meters of air" keeps the ratio constant no matter how
+ * fine the grid is.
  *
- * Der Faktor 5 sorgt dafür, dass bei den Voreinstellungen rund vier
- * Fünftel des Temperaturunterschieds an der Wand abfallen und nicht im
- * Raum davor — reale Räume durchmischen sich durch Konvektion viel
- * stärker, als eine reine Wärmeleitungsrechnung es täte.
+ * The factor of 5 ensures that, with the default settings, roughly
+ * four-fifths of the temperature difference drops across the wall
+ * rather than in the room in front of it — real rooms mix far more
+ * through convection than a pure heat-conduction calculation would.
  */
 const WALL_AIR_EQUIVALENT_M = 5;
 
-/** Toleranz für die Zuordnung eines Wandtreffers zu genau einer Gitterkante. */
+/** Tolerance for assigning a wall hit to exactly one grid edge. */
 const FACE_EPS = 1e-6;
 
 export class HeatField {
@@ -59,7 +60,7 @@ export class HeatField {
     this._build();
   }
 
-  /** Signatur, mit der die Karte erkennt, ob das Gitter neu gebaut werden muss. */
+  /** Signature the card uses to detect whether the grid needs to be rebuilt. */
   static signature(floorplan, options) {
     return JSON.stringify([floorplan, options.cellSize, options.sensorRadius, options.transmittance, options.pxPerMeter]);
   }
@@ -88,8 +89,8 @@ export class HeatField {
     const rooms = this.fp.rooms || [];
 
     if (!rooms.length) {
-      // Nur Wände gezeichnet, keine Räume: die gesamte Bounding-Box zählt
-      // als Fläche, damit auch dieser Workflow ein Feld ergibt.
+      // Only walls drawn, no rooms: the entire bounding box counts as
+      // area, so this workflow also produces a field.
       inside.fill(1);
       this.inside = inside;
       this.roomOfCell = null;
@@ -115,9 +116,9 @@ export class HeatField {
   }
 
   /**
-   * Sortiert jede Wand in die Gitterzellen ein, die sie berührt (plus
-   * 8er-Nachbarschaft). Für eine Gitterkante müssen dann nur noch die
-   * Wände aus dem Bucket ihrer Zelle geprüft werden statt alle.
+   * Buckets each wall into the grid cells it touches (plus its 8
+   * neighbors). For a grid edge, only the walls in its cell's bucket
+   * then need to be checked instead of all of them.
    */
   _bucketWalls(walls) {
     const { cols, rows, n } = this;
@@ -150,9 +151,9 @@ export class HeatField {
   }
 
   /**
-   * Durchlässigkeit an einem Wanddurchstoßpunkt. Öffnungen sind eigene
-   * Geometrie und gewinnen gegen die Wand — die durchlässigste Öffnung
-   * an der Stelle bestimmt den Wert.
+   * Transmittance at a wall crossing point. Openings are separate
+   * geometry and win against the wall — the most transmissive opening
+   * at that spot determines the value.
    */
   _transmittanceAt(wall, px, py) {
     const trans = this.opts.transmittance;
@@ -172,7 +173,7 @@ export class HeatField {
     return value;
   }
 
-  /** Durchlässigkeit 0…1 → Leitfähigkeit einer Gitterkante (freie Luft = 1). */
+  /** Transmittance 0…1 → conductance of a grid edge (free air = 1). */
   _conductance(t) {
     if (t >= 1) return 1;
     if (t <= 0) return 0;
@@ -186,8 +187,8 @@ export class HeatField {
     const walls = buildWalls(this.fp);
     const buckets = this._bucketWalls(walls);
 
-    const condX = new Float32Array(n); // Kante (c,r) → (c+1,r)
-    const condY = new Float32Array(n); // Kante (c,r) → (c,r+1)
+    const condX = new Float32Array(n); // edge (c,r) → (c+1,r)
+    const condY = new Float32Array(n); // edge (c,r) → (c,r+1)
 
     const faceConductance = (ax, ay, bx, by, candidates) => {
       let t = 1;
@@ -196,14 +197,14 @@ export class HeatField {
           const w = walls[candidates[i]];
           const hit = segIntersectParams(ax, ay, bx, by, w.x1, w.y1, w.x2, w.y2, FACE_EPS);
           if (!hit) continue;
-          // Halboffenes Intervall [0, 1): trifft eine Wand genau einen
-          // Zellmittelpunkt, sähen sie sonst BEIDE angrenzenden Kanten
-          // und die Wand dämpfte doppelt — sichtbar als sprunghaft
-          // stärkere Dämmung, sobald das Gitter zufällig passend liegt.
+          // Half-open interval [0, 1): if a wall hits exactly one cell
+          // center, both adjacent edges would otherwise see it and the
+          // wall would dampen twice — visible as abruptly stronger
+          // insulation whenever the grid happens to line up that way.
           if (hit.t >= 1 - FACE_EPS) continue;
-          // Mehrere gekreuzte Wände: die dichteste bestimmt den Durchlass.
-          // (Kein Produkt — sonst dämpfen zwei deckungsgleiche Raumkanten
-          // dieselbe physische Wand doppelt.)
+          // Multiple crossed walls: the densest one determines the
+          // transmittance. (Not a product — otherwise two coincident
+          // room edges would dampen the same physical wall twice.)
           const value = this._transmittanceAt(w, hit.x, hit.y);
           if (value < t) t = value;
         }
@@ -232,7 +233,7 @@ export class HeatField {
     this.walls = walls;
   }
 
-  /** Zellen, deren Mittelpunkt im Sensorradius liegt → feste Werte. */
+  /** Cells whose center lies within the sensor radius → fixed values. */
   _buildDirichlet(sensorValues) {
     const { cols, rows, n, inside } = this;
     const cs = this.opts.cellSize;
@@ -267,7 +268,7 @@ export class HeatField {
       }
 
       if (!hits) {
-        // Sensor außerhalb der Räume platziert: nächstgelegene Fläche nehmen.
+        // Sensor placed outside the rooms: use the nearest area instead.
         const idx = this._nearestInsideCell(s.x, s.y);
         if (idx >= 0) {
           fixed[idx] = 1;
@@ -305,7 +306,7 @@ export class HeatField {
     return best;
   }
 
-  /** Zellen, die über leitende Kanten überhaupt einen Sensor "sehen". */
+  /** Cells that can "see" a sensor at all via conductive edges. */
   _reachability(fixed) {
     const { cols, rows, n, condX, condY } = this;
     const reach = new Uint8Array(n);
@@ -325,8 +326,8 @@ export class HeatField {
   }
 
   /**
-   * @param {number[]} sensorValues Werte in der Reihenfolge von fp.sensors (NaN = unbekannt)
-   * @returns {boolean} true, wenn ein Feld vorliegt
+   * @param {number[]} sensorValues Values in the order of fp.sensors (NaN = unknown)
+   * @returns {boolean} true if a field is available
    */
   solve(sensorValues) {
     const started = (typeof performance !== 'undefined' ? performance : Date).now();
@@ -349,9 +350,9 @@ export class HeatField {
 
     const span = Math.max(0.05, dirichlet.max - dirichlet.min);
     const tol = span * 1e-4;
-    // Gauß-Seidel braucht grob so viele Durchläufe, wie das Gitter breit
-    // ist — die Grenze muss also mit der Auflösung mitwachsen, sonst
-    // liefern feine Gitter unfertige Felder.
+    // Gauss-Seidel needs roughly as many passes as the grid is wide —
+    // so the limit must scale with resolution, or fine grids will
+    // produce unfinished fields.
     const maxIter = this._warm ? 200 : clamp(6 * Math.max(cols, rows), 400, 4000);
     const omega = 1.85;
     let iter = 0;
@@ -403,7 +404,7 @@ export class HeatField {
     return true;
   }
 
-  /** Bilinear interpolierter Feldwert an einer Grundriss-Koordinate, sonst NaN. */
+  /** Bilinearly interpolated field value at a floor-plan coordinate, else NaN. */
   sample(x, y) {
     if (!this.T) return NaN;
     const { cols, rows, inside, T } = this;
