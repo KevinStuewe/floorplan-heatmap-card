@@ -134,6 +134,46 @@ dem Grundriss ab — **auch dafür lohnt sich das Kalibrieren des Maßstabs.**
 Das Temperaturfeld ändert sich durch die Ansicht nicht; sie ist reine
 Darstellung.
 
+## Verlaufszeitleiste
+
+Mit `show_timeline: true` erscheint unter der Legende eine interaktive
+Verlaufszeitleiste. Dieselben Einstellungen stehen im grafischen Editor
+unter **Verlauf & Zeitleiste** zur Verfügung.
+
+Mit der Zeitleiste kannst du:
+
+- historische Heatmap-Zeitpunkte mit dem Regler durchgehen;
+- den gewählten Zeitraum automatisch mit `0,5×`, `1×`, `2×` oder `4×`
+  abspielen;
+- zwischen **Heute**, **24 Std.**, **48 Std.** und **7 T.** wechseln, ohne
+  die Kartenkonfiguration umzuschreiben;
+- jederzeit direkt zu **LIVE** zurückspringen;
+- Sonnenauf- und -untergänge als Markierungen sehen, sofern `sun.sun` in
+  der Home-Assistant-History verfügbar ist.
+
+**Heute** reicht von der lokalen Mitternacht bis jetzt. Die anderen
+Voreinstellungen sind rollierende Zeitfenster bis zum aktuellen Zeitpunkt.
+`history_hours` bestimmt den Zeitraum, mit dem die Karte startet;
+`history_step_minutes` legt den Abstand der Frames für diesen konfigurierten
+Zeitraum fest. Die eingebauten Voreinstellungen verwenden passend zur Länge
+15 Minuten für Heute/24 Std., 30 Minuten für 48 Std. und 60 Minuten für
+7 Tage — außer der konfigurierte Zeitraum entspricht genau dieser
+Voreinstellung; dann wird der konfigurierte Zeitschritt verwendet.
+
+Historische Sensorwerte werden bewusst **nicht numerisch interpoliert**.
+Für jeden Frame nimmt die Karte je Sensor den letzten aufgezeichneten Wert
+am oder vor dem Zeitstempel und löst danach dasselbe stationäre räumliche
+Modell wie bei Live-Daten. Die Wiedergabe ist also eine Folge historischer
+stationärer Heatmaps und keine zeitabhängige physikalische Wärmesimulation.
+
+Die History wird über Home Assistants WebSocket-API
+`history/history_during_period` geladen. Der angeforderte Zeitraum muss
+deshalb noch in Recorder/History vorhanden sein. Ist die Aufbewahrungsdauer
+kürzer als der gewählte Zeitraum, können ältere Frames fehlende Sensorwerte
+enthalten. Die Sonnenmarkierungen werden aus aufgezeichneten
+`sun.sun`-Zustandswechseln abgeleitet und entfallen, wenn diese Entity oder
+ihre History nicht verfügbar ist.
+
 ## Konfiguration
 
 Alles ist über den grafischen Editor erreichbar. In YAML sieht es so aus:
@@ -161,6 +201,11 @@ show_walls: true
 show_room_labels: true
 show_values: true
 show_legend: true
+
+show_timeline: true       # standardmäßig false
+history_hours: 24         # Start-Zeitraum, 1…168 Stunden
+history_step_minutes: 15  # Abstand der Frames, 1…60 Minuten
+
 px_per_meter: 50
 background: /local/grundriss.png   # optionaler Referenzplan
 background_opacity: 0.25
@@ -232,7 +277,7 @@ Für Luftfeuchtigkeit reichen andere `min`/`max`-Werte und eine passende
 
 ```bash
 node build.mjs                # src/ → dist/floorplan-heatmap-card.js
-node --test "test/*.test.mjs" # Solver-Tests
+node --test "test/*.test.mjs" # automatisierte Tests
 ```
 
 Der Build hängt die Module ohne npm-Abhängigkeit aneinander und bricht ab,
@@ -255,6 +300,7 @@ und lässt den Vollbild-Editor öffnen.
 | `src/geometry.js` | Vektor- und Polygonhelfer |
 | `src/palette.js` | Farbskalen und Legendenverläufe |
 | `src/model.js` | Datenmodell, Defaults, automatische Wandklassifikation |
+| `src/history.js` | Home-Assistant-History laden/normalisieren, Timeline-Werte und Sonnenereignisse |
 | `src/solver.js` | Gitteraufbau und Diffusionslöser |
 | `src/isotherms.js` | Marching Squares für Linien gleicher Temperatur |
 | `src/renderer.js` | Zeichnen von Feld, Wänden, Türen in der Draufsicht |

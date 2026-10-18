@@ -25,8 +25,8 @@
  * dist output has zero runtime dependencies and can't fetch them.
  * ------------------------------------------------------------------ */
 
-const localeEn = {"translations":{"customCards.name":"Floorplan Heatmap","customCards.description":"Temperature distribution over a floor plan — with walls, doors, and windows as thermal resistance.","card.defaultTitle":"Temperature Distribution","card.resetViewTitle":"Reset view angle","card.resetViewLabel":"View","card.emptyLine1":"No floor plan yet.","card.emptyLine2":"Edit card → open {button} and draw rooms.","card.spreadTooltip":"Spread between warmest and coldest sensor","planEditor.title":"Floor Plan & Sensors","editor.openPlanButton":"Edit Floor Plan & Sensors","editor.counts":"{rooms} rooms · {sensors} sensors · {openings} openings","editor.sectionDisplay":"Display","editor.sectionView":"View","editor.sectionShow":"Show","editor.sectionModel":"Model & Accuracy","editor.sectionTransmittance":"Thermal transmittance","editor.fieldTitle":"Title","editor.fieldUnit":"Unit","editor.fieldPalette":"Color scale","editor.autoRange":"Automatically fit scale to sensor readings","editor.fieldMin":"Minimum","editor.fieldMax":"Maximum","editor.fieldOpacity":"Field opacity","editor.viewFlat":"Top-down","editor.viewTilted":"2.5D — walls raised","editor.fieldYaw":"Rotation","editor.fieldPitch":"Tilt angle","editor.fieldWallHeight":"Wall height","editor.viewAngleNote":"These angles are just the starting point. In the card itself, you can rotate the model with the mouse at any time — that's purely a viewing choice and won't overwrite the default set here.","editor.showWalls":"Walls, doors, and windows","editor.showRoomLabels":"Room names","editor.showValues":"Values at sensors","editor.showLegend":"Color legend","editor.showIsotherms":"Isotherms (lines of equal temperature)","editor.isothermStep":"Isotherm spacing","editor.cellSize":"Grid resolution","editor.cellSizeNote":"Smaller = finer and more accurate, but more compute-intensive. 6–10 px is a good compromise for apartments.","editor.sensorRadius":"Sensor radius","editor.sensorRadiusNote":"How large the area around a sensor point is that's held exactly at its value.","editor.transmittanceNote":"0% = perfect insulation, 100% = like free air. These values determine how strongly heat is exchanged between adjacent areas.","editor.dialogClosedWarning":"floorplan-heatmap-card: The configuration dialog was closed while the floor plan editor was open. The changes could not be applied.","editor.paletteCoolwarm":"Cool–Warm (recommended)","editor.paletteThermal":"Thermal","editor.paletteViridis":"Viridis","editor.paletteInferno":"Inferno","editor.paletteTurbo":"Turbo","editor.paletteCustom":"Custom","editor.paletteStops":"Custom palette stops","editor.palettePosition":"Position","editor.paletteColor":"Color","editor.paletteAddStop":"Add stop","editor.paletteRemoveStop":"Remove stop","editor.paletteStopsNote":"Position runs from 0 to 1. Stops are sorted automatically; at least two are required.","editor.paletteStopsInvalid":"Use at least two valid stops with positions from 0 to 1 and valid hex colors.","label.exterior":"Exterior wall","label.interior":"Interior wall","label.door":"Door","label.window":"Window","label.passage":"Passage","tools.select.label":"Select","tools.select.hint":"Click to select · drag to move · drag corner handles · type room dimensions on the right · Del removes","tools.room.label":"Room","tools.room.hint":"Drag for a rectangle · click repeatedly for a polygon (Enter or double-click closes it, Backspace undoes the last point)","tools.wall.label":"Wall","tools.wall.hint":"Click to set the start, click again for the end · type a length on the right and press Enter for an exact size","tools.opening.label":"Door / Window","tools.opening.hint":"Click on a wall — the opening snaps onto it and affects both adjoining rooms","tools.sensor.label":"Sensor","tools.sensor.hint":"Click to place a measurement point · assign the entity on the right","tools.erase.label":"Delete","tools.erase.hint":"Click an element to remove it","tools.measure.label":"Scale","tools.measure.hint":"Click a stretch of known length and enter its real length in meters","planEditor.undoTitle":"Undo (Cmd/Ctrl+Z)","planEditor.redoTitle":"Redo (Cmd/Ctrl+Shift+Z)","planEditor.fitTitle":"Fit all","planEditor.toggleGrid":"Grid","planEditor.toggleSnapGrid":"Snap to grid","planEditor.toggleSnapPoints":"Snap to corners","planEditor.toggleAxisSnap":"0°/90°","planEditor.cancel":"Cancel","planEditor.save":"Apply","planEditor.hintSuffix":"Scroll wheel zooms, middle button or spacebar pans.","planEditor.roomFallback":"Room {n}","planEditor.sensorFallback":"Sensor","planEditor.panelGeneral":"General Settings","planEditor.panelWallDraft":"Draw Wall","planEditor.panelMeasure":"Calibrate Scale","planEditor.panelRoom":"Room","planEditor.panelWall":"Freestanding Wall","planEditor.panelOpening":"Opening","planEditor.panelSensor":"Sensor","planEditor.scaleLabel":"Scale — pixels per meter","planEditor.backgroundLabel":"Background image (path under /local/…)","planEditor.backgroundPlaceholder":"/local/floorplan.png","planEditor.backgroundOpacityLabel":"Background opacity —","planEditor.scaleNote":"The scale only affects labels and the sensor radius — the temperature field itself is scale-free.","planEditor.currentLength":"Current length","planEditor.exactLengthLabel":"Set exact length (meters) — Enter confirms","planEditor.examplePlaceholder":"e.g. 3.20","planEditor.finishDrawing":"Finish drawing (Esc)","planEditor.measureNote":"Click a stretch whose real length you know — a room wall, for example. Then enter the length in meters.","planEditor.measuredDistance":"Measured distance","planEditor.notMeasuredYet":"nothing measured yet","planEditor.realLengthLabel":"Real length (meters) — Enter applies","planEditor.current":"Current","planEditor.name":"Name","planEditor.width":"Width (m)","planEditor.length":"Length (m)","planEditor.area":"Area","planEditor.corners":"Corners","planEditor.roomSizeNote":"Dimensions are the outer edges — Enter or clicking elsewhere applies them. The top-left corner stays fixed; doors and windows don't move with it. Corner points can still be dragged at the white handles.","planEditor.type":"Type","planEditor.wallLength":"Length","planEditor.wallTypeNote":"Room edges are automatically detected as exterior or interior walls; this type only applies to freestanding walls.","planEditor.kind":"Kind","planEditor.openingWidthLabel":"Width —","planEditor.doorSwingLabel":"Door swing","planEditor.doorFlipHinge":"Flip hinge side","planEditor.doorFlipSwing":"Flip swing direction","planEditor.openingNote":"Passage = open, door = clearly damped, window = almost sealed. The opening affects every wall at this spot — so both rooms, if two adjoin here.","planEditor.displayNameLabel":"Display name (empty = entity name)","planEditor.exampleRoomPlaceholder":"e.g. Living Room","planEditor.currentValue":"Current value","planEditor.notAvailable":"not available","planEditor.entityPlaceholder":"sensor.living_room_temperature","planEditor.deleteButton":"Delete (Del)","planEditor.noEntity":"No entity","planEditor.noEntityAssigned":"no entity assigned","planEditor.noSensorsYet":"No sensors placed yet.","planEditor.noRoomsYet":"No rooms drawn yet.","planEditor.sensorsHeader":"Sensors ({n})","planEditor.roomsHeader":"Rooms ({n})","planEditor.overview":"Overview","planEditor.summaryLine":"{rooms} rooms · {walls} freestanding walls · {openings} openings · {sensors} sensors"},"roomNameSuggestions":["Living Room","Kitchen","Bedroom","Bathroom","Hallway","Office","Kids Room","Guest WC"]};
-const localeDe = {"translations":{"customCards.name":"Grundriss-Heatmap","customCards.description":"Temperaturverteilung über einen Grundriss — mit Wänden, Türen und Fenstern als Wärmewiderstand.","card.defaultTitle":"Temperaturverteilung","card.resetViewTitle":"Blickwinkel zurücksetzen","card.resetViewLabel":"Ansicht","card.emptyLine1":"Noch kein Grundriss angelegt.","card.emptyLine2":"Karte bearbeiten → {button} öffnen und Räume zeichnen.","card.spreadTooltip":"Spreizung zwischen wärmstem und kältestem Sensor","planEditor.title":"Grundriss & Sensoren","editor.openPlanButton":"Grundriss & Sensoren bearbeiten","editor.counts":"{rooms} Räume · {sensors} Sensoren · {openings} Öffnungen","editor.sectionDisplay":"Darstellung","editor.sectionView":"Ansicht","editor.sectionShow":"Anzeigen","editor.sectionModel":"Modell & Genauigkeit","editor.sectionTransmittance":"Wärmedurchlässigkeit","editor.fieldTitle":"Titel","editor.fieldUnit":"Einheit","editor.fieldPalette":"Farbskala","editor.autoRange":"Skala automatisch an die Messwerte anpassen","editor.fieldMin":"Minimum","editor.fieldMax":"Maximum","editor.fieldOpacity":"Deckkraft der Fläche","editor.viewFlat":"Draufsicht","editor.viewTilted":"2,5D — Wände aufgestellt","editor.fieldYaw":"Drehung","editor.fieldPitch":"Höhenwinkel","editor.fieldWallHeight":"Wandhöhe","editor.viewAngleNote":"Diese Winkel sind der Ausgangspunkt. In der Karte selbst lässt sich das Modell jederzeit mit der Maus drehen — das bleibt aber eine reine Ansichtssache und überschreibt die Voreinstellung hier nicht.","editor.showWalls":"Wände, Türen und Fenster","editor.showRoomLabels":"Raumnamen","editor.showValues":"Messwerte an den Sensoren","editor.showLegend":"Farblegende","editor.showIsotherms":"Isothermen (Linien gleicher Temperatur)","editor.isothermStep":"Abstand der Isothermen","editor.cellSize":"Gitterauflösung","editor.cellSizeNote":"Kleiner = feiner und genauer, aber rechenintensiver. 6–10 px ist für Wohnungen ein guter Kompromiss.","editor.sensorRadius":"Sensorradius","editor.sensorRadiusNote":"Wie groß die Fläche um einen Messpunkt ist, die exakt auf dessen Wert festgehalten wird.","editor.transmittanceNote":"0 % = perfekte Dämmung, 100 % = wie freie Luft. Diese Werte bestimmen, wie stark Wärme zwischen benachbarten Bereichen ausgetauscht wird.","editor.dialogClosedWarning":"floorplan-heatmap-card: Der Konfigurationsdialog wurde geschlossen, während der Grundriss-Editor offen war. Die Änderungen konnten nicht übernommen werden.","editor.paletteCoolwarm":"Kalt–Warm (empfohlen)","editor.paletteThermal":"Thermal","editor.paletteViridis":"Viridis","editor.paletteInferno":"Inferno","editor.paletteTurbo":"Turbo","editor.paletteCustom":"Benutzerdefiniert","editor.paletteStops":"Benutzerdefinierte Farbstopps","editor.palettePosition":"Position","editor.paletteColor":"Farbe","editor.paletteAddStop":"Stopp hinzufügen","editor.paletteRemoveStop":"Stopp entfernen","editor.paletteStopsNote":"Die Position reicht von 0 bis 1. Stopps werden automatisch sortiert; mindestens zwei sind erforderlich.","editor.paletteStopsInvalid":"Mindestens zwei gültige Stopps mit Positionen von 0 bis 1 und gültigen Hex-Farben verwenden.","label.exterior":"Außenwand","label.interior":"Innenwand","label.door":"Tür","label.window":"Fenster","label.passage":"Durchgang","tools.select.label":"Auswählen","tools.select.hint":"Klicken zum Auswählen · ziehen zum Verschieben · Eckpunkte an den Griffen ziehen · Raummaße rechts eintippen · Entf löscht","tools.room.label":"Raum","tools.room.hint":"Ziehen ergibt ein Rechteck · einzelne Klicks ergeben ein Polygon (Enter oder Doppelklick schließt, Rücktaste nimmt zurück)","tools.wall.label":"Wand","tools.wall.hint":"Klick setzt den Anfang, zweiter Klick das Ende · Länge rechts eintippen und Enter für ein exaktes Maß","tools.opening.label":"Tür / Fenster","tools.opening.hint":"Auf eine Wand klicken — die Öffnung rastet darauf ein und wirkt auf beide angrenzenden Räume","tools.sensor.label":"Sensor","tools.sensor.hint":"Klick setzt einen Messpunkt · rechts die Entity zuweisen","tools.erase.label":"Löschen","tools.erase.hint":"Auf ein Element klicken, um es zu entfernen","tools.measure.label":"Maßstab","tools.measure.hint":"Eine Strecke bekannter Länge abklicken und die echte Länge in Metern eintragen","planEditor.undoTitle":"Rückgängig (Cmd/Ctrl+Z)","planEditor.redoTitle":"Wiederholen (Cmd/Ctrl+Shift+Z)","planEditor.fitTitle":"Alles einpassen","planEditor.toggleGrid":"Raster","planEditor.toggleSnapGrid":"Am Raster","planEditor.toggleSnapPoints":"An Ecken","planEditor.toggleAxisSnap":"0°/90°","planEditor.cancel":"Abbrechen","planEditor.save":"Übernehmen","planEditor.hintSuffix":"Mausrad zoomt, mittlere Taste oder Leertaste schiebt.","planEditor.roomFallback":"Raum {n}","planEditor.sensorFallback":"Sensor","planEditor.panelGeneral":"Grundeinstellungen","planEditor.panelWallDraft":"Wand zeichnen","planEditor.panelMeasure":"Maßstab kalibrieren","planEditor.panelRoom":"Raum","planEditor.panelWall":"Freistehende Wand","planEditor.panelOpening":"Öffnung","planEditor.panelSensor":"Sensor","planEditor.scaleLabel":"Maßstab — Pixel pro Meter","planEditor.backgroundLabel":"Hintergrundbild (Pfad unter /local/…)","planEditor.backgroundPlaceholder":"/local/grundriss.png","planEditor.backgroundOpacityLabel":"Deckkraft Hintergrund —","planEditor.scaleNote":"Der Maßstab wirkt sich nur auf Beschriftungen und den Sensorradius aus — das Temperaturfeld selbst ist maßstabsfrei.","planEditor.currentLength":"Aktuelle Länge","planEditor.exactLengthLabel":"Länge exakt setzen (Meter) — Enter bestätigt","planEditor.examplePlaceholder":"z. B. 3.20","planEditor.finishDrawing":"Zeichnen beenden (Esc)","planEditor.measureNote":"Eine Strecke abklicken, deren echte Länge du kennst — etwa eine Zimmerwand. Danach die Länge in Metern eintragen.","planEditor.measuredDistance":"Gemessene Strecke","planEditor.notMeasuredYet":"noch nichts gemessen","planEditor.realLengthLabel":"Echte Länge (Meter) — Enter übernimmt","planEditor.current":"Aktuell","planEditor.name":"Name","planEditor.width":"Breite (m)","planEditor.length":"Länge (m)","planEditor.area":"Fläche","planEditor.corners":"Ecken","planEditor.roomSizeNote":"Maße sind die Außenkanten — Enter oder ein Klick daneben übernimmt. Die linke obere Ecke bleibt dabei stehen, Türen und Fenster wandern nicht mit. Eckpunkte lassen sich weiterhin an den weißen Griffen ziehen.","planEditor.type":"Typ","planEditor.wallLength":"Länge","planEditor.wallTypeNote":"Raumkanten werden automatisch als Außen- oder Innenwand erkannt; dieser Typ gilt nur für freistehende Wände.","planEditor.kind":"Art","planEditor.openingWidthLabel":"Breite —","planEditor.doorSwingLabel":"Türanschlag","planEditor.doorFlipHinge":"Scharnierseite wechseln","planEditor.doorFlipSwing":"Schwenkrichtung wechseln","planEditor.openingNote":"Durchgang = offen, Tür = deutlich gedämpft, Fenster = fast dicht. Die Öffnung wirkt auf jede Wand an dieser Stelle — bei zwei aneinandergrenzenden Räumen also auf beide.","planEditor.displayNameLabel":"Anzeigename (leer = Entity-Name)","planEditor.exampleRoomPlaceholder":"z. B. Wohnzimmer","planEditor.currentValue":"Aktueller Wert","planEditor.notAvailable":"nicht verfügbar","planEditor.entityPlaceholder":"sensor.wohnzimmer_temperatur","planEditor.deleteButton":"Löschen (Entf)","planEditor.noEntity":"Ohne Entity","planEditor.noEntityAssigned":"keine Entity zugewiesen","planEditor.noSensorsYet":"Noch keine Sensoren gesetzt.","planEditor.noRoomsYet":"Noch keine Räume gezeichnet.","planEditor.sensorsHeader":"Sensoren ({n})","planEditor.roomsHeader":"Räume ({n})","planEditor.overview":"Übersicht","planEditor.summaryLine":"{rooms} Räume · {walls} freie Wände · {openings} Öffnungen · {sensors} Sensoren"},"roomNameSuggestions":["Wohnzimmer","Küche","Schlafzimmer","Bad","Flur","Büro","Kinderzimmer","Gäste-WC"]};
+const localeEn = {"translations":{"customCards.name":"Floorplan Heatmap","customCards.description":"Temperature distribution over a floor plan — with walls, doors, and windows as thermal resistance.","card.defaultTitle":"Temperature Distribution","card.resetViewTitle":"Reset view angle","card.resetViewLabel":"View","card.emptyLine1":"No floor plan yet.","card.emptyLine2":"Edit card → open {button} and draw rooms.","card.spreadTooltip":"Spread between warmest and coldest sensor","timeline.live":"LIVE","timeline.play":"Play","timeline.pause":"Pause","timeline.playbackSpeed":"Playback speed","timeline.historyRange":"History range","timeline.today":"Today","timeline.range24h":"24h","timeline.range48h":"48h","timeline.range7d":"7d","timeline.custom":"Custom","timeline.loading":"Loading history…","timeline.unavailable":"History unavailable","timeline.noSensors":"No sensor entities configured","timeline.sunrise":"Sunrise","timeline.sunset":"Sunset","planEditor.title":"Floor Plan & Sensors","editor.openPlanButton":"Edit Floor Plan & Sensors","editor.counts":"{rooms} rooms · {sensors} sensors · {openings} openings","editor.sectionDisplay":"Display","editor.sectionView":"View","editor.sectionShow":"Show","editor.sectionTimeline":"History & Timeline","editor.showTimeline":"Show history timeline","editor.historyHours":"Default history range (hours)","editor.historyStepMinutes":"History step (minutes)","editor.timelineNote":"The card opens with this rolling history range. The Today / 24h / 48h / 7d selector on the card changes only the current view and does not rewrite this configuration.","editor.historyStepNote":"Smaller steps give smoother playback, but create more historical frames and require more processing.","editor.sectionModel":"Model & Accuracy","editor.sectionTransmittance":"Thermal transmittance","editor.fieldTitle":"Title","editor.fieldUnit":"Unit","editor.fieldPalette":"Color scale","editor.autoRange":"Automatically fit scale to sensor readings","editor.fieldMin":"Minimum","editor.fieldMax":"Maximum","editor.fieldOpacity":"Field opacity","editor.viewFlat":"Top-down","editor.viewTilted":"2.5D — walls raised","editor.fieldYaw":"Rotation","editor.fieldPitch":"Tilt angle","editor.fieldWallHeight":"Wall height","editor.viewAngleNote":"These angles are just the starting point. In the card itself, you can rotate the model with the mouse at any time — that's purely a viewing choice and won't overwrite the default set here.","editor.showWalls":"Walls, doors, and windows","editor.showRoomLabels":"Room names","editor.showValues":"Values at sensors","editor.showLegend":"Color legend","editor.showIsotherms":"Isotherms (lines of equal temperature)","editor.isothermStep":"Isotherm spacing","editor.cellSize":"Grid resolution","editor.cellSizeNote":"Smaller = finer and more accurate, but more compute-intensive. 6–10 px is a good compromise for apartments.","editor.sensorRadius":"Sensor radius","editor.sensorRadiusNote":"How large the area around a sensor point is that's held exactly at its value.","editor.transmittanceNote":"0% = perfect insulation, 100% = like free air. These values determine how strongly heat is exchanged between adjacent areas.","editor.dialogClosedWarning":"floorplan-heatmap-card: The configuration dialog was closed while the floor plan editor was open. The changes could not be applied.","editor.paletteCoolwarm":"Cool–Warm (recommended)","editor.paletteThermal":"Thermal","editor.paletteViridis":"Viridis","editor.paletteInferno":"Inferno","editor.paletteTurbo":"Turbo","editor.paletteCustom":"Custom","editor.paletteStops":"Custom palette stops","editor.palettePosition":"Position","editor.paletteColor":"Color","editor.paletteAddStop":"Add stop","editor.paletteRemoveStop":"Remove stop","editor.paletteStopsNote":"Position runs from 0 to 1. Stops are sorted automatically; at least two are required.","editor.paletteStopsInvalid":"Use at least two valid stops with positions from 0 to 1 and valid hex colors.","label.exterior":"Exterior wall","label.interior":"Interior wall","label.door":"Door","label.window":"Window","label.passage":"Passage","tools.select.label":"Select","tools.select.hint":"Click to select · drag to move · drag corner handles · type room dimensions on the right · Del removes","tools.room.label":"Room","tools.room.hint":"Drag for a rectangle · click repeatedly for a polygon (Enter or double-click closes it, Backspace undoes the last point)","tools.wall.label":"Wall","tools.wall.hint":"Click to set the start, click again for the end · type a length on the right and press Enter for an exact size","tools.opening.label":"Door / Window","tools.opening.hint":"Click on a wall — the opening snaps onto it and affects both adjoining rooms","tools.sensor.label":"Sensor","tools.sensor.hint":"Click to place a measurement point · assign the entity on the right","tools.erase.label":"Delete","tools.erase.hint":"Click an element to remove it","tools.measure.label":"Scale","tools.measure.hint":"Click a stretch of known length and enter its real length in meters","planEditor.undoTitle":"Undo (Cmd/Ctrl+Z)","planEditor.redoTitle":"Redo (Cmd/Ctrl+Shift+Z)","planEditor.fitTitle":"Fit all","planEditor.toggleGrid":"Grid","planEditor.toggleSnapGrid":"Snap to grid","planEditor.toggleSnapPoints":"Snap to corners","planEditor.toggleAxisSnap":"0°/90°","planEditor.cancel":"Cancel","planEditor.save":"Apply","planEditor.hintSuffix":"Scroll wheel zooms, middle button or spacebar pans.","planEditor.roomFallback":"Room {n}","planEditor.sensorFallback":"Sensor","planEditor.panelGeneral":"General Settings","planEditor.panelWallDraft":"Draw Wall","planEditor.panelMeasure":"Calibrate Scale","planEditor.panelRoom":"Room","planEditor.panelWall":"Freestanding Wall","planEditor.panelOpening":"Opening","planEditor.panelSensor":"Sensor","planEditor.scaleLabel":"Scale — pixels per meter","planEditor.backgroundLabel":"Background image (path under /local/…)","planEditor.backgroundPlaceholder":"/local/floorplan.png","planEditor.backgroundOpacityLabel":"Background opacity —","planEditor.scaleNote":"The scale only affects labels and the sensor radius — the temperature field itself is scale-free.","planEditor.currentLength":"Current length","planEditor.exactLengthLabel":"Set exact length (meters) — Enter confirms","planEditor.examplePlaceholder":"e.g. 3.20","planEditor.finishDrawing":"Finish drawing (Esc)","planEditor.measureNote":"Click a stretch whose real length you know — a room wall, for example. Then enter the length in meters.","planEditor.measuredDistance":"Measured distance","planEditor.notMeasuredYet":"nothing measured yet","planEditor.realLengthLabel":"Real length (meters) — Enter applies","planEditor.current":"Current","planEditor.name":"Name","planEditor.width":"Width (m)","planEditor.length":"Length (m)","planEditor.area":"Area","planEditor.corners":"Corners","planEditor.roomSizeNote":"Dimensions are the outer edges — Enter or clicking elsewhere applies them. The top-left corner stays fixed; doors and windows don't move with it. Corner points can still be dragged at the white handles.","planEditor.type":"Type","planEditor.wallLength":"Length","planEditor.wallTypeNote":"Room edges are automatically detected as exterior or interior walls; this type only applies to freestanding walls.","planEditor.kind":"Kind","planEditor.openingWidthLabel":"Width —","planEditor.doorSwingLabel":"Door swing","planEditor.doorFlipHinge":"Flip hinge side","planEditor.doorFlipSwing":"Flip swing direction","planEditor.openingNote":"Passage = open, door = clearly damped, window = almost sealed. The opening affects every wall at this spot — so both rooms, if two adjoin here.","planEditor.displayNameLabel":"Display name (empty = entity name)","planEditor.exampleRoomPlaceholder":"e.g. Living Room","planEditor.currentValue":"Current value","planEditor.notAvailable":"not available","planEditor.entityPlaceholder":"sensor.living_room_temperature","planEditor.deleteButton":"Delete (Del)","planEditor.noEntity":"No entity","planEditor.noEntityAssigned":"no entity assigned","planEditor.noSensorsYet":"No sensors placed yet.","planEditor.noRoomsYet":"No rooms drawn yet.","planEditor.sensorsHeader":"Sensors ({n})","planEditor.roomsHeader":"Rooms ({n})","planEditor.overview":"Overview","planEditor.summaryLine":"{rooms} rooms · {walls} freestanding walls · {openings} openings · {sensors} sensors"},"roomNameSuggestions":["Living Room","Kitchen","Bedroom","Bathroom","Hallway","Office","Kids Room","Guest WC"]};
+const localeDe = {"translations":{"customCards.name":"Grundriss-Heatmap","customCards.description":"Temperaturverteilung über einen Grundriss — mit Wänden, Türen und Fenstern als Wärmewiderstand.","card.defaultTitle":"Temperaturverteilung","card.resetViewTitle":"Blickwinkel zurücksetzen","card.resetViewLabel":"Ansicht","card.emptyLine1":"Noch kein Grundriss angelegt.","card.emptyLine2":"Karte bearbeiten → {button} öffnen und Räume zeichnen.","card.spreadTooltip":"Spreizung zwischen wärmstem und kältestem Sensor","timeline.live":"LIVE","timeline.play":"Abspielen","timeline.pause":"Pause","timeline.playbackSpeed":"Wiedergabegeschwindigkeit","timeline.historyRange":"Verlaufszeitraum","timeline.today":"Heute","timeline.range24h":"24 Std.","timeline.range48h":"48 Std.","timeline.range7d":"7 T.","timeline.custom":"Benutzerdefiniert","timeline.loading":"Verlauf wird geladen…","timeline.unavailable":"Verlauf nicht verfügbar","timeline.noSensors":"Keine Sensor-Entities konfiguriert","timeline.sunrise":"Sonnenaufgang","timeline.sunset":"Sonnenuntergang","planEditor.title":"Grundriss & Sensoren","editor.openPlanButton":"Grundriss & Sensoren bearbeiten","editor.counts":"{rooms} Räume · {sensors} Sensoren · {openings} Öffnungen","editor.sectionDisplay":"Darstellung","editor.sectionView":"Ansicht","editor.sectionShow":"Anzeigen","editor.sectionTimeline":"Verlauf & Zeitleiste","editor.showTimeline":"Verlaufszeitleiste anzeigen","editor.historyHours":"Standard-Zeitraum (Stunden)","editor.historyStepMinutes":"Zeitschritt (Minuten)","editor.timelineNote":"Die Karte startet mit diesem rollierenden Verlaufszeitraum. Die Auswahl Heute / 24 Std. / 48 Std. / 7 T. in der Karte ändert nur die aktuelle Ansicht und schreibt diese Konfiguration nicht um.","editor.historyStepNote":"Kleinere Schritte ergeben eine flüssigere Wiedergabe, erzeugen aber mehr Verlaufsframes und benötigen mehr Rechenleistung.","editor.sectionModel":"Modell & Genauigkeit","editor.sectionTransmittance":"Wärmedurchlässigkeit","editor.fieldTitle":"Titel","editor.fieldUnit":"Einheit","editor.fieldPalette":"Farbskala","editor.autoRange":"Skala automatisch an die Messwerte anpassen","editor.fieldMin":"Minimum","editor.fieldMax":"Maximum","editor.fieldOpacity":"Deckkraft der Fläche","editor.viewFlat":"Draufsicht","editor.viewTilted":"2,5D — Wände aufgestellt","editor.fieldYaw":"Drehung","editor.fieldPitch":"Höhenwinkel","editor.fieldWallHeight":"Wandhöhe","editor.viewAngleNote":"Diese Winkel sind der Ausgangspunkt. In der Karte selbst lässt sich das Modell jederzeit mit der Maus drehen — das bleibt aber eine reine Ansichtssache und überschreibt die Voreinstellung hier nicht.","editor.showWalls":"Wände, Türen und Fenster","editor.showRoomLabels":"Raumnamen","editor.showValues":"Messwerte an den Sensoren","editor.showLegend":"Farblegende","editor.showIsotherms":"Isothermen (Linien gleicher Temperatur)","editor.isothermStep":"Abstand der Isothermen","editor.cellSize":"Gitterauflösung","editor.cellSizeNote":"Kleiner = feiner und genauer, aber rechenintensiver. 6–10 px ist für Wohnungen ein guter Kompromiss.","editor.sensorRadius":"Sensorradius","editor.sensorRadiusNote":"Wie groß die Fläche um einen Messpunkt ist, die exakt auf dessen Wert festgehalten wird.","editor.transmittanceNote":"0 % = perfekte Dämmung, 100 % = wie freie Luft. Diese Werte bestimmen, wie stark Wärme zwischen benachbarten Bereichen ausgetauscht wird.","editor.dialogClosedWarning":"floorplan-heatmap-card: Der Konfigurationsdialog wurde geschlossen, während der Grundriss-Editor offen war. Die Änderungen konnten nicht übernommen werden.","editor.paletteCoolwarm":"Kalt–Warm (empfohlen)","editor.paletteThermal":"Thermal","editor.paletteViridis":"Viridis","editor.paletteInferno":"Inferno","editor.paletteTurbo":"Turbo","editor.paletteCustom":"Benutzerdefiniert","editor.paletteStops":"Benutzerdefinierte Farbstopps","editor.palettePosition":"Position","editor.paletteColor":"Farbe","editor.paletteAddStop":"Stopp hinzufügen","editor.paletteRemoveStop":"Stopp entfernen","editor.paletteStopsNote":"Die Position reicht von 0 bis 1. Stopps werden automatisch sortiert; mindestens zwei sind erforderlich.","editor.paletteStopsInvalid":"Mindestens zwei gültige Stopps mit Positionen von 0 bis 1 und gültigen Hex-Farben verwenden.","label.exterior":"Außenwand","label.interior":"Innenwand","label.door":"Tür","label.window":"Fenster","label.passage":"Durchgang","tools.select.label":"Auswählen","tools.select.hint":"Klicken zum Auswählen · ziehen zum Verschieben · Eckpunkte an den Griffen ziehen · Raummaße rechts eintippen · Entf löscht","tools.room.label":"Raum","tools.room.hint":"Ziehen ergibt ein Rechteck · einzelne Klicks ergeben ein Polygon (Enter oder Doppelklick schließt, Rücktaste nimmt zurück)","tools.wall.label":"Wand","tools.wall.hint":"Klick setzt den Anfang, zweiter Klick das Ende · Länge rechts eintippen und Enter für ein exaktes Maß","tools.opening.label":"Tür / Fenster","tools.opening.hint":"Auf eine Wand klicken — die Öffnung rastet darauf ein und wirkt auf beide angrenzenden Räume","tools.sensor.label":"Sensor","tools.sensor.hint":"Klick setzt einen Messpunkt · rechts die Entity zuweisen","tools.erase.label":"Löschen","tools.erase.hint":"Auf ein Element klicken, um es zu entfernen","tools.measure.label":"Maßstab","tools.measure.hint":"Eine Strecke bekannter Länge abklicken und die echte Länge in Metern eintragen","planEditor.undoTitle":"Rückgängig (Cmd/Ctrl+Z)","planEditor.redoTitle":"Wiederholen (Cmd/Ctrl+Shift+Z)","planEditor.fitTitle":"Alles einpassen","planEditor.toggleGrid":"Raster","planEditor.toggleSnapGrid":"Am Raster","planEditor.toggleSnapPoints":"An Ecken","planEditor.toggleAxisSnap":"0°/90°","planEditor.cancel":"Abbrechen","planEditor.save":"Übernehmen","planEditor.hintSuffix":"Mausrad zoomt, mittlere Taste oder Leertaste schiebt.","planEditor.roomFallback":"Raum {n}","planEditor.sensorFallback":"Sensor","planEditor.panelGeneral":"Grundeinstellungen","planEditor.panelWallDraft":"Wand zeichnen","planEditor.panelMeasure":"Maßstab kalibrieren","planEditor.panelRoom":"Raum","planEditor.panelWall":"Freistehende Wand","planEditor.panelOpening":"Öffnung","planEditor.panelSensor":"Sensor","planEditor.scaleLabel":"Maßstab — Pixel pro Meter","planEditor.backgroundLabel":"Hintergrundbild (Pfad unter /local/…)","planEditor.backgroundPlaceholder":"/local/grundriss.png","planEditor.backgroundOpacityLabel":"Deckkraft Hintergrund —","planEditor.scaleNote":"Der Maßstab wirkt sich nur auf Beschriftungen und den Sensorradius aus — das Temperaturfeld selbst ist maßstabsfrei.","planEditor.currentLength":"Aktuelle Länge","planEditor.exactLengthLabel":"Länge exakt setzen (Meter) — Enter bestätigt","planEditor.examplePlaceholder":"z. B. 3.20","planEditor.finishDrawing":"Zeichnen beenden (Esc)","planEditor.measureNote":"Eine Strecke abklicken, deren echte Länge du kennst — etwa eine Zimmerwand. Danach die Länge in Metern eintragen.","planEditor.measuredDistance":"Gemessene Strecke","planEditor.notMeasuredYet":"noch nichts gemessen","planEditor.realLengthLabel":"Echte Länge (Meter) — Enter übernimmt","planEditor.current":"Aktuell","planEditor.name":"Name","planEditor.width":"Breite (m)","planEditor.length":"Länge (m)","planEditor.area":"Fläche","planEditor.corners":"Ecken","planEditor.roomSizeNote":"Maße sind die Außenkanten — Enter oder ein Klick daneben übernimmt. Die linke obere Ecke bleibt dabei stehen, Türen und Fenster wandern nicht mit. Eckpunkte lassen sich weiterhin an den weißen Griffen ziehen.","planEditor.type":"Typ","planEditor.wallLength":"Länge","planEditor.wallTypeNote":"Raumkanten werden automatisch als Außen- oder Innenwand erkannt; dieser Typ gilt nur für freistehende Wände.","planEditor.kind":"Art","planEditor.openingWidthLabel":"Breite —","planEditor.doorSwingLabel":"Türanschlag","planEditor.doorFlipHinge":"Scharnierseite wechseln","planEditor.doorFlipSwing":"Schwenkrichtung wechseln","planEditor.openingNote":"Durchgang = offen, Tür = deutlich gedämpft, Fenster = fast dicht. Die Öffnung wirkt auf jede Wand an dieser Stelle — bei zwei aneinandergrenzenden Räumen also auf beide.","planEditor.displayNameLabel":"Anzeigename (leer = Entity-Name)","planEditor.exampleRoomPlaceholder":"z. B. Wohnzimmer","planEditor.currentValue":"Aktueller Wert","planEditor.notAvailable":"nicht verfügbar","planEditor.entityPlaceholder":"sensor.wohnzimmer_temperatur","planEditor.deleteButton":"Löschen (Entf)","planEditor.noEntity":"Ohne Entity","planEditor.noEntityAssigned":"keine Entity zugewiesen","planEditor.noSensorsYet":"Noch keine Sensoren gesetzt.","planEditor.noRoomsYet":"Noch keine Räume gezeichnet.","planEditor.sensorsHeader":"Sensoren ({n})","planEditor.roomsHeader":"Räume ({n})","planEditor.overview":"Übersicht","planEditor.summaryLine":"{rooms} Räume · {walls} freie Wände · {openings} Öffnungen · {sensors} Sensoren"},"roomNameSuggestions":["Wohnzimmer","Küche","Schlafzimmer","Bad","Flur","Büro","Kinderzimmer","Gäste-WC"]};
 
 const TRANSLATIONS = {
   en: localeEn.translations,
@@ -463,6 +463,11 @@ const DEFAULTS = {
   background_opacity: 0.25,
   aspect_ratio: '',
 
+  // Timeline / historical playback
+  show_timeline: false,
+  history_hours: 24,
+  history_step_minutes: 15,
+
   // 2.5D view
   view_mode: 'flat',   // 'flat' = top-down view, 'tilted' = raised walls
   yaw: -22,            // degrees, rotation around the vertical axis
@@ -542,6 +547,16 @@ function normalizeConfig(raw) {
   config.transmittance = { ...DEFAULT_TRANSMITTANCE, ...(raw && raw.transmittance ? raw.transmittance : {}) };
   config.cell_size = Math.max(2, Number(config.cell_size) || DEFAULTS.cell_size);
   config.px_per_meter = Math.max(1, Number(config.px_per_meter) || DEFAULTS.px_per_meter);
+
+  config.show_timeline = config.show_timeline === true;
+  config.history_hours = Math.min(
+    168,
+    Math.max(1, Number(config.history_hours) || DEFAULTS.history_hours)
+  );
+  config.history_step_minutes = Math.min(
+    60,
+    Math.max(1, Number(config.history_step_minutes) || DEFAULTS.history_step_minutes)
+  );
 
   const num = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
   config.view_mode = VIEW_MODES.includes(config.view_mode) ? config.view_mode : DEFAULTS.view_mode;
@@ -3875,6 +3890,41 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
         </div>
 
         <div class="card">
+          <h3>${tr('editor.sectionTimeline')}</h3>
+          <label class="check">
+            <input type="checkbox" data-key="show_timeline" ${cfg.show_timeline ? 'checked' : ''}>
+            ${tr('editor.showTimeline')}
+          </label>
+
+          <div ${cfg.show_timeline ? '' : 'hidden'}>
+            <div class="row" style="margin-top:8px">
+              <div class="field">
+                <label>${tr('editor.historyHours')}</label>
+                <input
+                  type="number"
+                  data-key="history_hours"
+                  min="1"
+                  max="168"
+                  step="1"
+                  value="${cfg.history_hours}">
+              </div>
+              <div class="field">
+                <label>${tr('editor.historyStepMinutes')}</label>
+                <input
+                  type="number"
+                  data-key="history_step_minutes"
+                  min="1"
+                  max="60"
+                  step="1"
+                  value="${cfg.history_step_minutes}">
+              </div>
+            </div>
+            <div class="note">${tr('editor.timelineNote')}</div>
+            <div class="note">${tr('editor.historyStepNote')}</div>
+          </div>
+        </div>
+
+        <div class="card">
           <details>
             <summary>${tr('editor.sectionModel')}</summary>
             <div class="field">
@@ -4218,6 +4268,270 @@ function rgbCssToHex(value) {
     .toUpperCase()}`;
 }
 
+/* ===== src/history.js ===== */
+/* ------------------------------------------------------------------ *
+ * history.js — historical sensor values for the timeline.
+ *
+ * Home Assistant delivers compact history via
+ * history/history_during_period. The values are normalized once and
+ * then looked up by binary search for any point in time.
+ * ------------------------------------------------------------------ */
+
+/** Unique, non-empty entity IDs in sensor order. */
+function uniqueHistoryEntityIds(sensors = []) {
+  const seen = new Set();
+  const result = [];
+
+  for (const sensor of sensors) {
+    const entityId = sensor && (sensor.entity || sensor.entity_id);
+    if (!entityId || seen.has(entityId)) continue;
+    seen.add(entityId);
+    result.push(entityId);
+  }
+
+  return result;
+}
+
+/**
+ * Timestamp of an HA history entry in milliseconds.
+ *
+ * Compact history normally uses lu/lc as Unix seconds. The long field
+ * names are accepted too, so non-compact test or API data also works.
+ */
+function historyTimestampMs(state) {
+  if (!state) return NaN;
+
+  const raw =
+    state.lu ??
+    state.lc ??
+    state.last_updated ??
+    state.last_changed;
+
+  if (raw == null) return NaN;
+
+  if (typeof raw === 'number') {
+    if (!Number.isFinite(raw)) return NaN;
+    return Math.abs(raw) < 1e12 ? raw * 1000 : raw;
+  }
+
+  if (typeof raw === 'string') {
+    const text = raw.trim();
+    if (!text) return NaN;
+
+    const numeric = Number(text);
+    if (Number.isFinite(numeric)) {
+      return Math.abs(numeric) < 1e12 ? numeric * 1000 : numeric;
+    }
+
+    const parsed = Date.parse(text);
+    return Number.isFinite(parsed) ? parsed : NaN;
+  }
+
+  return NaN;
+}
+
+/** Numeric state of a history entry. */
+function historyNumericValue(state) {
+  if (!state) return NaN;
+
+  const raw = state.s ?? state.state;
+  if (raw == null) return NaN;
+
+  const text = String(raw).trim();
+  if (!text) return NaN;
+
+  const value = Number(text);
+  return Number.isFinite(value) ? value : NaN;
+}
+
+/**
+ * Convert HA history into a small, sorted format.
+ *
+ * Result:
+ * {
+ *   "sensor.room_temperature": [
+ *     { time: 1234567890000, value: 21.4 },
+ *     ...
+ *   ]
+ * }
+ */
+function normalizeHistory(rawHistory = {}) {
+  const result = {};
+
+  for (const [entityId, states] of Object.entries(rawHistory || {})) {
+    if (!Array.isArray(states)) {
+      result[entityId] = [];
+      continue;
+    }
+
+    result[entityId] = states
+      .map((state) => ({
+        time: historyTimestampMs(state),
+        value: historyNumericValue(state),
+      }))
+      .filter((point) => Number.isFinite(point.time))
+      .sort((a, b) => a.time - b.time);
+  }
+
+  return result;
+}
+
+/**
+ * Last known state at or before the requested time.
+ *
+ * Deliberately does NOT interpolate between readings.
+ */
+function historyValueAt(history, entityId, targetTime) {
+  const series = history && history[entityId];
+  if (!Array.isArray(series) || !series.length) return NaN;
+
+  const target =
+    targetTime instanceof Date
+      ? targetTime.getTime()
+      : Number(targetTime);
+
+  if (!Number.isFinite(target)) return NaN;
+
+  let lo = 0;
+  let hi = series.length - 1;
+  let found = -1;
+
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+
+    if (series[mid].time <= target) {
+      found = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+
+  return found >= 0 ? series[found].value : NaN;
+}
+
+/**
+ * Historical values in exactly the same order as floorplan.sensors.
+ *
+ * Several points may share one entity; they then get the same
+ * historical value, as expected.
+ */
+function sensorValuesAt(history, sensors = [], targetTime) {
+  return sensors.map((sensor) => {
+    const entityId = sensor && (sensor.entity || sensor.entity_id);
+    return entityId
+      ? historyValueAt(history, entityId, targetTime)
+      : NaN;
+  });
+}
+
+/**
+ * Derive sunrises and sunsets from the history of sun.sun.
+ *
+ * An event is only produced by an actual state change:
+ *   below_horizon -> above_horizon = sunrise
+ *   above_horizon -> below_horizon = sunset
+ *
+ * The first known state only serves as the baseline and is not itself
+ * counted as an event. This keeps the initial state that Home Assistant
+ * includes at the start of a history period from producing a bogus event.
+ */
+function extractSunEvents(
+  rawHistory = {},
+  startTime = -Infinity,
+  endTime = Infinity,
+  entityId = 'sun.sun'
+) {
+  const states =
+    rawHistory && Array.isArray(rawHistory[entityId])
+      ? rawHistory[entityId]
+      : [];
+
+  const start =
+    startTime instanceof Date ? startTime.getTime() : Number(startTime);
+  const end =
+    endTime instanceof Date ? endTime.getTime() : Number(endTime);
+
+  const startMs = Number.isFinite(start) ? start : -Infinity;
+  const endMs = Number.isFinite(end) ? end : Infinity;
+
+  const points = states
+    .map((state) => {
+      const value =
+        state && typeof state.s === 'string'
+          ? state.s
+          : state && typeof state.state === 'string'
+            ? state.state
+            : null;
+
+      return {
+        time: historyTimestampMs(state),
+        value,
+      };
+    })
+    .filter(
+      (point) =>
+        Number.isFinite(point.time) &&
+        (point.value === 'above_horizon' ||
+          point.value === 'below_horizon')
+    )
+    .sort((a, b) => a.time - b.time);
+
+  const events = [];
+  let previousState = null;
+
+  for (const point of points) {
+    if (
+      previousState != null &&
+      point.value !== previousState &&
+      point.time >= startMs &&
+      point.time <= endMs
+    ) {
+      events.push({
+        type:
+          point.value === 'above_horizon'
+            ? 'sunrise'
+            : 'sunset',
+        time: point.time,
+      });
+    }
+
+    previousState = point.value;
+  }
+
+  return events;
+}
+
+/**
+ * Load historical states directly via Home Assistant's WebSocket API.
+ */
+function fetchHistory(hass, startTime, endTime, entityIds = []) {
+  if (!hass || typeof hass.callWS !== 'function') {
+    return Promise.reject(new Error('Home Assistant WebSocket API unavailable'));
+  }
+
+  const start = startTime instanceof Date ? startTime : new Date(startTime);
+  const end = endTime instanceof Date ? endTime : new Date(endTime);
+
+  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime())) {
+    return Promise.reject(new Error('Invalid history time range'));
+  }
+
+  const ids = [...new Set((entityIds || []).filter(Boolean))];
+
+  const request = {
+    type: 'history/history_during_period',
+    start_time: start.toISOString(),
+    end_time: end.toISOString(),
+    minimal_response: true,
+    no_attributes: true,
+  };
+
+  if (ids.length) request.entity_ids = ids;
+
+  return hass.callWS(request);
+}
+
 /* ===== src/card.js ===== */
 /* ------------------------------------------------------------------ *
  * card.js — the Lovelace card itself.
@@ -4364,6 +4678,227 @@ const CARD_STYLES = `
     opacity: 0.65;
     transform: translateX(-1px);
   }
+  .timeline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px 14px;
+    font-size: 11px;
+    color: var(--secondary-text-color);
+    font-variant-numeric: tabular-nums;
+  }
+  .timeline[hidden] {
+    display: none !important;
+  }
+  .timeline .time {
+    min-width: 128px;
+    color: var(--primary-text-color);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .timeline.compact {
+    gap: 7px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .timeline.compact .time {
+    min-width: 72px;
+  }
+  .timeline .timeline-track {
+    position: relative;
+    flex: 1;
+    min-width: 80px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+  }
+  .timeline input[type=range] {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+  }
+  .timeline input[type=range]:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .timeline .sun-markers {
+    position: absolute;
+    z-index: 3;
+    left: 10px;
+    right: 10px;
+    top: 50%;
+    height: 18px;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  .timeline .sun-marker {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 2px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--warning-color, #f9a825);
+    opacity: 0.9;
+    transform: translate(-1px, -50%);
+    pointer-events: auto;
+    cursor: help;
+  }
+  .timeline .sun-marker::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    border: 2px solid var(--card-background-color, var(--ha-card-background, #111));
+    border-radius: 50%;
+    background: inherit;
+    transform: translateX(-50%);
+  }
+  .timeline .sun-marker.sunrise::after {
+    top: -4px;
+  }
+  .timeline .sun-marker.sunset::after {
+    bottom: -4px;
+  }
+  .timeline .play,
+  .timeline .speed,
+  .timeline .live {
+    box-sizing: border-box;
+    height: 30px;
+    border: 1px solid var(--divider-color, rgba(127,140,158,.35));
+    border-radius: 999px;
+    padding: 0 10px;
+    background: transparent;
+    color: var(--primary-text-color);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .timeline .play {
+    width: 36px;
+    padding: 0;
+  }
+  .timeline .speed {
+    min-width: 42px;
+    padding: 0 8px;
+  }
+  .timeline .live {
+    min-width: 46px;
+  }
+  .timeline .range-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary-text-color);
+  }
+  .timeline .range {
+    box-sizing: border-box;
+    height: 30px;
+    min-width: 64px;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid var(--divider-color, rgba(127,140,158,.35));
+    border-radius: 999px;
+    padding: 0 24px 0 10px;
+    background: transparent;
+    color: var(--primary-text-color);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .timeline .range-wrap::after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    opacity: 0.7;
+    pointer-events: none;
+    transform: translateY(-65%) rotate(45deg);
+  }
+  .timeline .range:hover:not(:disabled) {
+    background: var(--secondary-background-color, rgba(127,140,158,.12));
+  }
+  .timeline .range:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+  .timeline .range option {
+    color: var(--primary-text-color);
+    background: var(--card-background-color, var(--ha-card-background, #fff));
+  }
+  .timeline button:hover:not(:disabled) {
+    background: var(--secondary-background-color, rgba(127,140,158,.12));
+  }
+  .timeline button:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+  .timeline .play-icon {
+    position: relative;
+    display: block;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    color: currentColor;
+  }
+  .timeline .play-icon::before,
+  .timeline .play-icon::after {
+    content: "";
+    position: absolute;
+  }
+  .timeline .play:not(.playing) .play-icon::before {
+    left: 4px;
+    top: 2px;
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-left: 10px solid currentColor;
+  }
+  .timeline .play:not(.playing) .play-icon::after {
+    display: none;
+  }
+  .timeline .play.playing .play-icon::before,
+  .timeline .play.playing .play-icon::after {
+    top: 2px;
+    width: 4px;
+    height: 12px;
+    border-radius: 1px;
+    background: currentColor;
+  }
+  .timeline .play.playing .play-icon::before {
+    left: 3px;
+  }
+  .timeline .play.playing .play-icon::after {
+    right: 3px;
+  }
+  .timeline.compact .speed {
+    min-width: 38px;
+    padding: 0 6px;
+  }
+  .timeline.compact .range {
+    min-width: 58px;
+    padding-left: 8px;
+    padding-right: 22px;
+  }
+  .timeline .play:disabled,
+  .timeline .speed:disabled,
+  .timeline .live:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
   .empty {
     display: flex;
     flex-direction: column;
@@ -4405,6 +4940,21 @@ class FloorplanHeatmapCard extends HTMLElement {
     this._lastValues = null;
     this._isotherms = [];
     this._rafHandle = 0;
+
+    this._history = null;
+    this._historyLoading = false;
+    this._historyError = '';
+    this._historyStart = 0;
+    this._historyEnd = 0;
+    this._historyStepMs = 0;
+    this._historyFrames = 0;
+    this._selectedHistoryTime = null;
+    this._historyRequestToken = 0;
+    this._playTimer = 0;
+    this._playbackSpeed = 1;
+    this._historyRangeKey = '24h';
+    this._sunEvents = [];
+    this._sunMarkerSignature = '';
   }
 
   setConfig(config) {
@@ -4414,6 +4964,27 @@ class FloorplanHeatmapCard extends HTMLElement {
     this._fieldSignature = '';
     this._lastValues = null;
     this._buffer = null;
+
+    if (this._playTimer) {
+      clearTimeout(this._playTimer);
+      this._playTimer = 0;
+    }
+
+    // A changed config may use different sensors or a different range,
+    // which invalidates any history request still in flight.
+    this._historyRequestToken += 1;
+    this._history = null;
+    this._historyLoading = false;
+    this._historyError = '';
+    this._historyStart = 0;
+    this._historyEnd = 0;
+    this._historyStepMs = 0;
+    this._historyFrames = 0;
+    this._selectedHistoryTime = null;
+    this._historyRangeKey = this._initialHistoryRangeKey(this._config);
+    this._sunEvents = [];
+    this._sunMarkerSignature = '';
+
     // The view angle from the config is the starting point.
     // If the viewer then rotates the model, that remains purely a
     // viewing choice and is deliberately not written back to the config.
@@ -4426,7 +4997,12 @@ class FloorplanHeatmapCard extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
     this._applyStaticText();
+    this._updateTimelineUi();
     this._update(false);
+
+    if (this._config && this._config.show_timeline) {
+      this._ensureHistory();
+    }
   }
 
   /** Language from hass.language — browser fallback before the first hass update. */
@@ -4440,7 +5016,10 @@ class FloorplanHeatmapCard extends HTMLElement {
 
   connectedCallback() {
     if (!this._resizeObserver && this._stage) {
-      this._resizeObserver = new ResizeObserver(() => this._scheduleRender());
+      this._resizeObserver = new ResizeObserver(() => {
+        this._scheduleRender();
+        this._updateTimelineUi();
+      });
       this._resizeObserver.observe(this._stage);
     }
   }
@@ -4449,6 +5028,11 @@ class FloorplanHeatmapCard extends HTMLElement {
     if (this._resizeObserver) {
       this._resizeObserver.disconnect();
       this._resizeObserver = null;
+    }
+
+    if (this._playTimer) {
+      clearTimeout(this._playTimer);
+      this._playTimer = 0;
     }
   }
 
@@ -4474,6 +5058,26 @@ class FloorplanHeatmapCard extends HTMLElement {
           <div class="bar"></div>
           <span class="hi"></span>
         </div>
+        <div class="timeline" hidden>
+          <button class="play" type="button">
+            <span class="play-icon" aria-hidden="true"></span>
+          </button>
+          <button class="speed" type="button">1&times;</button>
+          <label class="range-wrap">
+            <select class="range">
+              <option value="today"></option>
+              <option value="24h"></option>
+              <option value="48h"></option>
+              <option value="7d"></option>
+            </select>
+          </label>
+          <span class="time"></span>
+          <div class="timeline-track">
+            <div class="sun-markers"></div>
+            <input class="timeline-slider" type="range" min="0" max="1" step="1" value="1">
+          </div>
+          <button class="live" type="button"></button>
+        </div>
         <div class="empty" hidden>
           <div class="big">🏠</div>
           <div class="empty-text"></div>
@@ -4489,6 +5093,14 @@ class FloorplanHeatmapCard extends HTMLElement {
     this._chips = this.shadowRoot.querySelector('.chips');
     this._tooltip = this.shadowRoot.querySelector('.tooltip');
     this._legend = this.shadowRoot.querySelector('.legend');
+    this._timeline = this.shadowRoot.querySelector('.timeline');
+    this._timelinePlay = this.shadowRoot.querySelector('.timeline .play');
+    this._timelineSpeed = this.shadowRoot.querySelector('.timeline .speed');
+    this._timelineRange = this.shadowRoot.querySelector('.timeline .range');
+    this._timelineTime = this.shadowRoot.querySelector('.timeline .time');
+    this._timelineSunMarkers = this.shadowRoot.querySelector('.timeline .sun-markers');
+    this._timelineSlider = this.shadowRoot.querySelector('.timeline-slider');
+    this._timelineLive = this.shadowRoot.querySelector('.timeline .live');
     this._empty = this.shadowRoot.querySelector('.empty');
     this._emptyText = this.shadowRoot.querySelector('.empty-text');
     this._resetBtn = this.shadowRoot.querySelector('.reset');
@@ -4497,6 +5109,35 @@ class FloorplanHeatmapCard extends HTMLElement {
     header.hidden = !cfg.title;
     this._titleEl.textContent = cfg.title || '';
     this._legend.hidden = !cfg.show_legend;
+    this._timeline.hidden = !cfg.show_timeline;
+
+    if (this._historyRangeKey === 'config') {
+      const option = document.createElement('option');
+      option.value = 'config';
+      option.textContent = this._formatHistoryHours(cfg.history_hours);
+      this._timelineRange.prepend(option);
+    }
+    this._timelineRange.value = this._historyRangeKey;
+
+    this._timelinePlay.addEventListener('click', () => {
+      this._togglePlayback();
+    });
+
+    this._timelineSpeed.addEventListener('click', () => {
+      this._cyclePlaybackSpeed();
+    });
+
+    this._timelineRange.addEventListener('change', (event) => {
+      this._setHistoryRange(event.target.value);
+    });
+
+    this._timelineSlider.addEventListener('input', (event) => {
+      this._onTimelineInput(event);
+    });
+
+    this._timelineLive.addEventListener('click', () => {
+      this._setLive();
+    });
 
     this._stage.classList.toggle('tilted', cfg.view_mode === 'tilted');
     this._stage.addEventListener('pointermove', (e) => this._onPointerMove(e));
@@ -4512,7 +5153,10 @@ class FloorplanHeatmapCard extends HTMLElement {
     });
 
     if (this._resizeObserver) this._resizeObserver.disconnect();
-    this._resizeObserver = new ResizeObserver(() => this._scheduleRender());
+    this._resizeObserver = new ResizeObserver(() => {
+      this._scheduleRender();
+      this._updateTimelineUi();
+    });
     this._resizeObserver.observe(this._stage);
 
     if (cfg.background) {
@@ -4525,6 +5169,11 @@ class FloorplanHeatmapCard extends HTMLElement {
     }
 
     this._applyStaticText();
+    this._updateTimelineUi();
+
+    if (cfg.show_timeline && this._hass) {
+      this._ensureHistory();
+    }
   }
 
   /** Refreshes the language-dependent, statically built texts — also
@@ -4532,17 +5181,64 @@ class FloorplanHeatmapCard extends HTMLElement {
   _applyStaticText() {
     if (!this._resetBtn) return;
     const lang = this._lang();
+
     this._resetBtn.title = t(lang, 'card.resetViewTitle');
     this._resetBtn.textContent = `↺ ${t(lang, 'card.resetViewLabel')}`;
     this._emptyText.innerHTML =
       `${t(lang, 'card.emptyLine1')}<br>` +
       `${t(lang, 'card.emptyLine2', { button: `<b>${t(lang, 'planEditor.title')}</b>` })}`;
+
+    if (!this._timeline) return;
+
+    const playing = Boolean(this._playTimer);
+    const playLabel = t(
+      lang,
+      playing ? 'timeline.pause' : 'timeline.play'
+    );
+
+    this._timelinePlay.title = playLabel;
+    this._timelinePlay.setAttribute('aria-label', playLabel);
+
+    this._timelineSpeed.title = t(lang, 'timeline.playbackSpeed');
+
+    const rangeLabel = t(lang, 'timeline.historyRange');
+    const rangeWrap = this._timelineRange.closest('.range-wrap');
+    if (rangeWrap) rangeWrap.title = rangeLabel;
+    this._timelineRange.setAttribute('aria-label', rangeLabel);
+
+    const rangeLabels = {
+      today: t(lang, 'timeline.today'),
+      '24h': t(lang, 'timeline.range24h'),
+      '48h': t(lang, 'timeline.range48h'),
+      '7d': t(lang, 'timeline.range7d'),
+    };
+
+    for (const option of this._timelineRange.options) {
+      if (rangeLabels[option.value]) {
+        option.textContent = rangeLabels[option.value];
+      }
+    }
+
+    const liveLabel = t(lang, 'timeline.live');
+    this._timelineLive.textContent = liveLabel;
+    this._timelineLive.title = liveLabel;
+    this._timelineLive.setAttribute('aria-label', liveLabel);
   }
 
-  /** Current readings in the order of floorplan.sensors. */
+  /** Readings in sensor order — live or at the selected point in time. */
   _readValues() {
     const sensors = this._config.floorplan.sensors;
+
+    if (this._selectedHistoryTime != null && this._history) {
+      return sensorValuesAt(
+        this._history,
+        sensors,
+        this._selectedHistoryTime
+      );
+    }
+
     const hass = this._hass;
+
     return sensors.map((s) => {
       if (!hass || !s.entity) return NaN;
       const state = hass.states[s.entity];
@@ -4572,6 +5268,7 @@ class FloorplanHeatmapCard extends HTMLElement {
     this._empty.hidden = !empty;
     this._stage.hidden = empty;
     this._legend.hidden = empty || !cfg.show_legend;
+    this._timeline.hidden = empty || !cfg.show_timeline;
     this._summaryEl.hidden = empty;
     if (empty) return;
 
@@ -4606,6 +5303,501 @@ class FloorplanHeatmapCard extends HTMLElement {
     this._isotherms =
       this._hasField && cfg.show_isotherms ? computeIsotherms(this._field, cfg.isotherm_step) : [];
     this._scheduleRender();
+  }
+
+  _initialHistoryRangeKey(config) {
+    const hours = Number(config && config.history_hours);
+
+    if (hours === 24) return '24h';
+    if (hours === 48) return '48h';
+    if (hours === 168) return '7d';
+
+    return 'config';
+  }
+
+  _formatHistoryHours(hours) {
+    const value = Number(hours);
+    if (!Number.isFinite(value)) {
+      return t(this._lang(), 'timeline.custom');
+    }
+    return `${Number.isInteger(value) ? value : value.toFixed(1)}h`;
+  }
+
+  _historyRangeSpec(key) {
+    const cfg = this._config;
+    const configuredHours = Number(cfg.history_hours);
+    const configuredStep = Number(cfg.history_step_minutes);
+
+    if (key === 'today') {
+      return {
+        mode: 'today',
+        stepMinutes: 15,
+      };
+    }
+
+    if (key === '48h') {
+      return {
+        mode: 'rolling',
+        hours: 48,
+        stepMinutes: configuredHours === 48 ? configuredStep : 30,
+      };
+    }
+
+    if (key === '7d') {
+      return {
+        mode: 'rolling',
+        hours: 168,
+        stepMinutes: configuredHours === 168 ? configuredStep : 60,
+      };
+    }
+
+    if (key === 'config') {
+      return {
+        mode: 'rolling',
+        hours: configuredHours,
+        stepMinutes: configuredStep,
+      };
+    }
+
+    return {
+      mode: 'rolling',
+      hours: 24,
+      stepMinutes: configuredHours === 24 ? configuredStep : 15,
+    };
+  }
+
+  _setHistoryRange(key) {
+    if (!this._config || key === this._historyRangeKey) return;
+
+    this._stopPlayback();
+
+    // Invalidate any fetch that is still in flight before starting the
+    // newly selected range.
+    this._historyRequestToken += 1;
+    this._historyRangeKey = key;
+    this._history = null;
+    this._historyLoading = false;
+    this._historyError = '';
+    this._historyStart = 0;
+    this._historyEnd = 0;
+    this._historyStepMs = 0;
+    this._historyFrames = 0;
+    this._selectedHistoryTime = null;
+    this._sunEvents = [];
+    this._sunMarkerSignature = '';
+
+    this._updateTimelineUi();
+    this._update(true);
+
+    if (this._hass) {
+      this._ensureHistory();
+    }
+  }
+
+  _renderSunMarkers() {
+    if (!this._timelineSunMarkers) return;
+
+    const span = this._historyEnd - this._historyStart;
+    const signature =
+      `${this._historyStart}:${this._historyEnd}:` +
+      this._sunEvents.map((event) => `${event.type}:${event.time}`).join(',');
+
+    if (signature === this._sunMarkerSignature) return;
+    this._sunMarkerSignature = signature;
+
+    this._timelineSunMarkers.replaceChildren();
+
+    if (!(span > 0) || !this._sunEvents.length) return;
+
+    for (const event of this._sunEvents) {
+      const ratio =
+        (event.time - this._historyStart) / span;
+
+      if (ratio < 0 || ratio > 1) continue;
+
+      const marker = document.createElement('span');
+      marker.className = `sun-marker ${event.type}`;
+      marker.style.left = `${ratio * 100}%`;
+
+      const label =
+        event.type === 'sunrise'
+          ? t(this._lang(), 'timeline.sunrise')
+          : t(this._lang(), 'timeline.sunset');
+
+      marker.title =
+        `${label} · ${this._formatTimelineTooltip(event.time)}`;
+      marker.setAttribute(
+        'aria-label',
+        `${label}, ${this._formatTimelineTooltip(event.time)}`
+      );
+
+      this._timelineSunMarkers.appendChild(marker);
+    }
+  }
+
+  async _ensureHistory() {
+    const cfg = this._config;
+
+    if (
+      !cfg ||
+      !cfg.show_timeline ||
+      !this._hass ||
+      this._history ||
+      this._historyLoading ||
+      this._historyError
+    ) {
+      return;
+    }
+
+    const entityIds = uniqueHistoryEntityIds(cfg.floorplan.sensors);
+
+    if (!entityIds.length) {
+      this._historyError =
+        t(this._lang(), 'timeline.noSensors');
+      this._updateTimelineUi();
+      return;
+    }
+
+    const range = this._historyRangeSpec(this._historyRangeKey);
+    const stepMinutes = Math.max(1, Number(range.stepMinutes) || 15);
+    const stepMs = stepMinutes * 60 * 1000;
+    const endMs = Date.now();
+
+    let startMs;
+
+    if (range.mode === 'today') {
+      const start = new Date(endMs);
+      start.setHours(0, 0, 0, 0);
+      startMs = start.getTime();
+    } else {
+      const hours = Math.max(1, Number(range.hours) || 24);
+      startMs = endMs - hours * 60 * 60 * 1000;
+    }
+
+    const frames = Math.max(
+      1,
+      Math.ceil((endMs - startMs) / stepMs)
+    );
+
+    this._historyStepMs = stepMs;
+    this._historyFrames = frames;
+    this._historyStart = startMs;
+    this._historyEnd = endMs;
+    this._historyLoading = true;
+    this._historyError = '';
+
+    const token = ++this._historyRequestToken;
+    const historyEntityIds = [...entityIds];
+
+    if (
+      this._hass.states &&
+      this._hass.states['sun.sun'] &&
+      !historyEntityIds.includes('sun.sun')
+    ) {
+      historyEntityIds.push('sun.sun');
+    }
+
+    this._updateTimelineUi();
+
+    try {
+      const raw = await fetchHistory(
+        this._hass,
+        new Date(startMs),
+        new Date(endMs),
+        historyEntityIds
+      );
+
+      if (token !== this._historyRequestToken) return;
+
+      this._history = normalizeHistory(raw);
+      this._sunEvents = extractSunEvents(
+        raw,
+        startMs,
+        endMs
+      );
+      this._sunMarkerSignature = '';
+    } catch (error) {
+      if (token !== this._historyRequestToken) return;
+
+      this._historyError =
+        error && error.message
+          ? error.message
+          : String(
+              error ||
+              t(this._lang(), 'timeline.unavailable')
+            );
+    } finally {
+      if (token !== this._historyRequestToken) return;
+
+      this._historyLoading = false;
+      this._updateTimelineUi();
+    }
+  }
+
+  _onTimelineInput(event) {
+    this._stopPlayback();
+
+    if (!this._history || !this._historyFrames) return;
+
+    const index = Math.max(
+      0,
+      Math.min(
+        this._historyFrames,
+        Math.round(Number(event.target.value) || 0)
+      )
+    );
+
+    // The far right position always means true live mode.
+    if (index >= this._historyFrames) {
+      this._setLive();
+      return;
+    }
+
+    this._selectedHistoryTime =
+      this._historyStart + index * this._historyStepMs;
+
+    this._updateTimelineUi();
+    this._update(true);
+  }
+
+  _cyclePlaybackSpeed() {
+    const speeds = [0.5, 1, 2, 4];
+    const current = speeds.indexOf(this._playbackSpeed);
+    this._playbackSpeed = speeds[(current + 1) % speeds.length];
+    this._updateTimelineUi();
+  }
+
+  _playbackDelay() {
+    return 350 / this._playbackSpeed;
+  }
+
+  _togglePlayback() {
+    if (this._playTimer) {
+      this._stopPlayback();
+      return;
+    }
+
+    if (!this._history || !this._historyFrames) return;
+
+    let index;
+
+    if (this._selectedHistoryTime == null) {
+      // Start at the beginning when Play is pressed from LIVE.
+      index = 0;
+    } else {
+      index = Math.round(
+        (this._selectedHistoryTime - this._historyStart) /
+          this._historyStepMs
+      );
+
+      // Continue with the next frame instead of replaying
+      // the frame already shown.
+      index += 1;
+
+      if (index >= this._historyFrames) index = 0;
+    }
+
+    const advance = () => {
+      if (!this._history || index >= this._historyFrames) {
+        this._stopPlayback();
+        this._setLive();
+        return;
+      }
+
+      this._selectedHistoryTime =
+        this._historyStart + index * this._historyStepMs;
+
+      this._updateTimelineUi();
+      this._update(true);
+
+      index += 1;
+
+      // 350 ms per historical frame at 1x speed.
+      this._playTimer = setTimeout(
+        advance,
+        this._playbackDelay()
+      );
+    };
+
+    // Non-zero marker tells the UI that playback is active.
+    this._playTimer = -1;
+    this._updateTimelineUi();
+    advance();
+  }
+
+  _stopPlayback() {
+    if (this._playTimer > 0) {
+      clearTimeout(this._playTimer);
+    }
+
+    this._playTimer = 0;
+
+    if (this._timelinePlay) {
+      const playLabel =
+        t(this._lang(), 'timeline.play');
+
+      this._timelinePlay.classList.remove('playing');
+      this._timelinePlay.title = playLabel;
+      this._timelinePlay.setAttribute('aria-label', playLabel);
+    }
+  }
+
+  _setLive() {
+    this._stopPlayback();
+    this._selectedHistoryTime = null;
+    this._updateTimelineUi();
+    this._update(true);
+  }
+
+  _formatTimelineTime(time, compact = false) {
+    const language =
+      this._hass && this._hass.language
+        ? this._hass.language
+        : undefined;
+    const date = new Date(time);
+
+    const timeText = new Intl.DateTimeFormat(language, {
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+
+    if (compact) {
+      const weekday = new Intl.DateTimeFormat(language, {
+        weekday: 'short',
+      }).format(date);
+
+      return `${weekday} ${timeText}`;
+    }
+
+    const dateText = new Intl.DateTimeFormat(language, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    })
+      .format(date)
+      .replace(/,/g, '');
+
+    return `${dateText} \u00B7 ${timeText}`;
+  }
+
+  _formatTimelineTooltip(time) {
+    const language =
+      this._hass && this._hass.language
+        ? this._hass.language
+        : undefined;
+
+    return new Intl.DateTimeFormat(language, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(time));
+  }
+
+  _updateTimelineUi() {
+    if (!this._timeline || !this._config) return;
+
+    const visible =
+      this._config.show_timeline &&
+      this._stage &&
+      !this._stage.hidden;
+
+    this._timeline.hidden = !visible;
+
+    if (!visible) return;
+
+    const timelineWidth = this._timeline.getBoundingClientRect().width;
+    const compact = timelineWidth > 0 && timelineWidth < 560;
+    this._timeline.classList.toggle('compact', compact);
+
+    this._timeline.title = this._historyError || '';
+    this._timelineRange.value = this._historyRangeKey;
+    this._renderSunMarkers();
+
+    if (this._historyLoading) {
+      this._timelineTime.textContent =
+        t(this._lang(), 'timeline.loading');
+      this._timelineTime.title = '';
+      this._timelinePlay.disabled = true;
+      this._timelineSpeed.disabled = true;
+      this._timelineSlider.disabled = true;
+      this._timelineLive.disabled = true;
+      return;
+    }
+
+    if (this._historyError) {
+      this._timelineTime.textContent =
+        t(this._lang(), 'timeline.unavailable');
+      this._timelineTime.title = '';
+      this._timelinePlay.disabled = true;
+      this._timelineSpeed.disabled = true;
+      this._timelineSlider.disabled = true;
+      this._timelineLive.disabled = true;
+      return;
+    }
+
+    if (!this._history || !this._historyFrames) {
+      this._timelineTime.textContent =
+        t(this._lang(), 'timeline.live');
+      this._timelineTime.title = '';
+      this._timelinePlay.disabled = true;
+      this._timelineSpeed.disabled = true;
+      this._timelineSlider.disabled = true;
+      this._timelineLive.disabled = true;
+      return;
+    }
+
+    this._timelinePlay.disabled = false;
+    this._timelineSpeed.disabled = false;
+
+    const playing = Boolean(this._playTimer);
+    const playLabel =
+      t(
+        this._lang(),
+        playing ? 'timeline.pause' : 'timeline.play'
+      );
+
+    this._timelinePlay.classList.toggle('playing', playing);
+    this._timelinePlay.title = playLabel;
+    this._timelinePlay.setAttribute('aria-label', playLabel);
+
+    this._timelineSpeed.textContent =
+      `${this._playbackSpeed}\u00D7`;
+
+    this._timelineSlider.disabled = false;
+    this._timelineSlider.min = '0';
+    this._timelineSlider.max = String(this._historyFrames);
+    this._timelineSlider.step = '1';
+
+    const live = this._selectedHistoryTime == null;
+
+    if (live) {
+      this._timelineSlider.value = String(this._historyFrames);
+      this._timelineTime.textContent =
+        t(this._lang(), 'timeline.live');
+      this._timelineTime.title = '';
+    } else {
+      const index = Math.max(
+        0,
+        Math.min(
+          this._historyFrames - 1,
+          Math.round(
+            (this._selectedHistoryTime - this._historyStart) /
+              this._historyStepMs
+          )
+        )
+      );
+
+      this._timelineSlider.value = String(index);
+      this._timelineTime.textContent =
+        this._formatTimelineTime(this._selectedHistoryTime, compact);
+      this._timelineTime.title =
+        this._formatTimelineTooltip(this._selectedHistoryTime);
+    }
+
+    this._timelineLive.disabled = live;
   }
 
   _computeRange() {

@@ -8,7 +8,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { roomAreaSqm, roomSizeMeters, resizeRoomPoints } from '../src/model.js';
+import {
+  normalizeConfig,
+  roomAreaSqm,
+  roomSizeMeters,
+  resizeRoomPoints,
+} from '../src/model.js';
 
 const PPM = 50;
 const rect = (w, h, x = 0, y = 0) => [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
@@ -54,4 +59,32 @@ test('resizeRoomPoints lässt eine Achse ohne Ausdehnung oder ohne Zielmaß unan
   // Kein (bzw. ungültiges) Zielmaß für Y ⇒ nur X wird skaliert.
   const onlyX = resizeRoomPoints(rect(100, 100), 300, 0);
   assert.deepEqual(onlyX, [[0, 0], [300, 0], [300, 100], [0, 100]]);
+});
+
+test('timeline settings have backwards-compatible defaults', () => {
+  const config = normalizeConfig({});
+
+  assert.equal(config.show_timeline, false);
+  assert.equal(config.history_hours, 24);
+  assert.equal(config.history_step_minutes, 15);
+});
+
+test('timeline settings are normalized to safe limits', () => {
+  const config = normalizeConfig({
+    show_timeline: true,
+    history_hours: 999,
+    history_step_minutes: 0,
+  });
+
+  assert.equal(config.show_timeline, true);
+  assert.equal(config.history_hours, 168);
+  assert.equal(config.history_step_minutes, 15);
+
+  const minimums = normalizeConfig({
+    history_hours: -5,
+    history_step_minutes: -10,
+  });
+
+  assert.equal(minimums.history_hours, 1);
+  assert.equal(minimums.history_step_minutes, 1);
 });

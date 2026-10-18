@@ -134,6 +134,44 @@ sill 0.9 m, lintel 2.1 m) are hardcoded and derived from the floor plan via
 The temperature field itself doesn't change with the view; it's purely a
 matter of presentation.
 
+## History timeline
+
+Set `show_timeline: true` to add an interactive history timeline below the
+legend. The graphical editor exposes the same settings under
+**History & Timeline**.
+
+The timeline can:
+
+- scrub through historical heatmap frames with the slider;
+- play the selected period automatically, with `0.5×`, `1×`, `2×`, and
+  `4×` playback speeds;
+- switch between **Today**, **24h**, **48h**, and **7d** without rewriting
+  the card configuration;
+- jump straight back to **LIVE**;
+- show sunrise and sunset markers when `sun.sun` is available in Home
+  Assistant history.
+
+**Today** runs from local midnight to now. The other presets are rolling
+windows ending at the current time. The configured `history_hours` value is
+the range the card opens with; `history_step_minutes` controls the frame
+spacing for that configured range. The built-in presets use sensible frame
+spacing for their length (15 minutes for Today/24h, 30 minutes for 48h, and
+60 minutes for 7d) unless the configured range matches that preset, in which
+case the configured step is used.
+
+Historical sensor values are deliberately **not interpolated numerically**.
+For each frame, the card uses the latest recorded value for each sensor at
+or before that frame's timestamp, then runs the same steady-state spatial
+solver used for live data. Playback is therefore a sequence of historical
+steady-state heatmaps, not a transient physical heat simulation.
+
+History comes from Home Assistant's `history/history_during_period`
+WebSocket API. The requested period must therefore still be available in
+Home Assistant's recorder/history data. If recorder retention is shorter
+than the selected period, older frames may have missing sensor values.
+Sunrise/sunset markers are derived from recorded `sun.sun` transitions and
+are omitted if that entity or its history is unavailable.
+
 ## Configuration
 
 Everything is reachable through the graphical editor. In YAML it looks
@@ -162,6 +200,11 @@ show_walls: true
 show_room_labels: true
 show_values: true
 show_legend: true
+
+show_timeline: true       # false by default
+history_hours: 24         # default rolling range, 1…168 hours
+history_step_minutes: 15  # frame spacing, 1…60 minutes
+
 px_per_meter: 50
 background: /local/floorplan.png   # optional reference plan
 background_opacity: 0.25
@@ -237,7 +280,7 @@ you omit `unit`, it's taken from the first entity.
 
 ```bash
 node build.mjs                # src/ → dist/floorplan-heatmap-card.js
-node --test "test/*.test.mjs" # solver tests
+node --test "test/*.test.mjs" # automated tests
 ```
 
 The build concatenates the modules with no npm dependency and fails if two
@@ -260,6 +303,7 @@ and lets you open the fullscreen editor.
 | `src/geometry.js` | Vector and polygon helpers |
 | `src/palette.js` | Color scales and legend gradients |
 | `src/model.js` | Data model, defaults, automatic wall classification |
+| `src/history.js` | Home Assistant history loading, normalization, timeline lookup, sun-event extraction |
 | `src/solver.js` | Grid construction and diffusion solver |
 | `src/isotherms.js` | Marching squares for equal-temperature lines |
 | `src/renderer.js` | Drawing the field, walls, doors in the top-down view |

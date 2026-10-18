@@ -29,6 +29,7 @@ const MODULES = [
   'scene3d.js',
   'plan-editor.js',
   'editor.js',
+  'history.js',
   'card.js',
   'index.js',
 ];

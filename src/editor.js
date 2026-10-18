@@ -368,6 +368,41 @@ export class FloorplanHeatmapCardEditor extends HTMLElement {
         </div>
 
         <div class="card">
+          <h3>${tr('editor.sectionTimeline')}</h3>
+          <label class="check">
+            <input type="checkbox" data-key="show_timeline" ${cfg.show_timeline ? 'checked' : ''}>
+            ${tr('editor.showTimeline')}
+          </label>
+
+          <div ${cfg.show_timeline ? '' : 'hidden'}>
+            <div class="row" style="margin-top:8px">
+              <div class="field">
+                <label>${tr('editor.historyHours')}</label>
+                <input
+                  type="number"
+                  data-key="history_hours"
+                  min="1"
+                  max="168"
+                  step="1"
+                  value="${cfg.history_hours}">
+              </div>
+              <div class="field">
+                <label>${tr('editor.historyStepMinutes')}</label>
+                <input
+                  type="number"
+                  data-key="history_step_minutes"
+                  min="1"
+                  max="60"
+                  step="1"
+                  value="${cfg.history_step_minutes}">
+              </div>
+            </div>
+            <div class="note">${tr('editor.timelineNote')}</div>
+            <div class="note">${tr('editor.historyStepNote')}</div>
+          </div>
+        </div>
+
+        <div class="card">
           <details>
             <summary>${tr('editor.sectionModel')}</summary>
             <div class="field">
