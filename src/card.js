@@ -157,6 +157,9 @@ const CARD_STYLES = `
     font-size: 13px;
     line-height: 1.5;
   }
+  .empty[hidden] {
+    display: none !important;
+  }
   .empty .big { font-size: 26px; opacity: 0.65; }
 `;
 
