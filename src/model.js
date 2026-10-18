@@ -28,6 +28,7 @@ export const DEFAULTS = {
   max: 26,
   auto_range: false,
   palette: 'coolwarm',
+  palette_stops: [],
   opacity: 0.85,
   cell_size: 8,
   sensor_radius: 0.4,

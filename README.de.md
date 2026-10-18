@@ -145,7 +145,7 @@ unit: °C
 min: 18                 # untere Grenze der Farbskala
 max: 26                 # obere Grenze
 auto_range: false       # true = Skala folgt den Messwerten
-palette: coolwarm       # coolwarm | thermal | viridis | inferno | turbo
+palette: coolwarm       # coolwarm | thermal | viridis | inferno | turbo | custom
 opacity: 0.85
 
 view_mode: flat         # flat = Draufsicht | tilted = 2,5D mit Wänden
@@ -183,6 +183,36 @@ floorplan:
   sensors:
     - { id: s1, x: 175, y: 150, entity: sensor.wohnzimmer_temperatur, name: Wohnzimmer }
 ```
+
+### Benutzerdefinierte Farbskalen
+
+Mit `palette: custom` lässt sich über `palette_stops` eine eigene Farbskala
+definieren. Jeder Stopp ist ein `[Position, Farbe]`-Paar. Die Position reicht
+von `0` am konfigurierten Minimum bis `1` am konfigurierten Maximum.
+
+```yaml
+min: 30
+max: 80
+palette: custom
+palette_stops:
+  - [0.00, "#482382"]
+  - [0.15, "#2864d2"]
+  - [0.30, "#23b4c8"]
+  - [0.45, "#2db464"]
+  - [0.60, "#50be50"]
+  - [0.70, "#bed23c"]
+  - [0.80, "#f5be2d"]
+  - [0.90, "#eb6423"]
+  - [1.00, "#b91923"]
+```
+
+Farben können als `#RGB`, `#RRGGBB` oder als RGB-Array wie
+`[45, 180, 100]` angegeben werden. Mindestens zwei gültige Stopps sind
+erforderlich. Die Stopps werden automatisch nach Position sortiert. Reicht
+der erste oder letzte Stopp nicht bis `0` beziehungsweise `1`, wird die
+nächstgelegene Farbe bis zum jeweiligen Endpunkt verlängert.
+
+Für die eingebauten Farbskalen ist `palette_stops` nicht erforderlich.
 
 Koordinaten sind abstrakte Grundriss-Pixel. `px_per_meter` übersetzt sie in
 Meter — das brauchst du für Beschriftungen, den Sensorradius und die

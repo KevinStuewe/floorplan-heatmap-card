@@ -25,8 +25,8 @@
  * dist output has zero runtime dependencies and can't fetch them.
  * ------------------------------------------------------------------ */
 
-const localeEn = {"translations":{"customCards.name":"Floorplan Heatmap","customCards.description":"Temperature distribution over a floor plan — with walls, doors, and windows as thermal resistance.","card.defaultTitle":"Temperature Distribution","card.resetViewTitle":"Reset view angle","card.resetViewLabel":"View","card.emptyLine1":"No floor plan yet.","card.emptyLine2":"Edit card → open {button} and draw rooms.","card.spreadTooltip":"Spread between warmest and coldest sensor","planEditor.title":"Floor Plan & Sensors","editor.openPlanButton":"Edit Floor Plan & Sensors","editor.counts":"{rooms} rooms · {sensors} sensors · {openings} openings","editor.sectionDisplay":"Display","editor.sectionView":"View","editor.sectionShow":"Show","editor.sectionModel":"Model & Accuracy","editor.sectionTransmittance":"Thermal transmittance","editor.fieldTitle":"Title","editor.fieldUnit":"Unit","editor.fieldPalette":"Color scale","editor.autoRange":"Automatically fit scale to sensor readings","editor.fieldMin":"Minimum","editor.fieldMax":"Maximum","editor.fieldOpacity":"Field opacity","editor.viewFlat":"Top-down","editor.viewTilted":"2.5D — walls raised","editor.fieldYaw":"Rotation","editor.fieldPitch":"Tilt angle","editor.fieldWallHeight":"Wall height","editor.viewAngleNote":"These angles are just the starting point. In the card itself, you can rotate the model with the mouse at any time — that's purely a viewing choice and won't overwrite the default set here.","editor.showWalls":"Walls, doors, and windows","editor.showRoomLabels":"Room names","editor.showValues":"Values at sensors","editor.showLegend":"Color legend","editor.showIsotherms":"Isotherms (lines of equal temperature)","editor.isothermStep":"Isotherm spacing","editor.cellSize":"Grid resolution","editor.cellSizeNote":"Smaller = finer and more accurate, but more compute-intensive. 6–10 px is a good compromise for apartments.","editor.sensorRadius":"Sensor radius","editor.sensorRadiusNote":"How large the area around a sensor point is that's held exactly at its value.","editor.transmittanceNote":"0% = perfect insulation, 100% = like free air. These values determine how strongly heat is exchanged between adjacent areas.","editor.dialogClosedWarning":"floorplan-heatmap-card: The configuration dialog was closed while the floor plan editor was open. The changes could not be applied.","editor.paletteCoolwarm":"Cool–Warm (recommended)","editor.paletteThermal":"Thermal","editor.paletteViridis":"Viridis","editor.paletteInferno":"Inferno","editor.paletteTurbo":"Turbo","label.exterior":"Exterior wall","label.interior":"Interior wall","label.door":"Door","label.window":"Window","label.passage":"Passage","tools.select.label":"Select","tools.select.hint":"Click to select · drag to move · drag corner handles · type room dimensions on the right · Del removes","tools.room.label":"Room","tools.room.hint":"Drag for a rectangle · click repeatedly for a polygon (Enter or double-click closes it, Backspace undoes the last point)","tools.wall.label":"Wall","tools.wall.hint":"Click to set the start, click again for the end · type a length on the right and press Enter for an exact size","tools.opening.label":"Door / Window","tools.opening.hint":"Click on a wall — the opening snaps onto it and affects both adjoining rooms","tools.sensor.label":"Sensor","tools.sensor.hint":"Click to place a measurement point · assign the entity on the right","tools.erase.label":"Delete","tools.erase.hint":"Click an element to remove it","tools.measure.label":"Scale","tools.measure.hint":"Click a stretch of known length and enter its real length in meters","planEditor.undoTitle":"Undo (Cmd/Ctrl+Z)","planEditor.redoTitle":"Redo (Cmd/Ctrl+Shift+Z)","planEditor.fitTitle":"Fit all","planEditor.toggleGrid":"Grid","planEditor.toggleSnapGrid":"Snap to grid","planEditor.toggleSnapPoints":"Snap to corners","planEditor.toggleAxisSnap":"0°/90°","planEditor.cancel":"Cancel","planEditor.save":"Apply","planEditor.hintSuffix":"Scroll wheel zooms, middle button or spacebar pans.","planEditor.roomFallback":"Room {n}","planEditor.sensorFallback":"Sensor","planEditor.panelGeneral":"General Settings","planEditor.panelWallDraft":"Draw Wall","planEditor.panelMeasure":"Calibrate Scale","planEditor.panelRoom":"Room","planEditor.panelWall":"Freestanding Wall","planEditor.panelOpening":"Opening","planEditor.panelSensor":"Sensor","planEditor.scaleLabel":"Scale — pixels per meter","planEditor.backgroundLabel":"Background image (path under /local/…)","planEditor.backgroundPlaceholder":"/local/floorplan.png","planEditor.backgroundOpacityLabel":"Background opacity —","planEditor.scaleNote":"The scale only affects labels and the sensor radius — the temperature field itself is scale-free.","planEditor.currentLength":"Current length","planEditor.exactLengthLabel":"Set exact length (meters) — Enter confirms","planEditor.examplePlaceholder":"e.g. 3.20","planEditor.finishDrawing":"Finish drawing (Esc)","planEditor.measureNote":"Click a stretch whose real length you know — a room wall, for example. Then enter the length in meters.","planEditor.measuredDistance":"Measured distance","planEditor.notMeasuredYet":"nothing measured yet","planEditor.realLengthLabel":"Real length (meters) — Enter applies","planEditor.current":"Current","planEditor.name":"Name","planEditor.width":"Width (m)","planEditor.length":"Length (m)","planEditor.area":"Area","planEditor.corners":"Corners","planEditor.roomSizeNote":"Dimensions are the outer edges — Enter or clicking elsewhere applies them. The top-left corner stays fixed; doors and windows don't move with it. Corner points can still be dragged at the white handles.","planEditor.type":"Type","planEditor.wallLength":"Length","planEditor.wallTypeNote":"Room edges are automatically detected as exterior or interior walls; this type only applies to freestanding walls.","planEditor.kind":"Kind","planEditor.openingWidthLabel":"Width —","planEditor.doorSwingLabel":"Door swing","planEditor.doorFlipHinge":"Flip hinge side","planEditor.doorFlipSwing":"Flip swing direction","planEditor.openingNote":"Passage = open, door = clearly damped, window = almost sealed. The opening affects every wall at this spot — so both rooms, if two adjoin here.","planEditor.displayNameLabel":"Display name (empty = entity name)","planEditor.exampleRoomPlaceholder":"e.g. Living Room","planEditor.currentValue":"Current value","planEditor.notAvailable":"not available","planEditor.entityPlaceholder":"sensor.living_room_temperature","planEditor.deleteButton":"Delete (Del)","planEditor.noEntity":"No entity","planEditor.noEntityAssigned":"no entity assigned","planEditor.noSensorsYet":"No sensors placed yet.","planEditor.noRoomsYet":"No rooms drawn yet.","planEditor.sensorsHeader":"Sensors ({n})","planEditor.roomsHeader":"Rooms ({n})","planEditor.overview":"Overview","planEditor.summaryLine":"{rooms} rooms · {walls} freestanding walls · {openings} openings · {sensors} sensors"},"roomNameSuggestions":["Living Room","Kitchen","Bedroom","Bathroom","Hallway","Office","Kids Room","Guest WC"]};
-const localeDe = {"translations":{"customCards.name":"Grundriss-Heatmap","customCards.description":"Temperaturverteilung über einen Grundriss — mit Wänden, Türen und Fenstern als Wärmewiderstand.","card.defaultTitle":"Temperaturverteilung","card.resetViewTitle":"Blickwinkel zurücksetzen","card.resetViewLabel":"Ansicht","card.emptyLine1":"Noch kein Grundriss angelegt.","card.emptyLine2":"Karte bearbeiten → {button} öffnen und Räume zeichnen.","card.spreadTooltip":"Spreizung zwischen wärmstem und kältestem Sensor","planEditor.title":"Grundriss & Sensoren","editor.openPlanButton":"Grundriss & Sensoren bearbeiten","editor.counts":"{rooms} Räume · {sensors} Sensoren · {openings} Öffnungen","editor.sectionDisplay":"Darstellung","editor.sectionView":"Ansicht","editor.sectionShow":"Anzeigen","editor.sectionModel":"Modell & Genauigkeit","editor.sectionTransmittance":"Wärmedurchlässigkeit","editor.fieldTitle":"Titel","editor.fieldUnit":"Einheit","editor.fieldPalette":"Farbskala","editor.autoRange":"Skala automatisch an die Messwerte anpassen","editor.fieldMin":"Minimum","editor.fieldMax":"Maximum","editor.fieldOpacity":"Deckkraft der Fläche","editor.viewFlat":"Draufsicht","editor.viewTilted":"2,5D — Wände aufgestellt","editor.fieldYaw":"Drehung","editor.fieldPitch":"Höhenwinkel","editor.fieldWallHeight":"Wandhöhe","editor.viewAngleNote":"Diese Winkel sind der Ausgangspunkt. In der Karte selbst lässt sich das Modell jederzeit mit der Maus drehen — das bleibt aber eine reine Ansichtssache und überschreibt die Voreinstellung hier nicht.","editor.showWalls":"Wände, Türen und Fenster","editor.showRoomLabels":"Raumnamen","editor.showValues":"Messwerte an den Sensoren","editor.showLegend":"Farblegende","editor.showIsotherms":"Isothermen (Linien gleicher Temperatur)","editor.isothermStep":"Abstand der Isothermen","editor.cellSize":"Gitterauflösung","editor.cellSizeNote":"Kleiner = feiner und genauer, aber rechenintensiver. 6–10 px ist für Wohnungen ein guter Kompromiss.","editor.sensorRadius":"Sensorradius","editor.sensorRadiusNote":"Wie groß die Fläche um einen Messpunkt ist, die exakt auf dessen Wert festgehalten wird.","editor.transmittanceNote":"0 % = perfekte Dämmung, 100 % = wie freie Luft. Diese Werte bestimmen, wie stark Wärme zwischen benachbarten Bereichen ausgetauscht wird.","editor.dialogClosedWarning":"floorplan-heatmap-card: Der Konfigurationsdialog wurde geschlossen, während der Grundriss-Editor offen war. Die Änderungen konnten nicht übernommen werden.","editor.paletteCoolwarm":"Kalt–Warm (empfohlen)","editor.paletteThermal":"Thermal","editor.paletteViridis":"Viridis","editor.paletteInferno":"Inferno","editor.paletteTurbo":"Turbo","label.exterior":"Außenwand","label.interior":"Innenwand","label.door":"Tür","label.window":"Fenster","label.passage":"Durchgang","tools.select.label":"Auswählen","tools.select.hint":"Klicken zum Auswählen · ziehen zum Verschieben · Eckpunkte an den Griffen ziehen · Raummaße rechts eintippen · Entf löscht","tools.room.label":"Raum","tools.room.hint":"Ziehen ergibt ein Rechteck · einzelne Klicks ergeben ein Polygon (Enter oder Doppelklick schließt, Rücktaste nimmt zurück)","tools.wall.label":"Wand","tools.wall.hint":"Klick setzt den Anfang, zweiter Klick das Ende · Länge rechts eintippen und Enter für ein exaktes Maß","tools.opening.label":"Tür / Fenster","tools.opening.hint":"Auf eine Wand klicken — die Öffnung rastet darauf ein und wirkt auf beide angrenzenden Räume","tools.sensor.label":"Sensor","tools.sensor.hint":"Klick setzt einen Messpunkt · rechts die Entity zuweisen","tools.erase.label":"Löschen","tools.erase.hint":"Auf ein Element klicken, um es zu entfernen","tools.measure.label":"Maßstab","tools.measure.hint":"Eine Strecke bekannter Länge abklicken und die echte Länge in Metern eintragen","planEditor.undoTitle":"Rückgängig (Cmd/Ctrl+Z)","planEditor.redoTitle":"Wiederholen (Cmd/Ctrl+Shift+Z)","planEditor.fitTitle":"Alles einpassen","planEditor.toggleGrid":"Raster","planEditor.toggleSnapGrid":"Am Raster","planEditor.toggleSnapPoints":"An Ecken","planEditor.toggleAxisSnap":"0°/90°","planEditor.cancel":"Abbrechen","planEditor.save":"Übernehmen","planEditor.hintSuffix":"Mausrad zoomt, mittlere Taste oder Leertaste schiebt.","planEditor.roomFallback":"Raum {n}","planEditor.sensorFallback":"Sensor","planEditor.panelGeneral":"Grundeinstellungen","planEditor.panelWallDraft":"Wand zeichnen","planEditor.panelMeasure":"Maßstab kalibrieren","planEditor.panelRoom":"Raum","planEditor.panelWall":"Freistehende Wand","planEditor.panelOpening":"Öffnung","planEditor.panelSensor":"Sensor","planEditor.scaleLabel":"Maßstab — Pixel pro Meter","planEditor.backgroundLabel":"Hintergrundbild (Pfad unter /local/…)","planEditor.backgroundPlaceholder":"/local/grundriss.png","planEditor.backgroundOpacityLabel":"Deckkraft Hintergrund —","planEditor.scaleNote":"Der Maßstab wirkt sich nur auf Beschriftungen und den Sensorradius aus — das Temperaturfeld selbst ist maßstabsfrei.","planEditor.currentLength":"Aktuelle Länge","planEditor.exactLengthLabel":"Länge exakt setzen (Meter) — Enter bestätigt","planEditor.examplePlaceholder":"z. B. 3.20","planEditor.finishDrawing":"Zeichnen beenden (Esc)","planEditor.measureNote":"Eine Strecke abklicken, deren echte Länge du kennst — etwa eine Zimmerwand. Danach die Länge in Metern eintragen.","planEditor.measuredDistance":"Gemessene Strecke","planEditor.notMeasuredYet":"noch nichts gemessen","planEditor.realLengthLabel":"Echte Länge (Meter) — Enter übernimmt","planEditor.current":"Aktuell","planEditor.name":"Name","planEditor.width":"Breite (m)","planEditor.length":"Länge (m)","planEditor.area":"Fläche","planEditor.corners":"Ecken","planEditor.roomSizeNote":"Maße sind die Außenkanten — Enter oder ein Klick daneben übernimmt. Die linke obere Ecke bleibt dabei stehen, Türen und Fenster wandern nicht mit. Eckpunkte lassen sich weiterhin an den weißen Griffen ziehen.","planEditor.type":"Typ","planEditor.wallLength":"Länge","planEditor.wallTypeNote":"Raumkanten werden automatisch als Außen- oder Innenwand erkannt; dieser Typ gilt nur für freistehende Wände.","planEditor.kind":"Art","planEditor.openingWidthLabel":"Breite —","planEditor.doorSwingLabel":"Türanschlag","planEditor.doorFlipHinge":"Scharnierseite wechseln","planEditor.doorFlipSwing":"Schwenkrichtung wechseln","planEditor.openingNote":"Durchgang = offen, Tür = deutlich gedämpft, Fenster = fast dicht. Die Öffnung wirkt auf jede Wand an dieser Stelle — bei zwei aneinandergrenzenden Räumen also auf beide.","planEditor.displayNameLabel":"Anzeigename (leer = Entity-Name)","planEditor.exampleRoomPlaceholder":"z. B. Wohnzimmer","planEditor.currentValue":"Aktueller Wert","planEditor.notAvailable":"nicht verfügbar","planEditor.entityPlaceholder":"sensor.wohnzimmer_temperatur","planEditor.deleteButton":"Löschen (Entf)","planEditor.noEntity":"Ohne Entity","planEditor.noEntityAssigned":"keine Entity zugewiesen","planEditor.noSensorsYet":"Noch keine Sensoren gesetzt.","planEditor.noRoomsYet":"Noch keine Räume gezeichnet.","planEditor.sensorsHeader":"Sensoren ({n})","planEditor.roomsHeader":"Räume ({n})","planEditor.overview":"Übersicht","planEditor.summaryLine":"{rooms} Räume · {walls} freie Wände · {openings} Öffnungen · {sensors} Sensoren"},"roomNameSuggestions":["Wohnzimmer","Küche","Schlafzimmer","Bad","Flur","Büro","Kinderzimmer","Gäste-WC"]};
+const localeEn = {"translations":{"customCards.name":"Floorplan Heatmap","customCards.description":"Temperature distribution over a floor plan — with walls, doors, and windows as thermal resistance.","card.defaultTitle":"Temperature Distribution","card.resetViewTitle":"Reset view angle","card.resetViewLabel":"View","card.emptyLine1":"No floor plan yet.","card.emptyLine2":"Edit card → open {button} and draw rooms.","card.spreadTooltip":"Spread between warmest and coldest sensor","planEditor.title":"Floor Plan & Sensors","editor.openPlanButton":"Edit Floor Plan & Sensors","editor.counts":"{rooms} rooms · {sensors} sensors · {openings} openings","editor.sectionDisplay":"Display","editor.sectionView":"View","editor.sectionShow":"Show","editor.sectionModel":"Model & Accuracy","editor.sectionTransmittance":"Thermal transmittance","editor.fieldTitle":"Title","editor.fieldUnit":"Unit","editor.fieldPalette":"Color scale","editor.autoRange":"Automatically fit scale to sensor readings","editor.fieldMin":"Minimum","editor.fieldMax":"Maximum","editor.fieldOpacity":"Field opacity","editor.viewFlat":"Top-down","editor.viewTilted":"2.5D — walls raised","editor.fieldYaw":"Rotation","editor.fieldPitch":"Tilt angle","editor.fieldWallHeight":"Wall height","editor.viewAngleNote":"These angles are just the starting point. In the card itself, you can rotate the model with the mouse at any time — that's purely a viewing choice and won't overwrite the default set here.","editor.showWalls":"Walls, doors, and windows","editor.showRoomLabels":"Room names","editor.showValues":"Values at sensors","editor.showLegend":"Color legend","editor.showIsotherms":"Isotherms (lines of equal temperature)","editor.isothermStep":"Isotherm spacing","editor.cellSize":"Grid resolution","editor.cellSizeNote":"Smaller = finer and more accurate, but more compute-intensive. 6–10 px is a good compromise for apartments.","editor.sensorRadius":"Sensor radius","editor.sensorRadiusNote":"How large the area around a sensor point is that's held exactly at its value.","editor.transmittanceNote":"0% = perfect insulation, 100% = like free air. These values determine how strongly heat is exchanged between adjacent areas.","editor.dialogClosedWarning":"floorplan-heatmap-card: The configuration dialog was closed while the floor plan editor was open. The changes could not be applied.","editor.paletteCoolwarm":"Cool–Warm (recommended)","editor.paletteThermal":"Thermal","editor.paletteViridis":"Viridis","editor.paletteInferno":"Inferno","editor.paletteTurbo":"Turbo","editor.paletteCustom":"Custom","editor.paletteStops":"Custom palette stops","editor.palettePosition":"Position","editor.paletteColor":"Color","editor.paletteAddStop":"Add stop","editor.paletteRemoveStop":"Remove stop","editor.paletteStopsNote":"Position runs from 0 to 1. Stops are sorted automatically; at least two are required.","editor.paletteStopsInvalid":"Use at least two valid stops with positions from 0 to 1 and valid hex colors.","label.exterior":"Exterior wall","label.interior":"Interior wall","label.door":"Door","label.window":"Window","label.passage":"Passage","tools.select.label":"Select","tools.select.hint":"Click to select · drag to move · drag corner handles · type room dimensions on the right · Del removes","tools.room.label":"Room","tools.room.hint":"Drag for a rectangle · click repeatedly for a polygon (Enter or double-click closes it, Backspace undoes the last point)","tools.wall.label":"Wall","tools.wall.hint":"Click to set the start, click again for the end · type a length on the right and press Enter for an exact size","tools.opening.label":"Door / Window","tools.opening.hint":"Click on a wall — the opening snaps onto it and affects both adjoining rooms","tools.sensor.label":"Sensor","tools.sensor.hint":"Click to place a measurement point · assign the entity on the right","tools.erase.label":"Delete","tools.erase.hint":"Click an element to remove it","tools.measure.label":"Scale","tools.measure.hint":"Click a stretch of known length and enter its real length in meters","planEditor.undoTitle":"Undo (Cmd/Ctrl+Z)","planEditor.redoTitle":"Redo (Cmd/Ctrl+Shift+Z)","planEditor.fitTitle":"Fit all","planEditor.toggleGrid":"Grid","planEditor.toggleSnapGrid":"Snap to grid","planEditor.toggleSnapPoints":"Snap to corners","planEditor.toggleAxisSnap":"0°/90°","planEditor.cancel":"Cancel","planEditor.save":"Apply","planEditor.hintSuffix":"Scroll wheel zooms, middle button or spacebar pans.","planEditor.roomFallback":"Room {n}","planEditor.sensorFallback":"Sensor","planEditor.panelGeneral":"General Settings","planEditor.panelWallDraft":"Draw Wall","planEditor.panelMeasure":"Calibrate Scale","planEditor.panelRoom":"Room","planEditor.panelWall":"Freestanding Wall","planEditor.panelOpening":"Opening","planEditor.panelSensor":"Sensor","planEditor.scaleLabel":"Scale — pixels per meter","planEditor.backgroundLabel":"Background image (path under /local/…)","planEditor.backgroundPlaceholder":"/local/floorplan.png","planEditor.backgroundOpacityLabel":"Background opacity —","planEditor.scaleNote":"The scale only affects labels and the sensor radius — the temperature field itself is scale-free.","planEditor.currentLength":"Current length","planEditor.exactLengthLabel":"Set exact length (meters) — Enter confirms","planEditor.examplePlaceholder":"e.g. 3.20","planEditor.finishDrawing":"Finish drawing (Esc)","planEditor.measureNote":"Click a stretch whose real length you know — a room wall, for example. Then enter the length in meters.","planEditor.measuredDistance":"Measured distance","planEditor.notMeasuredYet":"nothing measured yet","planEditor.realLengthLabel":"Real length (meters) — Enter applies","planEditor.current":"Current","planEditor.name":"Name","planEditor.width":"Width (m)","planEditor.length":"Length (m)","planEditor.area":"Area","planEditor.corners":"Corners","planEditor.roomSizeNote":"Dimensions are the outer edges — Enter or clicking elsewhere applies them. The top-left corner stays fixed; doors and windows don't move with it. Corner points can still be dragged at the white handles.","planEditor.type":"Type","planEditor.wallLength":"Length","planEditor.wallTypeNote":"Room edges are automatically detected as exterior or interior walls; this type only applies to freestanding walls.","planEditor.kind":"Kind","planEditor.openingWidthLabel":"Width —","planEditor.doorSwingLabel":"Door swing","planEditor.doorFlipHinge":"Flip hinge side","planEditor.doorFlipSwing":"Flip swing direction","planEditor.openingNote":"Passage = open, door = clearly damped, window = almost sealed. The opening affects every wall at this spot — so both rooms, if two adjoin here.","planEditor.displayNameLabel":"Display name (empty = entity name)","planEditor.exampleRoomPlaceholder":"e.g. Living Room","planEditor.currentValue":"Current value","planEditor.notAvailable":"not available","planEditor.entityPlaceholder":"sensor.living_room_temperature","planEditor.deleteButton":"Delete (Del)","planEditor.noEntity":"No entity","planEditor.noEntityAssigned":"no entity assigned","planEditor.noSensorsYet":"No sensors placed yet.","planEditor.noRoomsYet":"No rooms drawn yet.","planEditor.sensorsHeader":"Sensors ({n})","planEditor.roomsHeader":"Rooms ({n})","planEditor.overview":"Overview","planEditor.summaryLine":"{rooms} rooms · {walls} freestanding walls · {openings} openings · {sensors} sensors"},"roomNameSuggestions":["Living Room","Kitchen","Bedroom","Bathroom","Hallway","Office","Kids Room","Guest WC"]};
+const localeDe = {"translations":{"customCards.name":"Grundriss-Heatmap","customCards.description":"Temperaturverteilung über einen Grundriss — mit Wänden, Türen und Fenstern als Wärmewiderstand.","card.defaultTitle":"Temperaturverteilung","card.resetViewTitle":"Blickwinkel zurücksetzen","card.resetViewLabel":"Ansicht","card.emptyLine1":"Noch kein Grundriss angelegt.","card.emptyLine2":"Karte bearbeiten → {button} öffnen und Räume zeichnen.","card.spreadTooltip":"Spreizung zwischen wärmstem und kältestem Sensor","planEditor.title":"Grundriss & Sensoren","editor.openPlanButton":"Grundriss & Sensoren bearbeiten","editor.counts":"{rooms} Räume · {sensors} Sensoren · {openings} Öffnungen","editor.sectionDisplay":"Darstellung","editor.sectionView":"Ansicht","editor.sectionShow":"Anzeigen","editor.sectionModel":"Modell & Genauigkeit","editor.sectionTransmittance":"Wärmedurchlässigkeit","editor.fieldTitle":"Titel","editor.fieldUnit":"Einheit","editor.fieldPalette":"Farbskala","editor.autoRange":"Skala automatisch an die Messwerte anpassen","editor.fieldMin":"Minimum","editor.fieldMax":"Maximum","editor.fieldOpacity":"Deckkraft der Fläche","editor.viewFlat":"Draufsicht","editor.viewTilted":"2,5D — Wände aufgestellt","editor.fieldYaw":"Drehung","editor.fieldPitch":"Höhenwinkel","editor.fieldWallHeight":"Wandhöhe","editor.viewAngleNote":"Diese Winkel sind der Ausgangspunkt. In der Karte selbst lässt sich das Modell jederzeit mit der Maus drehen — das bleibt aber eine reine Ansichtssache und überschreibt die Voreinstellung hier nicht.","editor.showWalls":"Wände, Türen und Fenster","editor.showRoomLabels":"Raumnamen","editor.showValues":"Messwerte an den Sensoren","editor.showLegend":"Farblegende","editor.showIsotherms":"Isothermen (Linien gleicher Temperatur)","editor.isothermStep":"Abstand der Isothermen","editor.cellSize":"Gitterauflösung","editor.cellSizeNote":"Kleiner = feiner und genauer, aber rechenintensiver. 6–10 px ist für Wohnungen ein guter Kompromiss.","editor.sensorRadius":"Sensorradius","editor.sensorRadiusNote":"Wie groß die Fläche um einen Messpunkt ist, die exakt auf dessen Wert festgehalten wird.","editor.transmittanceNote":"0 % = perfekte Dämmung, 100 % = wie freie Luft. Diese Werte bestimmen, wie stark Wärme zwischen benachbarten Bereichen ausgetauscht wird.","editor.dialogClosedWarning":"floorplan-heatmap-card: Der Konfigurationsdialog wurde geschlossen, während der Grundriss-Editor offen war. Die Änderungen konnten nicht übernommen werden.","editor.paletteCoolwarm":"Kalt–Warm (empfohlen)","editor.paletteThermal":"Thermal","editor.paletteViridis":"Viridis","editor.paletteInferno":"Inferno","editor.paletteTurbo":"Turbo","editor.paletteCustom":"Benutzerdefiniert","editor.paletteStops":"Benutzerdefinierte Farbstopps","editor.palettePosition":"Position","editor.paletteColor":"Farbe","editor.paletteAddStop":"Stopp hinzufügen","editor.paletteRemoveStop":"Stopp entfernen","editor.paletteStopsNote":"Die Position reicht von 0 bis 1. Stopps werden automatisch sortiert; mindestens zwei sind erforderlich.","editor.paletteStopsInvalid":"Mindestens zwei gültige Stopps mit Positionen von 0 bis 1 und gültigen Hex-Farben verwenden.","label.exterior":"Außenwand","label.interior":"Innenwand","label.door":"Tür","label.window":"Fenster","label.passage":"Durchgang","tools.select.label":"Auswählen","tools.select.hint":"Klicken zum Auswählen · ziehen zum Verschieben · Eckpunkte an den Griffen ziehen · Raummaße rechts eintippen · Entf löscht","tools.room.label":"Raum","tools.room.hint":"Ziehen ergibt ein Rechteck · einzelne Klicks ergeben ein Polygon (Enter oder Doppelklick schließt, Rücktaste nimmt zurück)","tools.wall.label":"Wand","tools.wall.hint":"Klick setzt den Anfang, zweiter Klick das Ende · Länge rechts eintippen und Enter für ein exaktes Maß","tools.opening.label":"Tür / Fenster","tools.opening.hint":"Auf eine Wand klicken — die Öffnung rastet darauf ein und wirkt auf beide angrenzenden Räume","tools.sensor.label":"Sensor","tools.sensor.hint":"Klick setzt einen Messpunkt · rechts die Entity zuweisen","tools.erase.label":"Löschen","tools.erase.hint":"Auf ein Element klicken, um es zu entfernen","tools.measure.label":"Maßstab","tools.measure.hint":"Eine Strecke bekannter Länge abklicken und die echte Länge in Metern eintragen","planEditor.undoTitle":"Rückgängig (Cmd/Ctrl+Z)","planEditor.redoTitle":"Wiederholen (Cmd/Ctrl+Shift+Z)","planEditor.fitTitle":"Alles einpassen","planEditor.toggleGrid":"Raster","planEditor.toggleSnapGrid":"Am Raster","planEditor.toggleSnapPoints":"An Ecken","planEditor.toggleAxisSnap":"0°/90°","planEditor.cancel":"Abbrechen","planEditor.save":"Übernehmen","planEditor.hintSuffix":"Mausrad zoomt, mittlere Taste oder Leertaste schiebt.","planEditor.roomFallback":"Raum {n}","planEditor.sensorFallback":"Sensor","planEditor.panelGeneral":"Grundeinstellungen","planEditor.panelWallDraft":"Wand zeichnen","planEditor.panelMeasure":"Maßstab kalibrieren","planEditor.panelRoom":"Raum","planEditor.panelWall":"Freistehende Wand","planEditor.panelOpening":"Öffnung","planEditor.panelSensor":"Sensor","planEditor.scaleLabel":"Maßstab — Pixel pro Meter","planEditor.backgroundLabel":"Hintergrundbild (Pfad unter /local/…)","planEditor.backgroundPlaceholder":"/local/grundriss.png","planEditor.backgroundOpacityLabel":"Deckkraft Hintergrund —","planEditor.scaleNote":"Der Maßstab wirkt sich nur auf Beschriftungen und den Sensorradius aus — das Temperaturfeld selbst ist maßstabsfrei.","planEditor.currentLength":"Aktuelle Länge","planEditor.exactLengthLabel":"Länge exakt setzen (Meter) — Enter bestätigt","planEditor.examplePlaceholder":"z. B. 3.20","planEditor.finishDrawing":"Zeichnen beenden (Esc)","planEditor.measureNote":"Eine Strecke abklicken, deren echte Länge du kennst — etwa eine Zimmerwand. Danach die Länge in Metern eintragen.","planEditor.measuredDistance":"Gemessene Strecke","planEditor.notMeasuredYet":"noch nichts gemessen","planEditor.realLengthLabel":"Echte Länge (Meter) — Enter übernimmt","planEditor.current":"Aktuell","planEditor.name":"Name","planEditor.width":"Breite (m)","planEditor.length":"Länge (m)","planEditor.area":"Fläche","planEditor.corners":"Ecken","planEditor.roomSizeNote":"Maße sind die Außenkanten — Enter oder ein Klick daneben übernimmt. Die linke obere Ecke bleibt dabei stehen, Türen und Fenster wandern nicht mit. Eckpunkte lassen sich weiterhin an den weißen Griffen ziehen.","planEditor.type":"Typ","planEditor.wallLength":"Länge","planEditor.wallTypeNote":"Raumkanten werden automatisch als Außen- oder Innenwand erkannt; dieser Typ gilt nur für freistehende Wände.","planEditor.kind":"Art","planEditor.openingWidthLabel":"Breite —","planEditor.doorSwingLabel":"Türanschlag","planEditor.doorFlipHinge":"Scharnierseite wechseln","planEditor.doorFlipSwing":"Schwenkrichtung wechseln","planEditor.openingNote":"Durchgang = offen, Tür = deutlich gedämpft, Fenster = fast dicht. Die Öffnung wirkt auf jede Wand an dieser Stelle — bei zwei aneinandergrenzenden Räumen also auf beide.","planEditor.displayNameLabel":"Anzeigename (leer = Entity-Name)","planEditor.exampleRoomPlaceholder":"z. B. Wohnzimmer","planEditor.currentValue":"Aktueller Wert","planEditor.notAvailable":"nicht verfügbar","planEditor.entityPlaceholder":"sensor.wohnzimmer_temperatur","planEditor.deleteButton":"Löschen (Entf)","planEditor.noEntity":"Ohne Entity","planEditor.noEntityAssigned":"keine Entity zugewiesen","planEditor.noSensorsYet":"Noch keine Sensoren gesetzt.","planEditor.noRoomsYet":"Noch keine Räume gezeichnet.","planEditor.sensorsHeader":"Sensoren ({n})","planEditor.roomsHeader":"Räume ({n})","planEditor.overview":"Übersicht","planEditor.summaryLine":"{rooms} Räume · {walls} freie Wände · {openings} Öffnungen · {sensors} Sensoren"},"roomNameSuggestions":["Wohnzimmer","Küche","Schlafzimmer","Bad","Flur","Büro","Kinderzimmer","Gäste-WC"]};
 
 const TRANSLATIONS = {
   en: localeEn.translations,
@@ -251,19 +251,119 @@ const STOPS = {
   ],
 };
 
-const PALETTE_NAMES = Object.keys(STOPS);
+const PALETTE_NAMES = [...Object.keys(STOPS), 'custom'];
 
 const lutCache = new Map();
 
-/** 256×4 lookup table (RGBA, alpha always 255) for a palette. */
-function paletteLUT(name) {
+/** Converts a supported colour value to [r, g, b]. */
+function parseColor(value) {
+  if (Array.isArray(value) && value.length >= 3) {
+    const rgb = value.slice(0, 3).map(Number);
+    if (rgb.every(Number.isFinite)) {
+      return rgb.map((v) => Math.round(clamp(v, 0, 255)));
+    }
+    return null;
+  }
+
+  if (typeof value !== 'string') return null;
+
+  const hex = value.trim();
+
+  const short = /^#([0-9a-f]{3})$/i.exec(hex);
+  if (short) {
+    return short[1].split('').map((c) => parseInt(c + c, 16));
+  }
+
+  const full = /^#([0-9a-f]{6})$/i.exec(hex);
+  if (full) {
+    const n = parseInt(full[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+
+  return null;
+}
+
+/**
+ * Converts user-defined palette stops to the internal format.
+ *
+ * Input:
+ *   [
+ *     [0.0, "#482382"],
+ *     [0.5, "#2db464"],
+ *     [1.0, "#b91923"]
+ *   ]
+ *
+ * Invalid stops are ignored. Stops are sorted by position.
+ * Missing 0/1 endpoints inherit the nearest supplied colour.
+ */
+function normalizePaletteStops(stops) {
+  if (!Array.isArray(stops)) return null;
+
+  const byPosition = new Map();
+
+  for (const stop of stops) {
+    if (!Array.isArray(stop) || stop.length < 2) continue;
+
+    const position = Number(stop[0]);
+    const color = parseColor(stop[1]);
+
+    if (!Number.isFinite(position) || position < 0 || position > 1 || !color) continue;
+
+    // If a position is supplied more than once, the last one wins.
+    byPosition.set(position, [position, color]);
+  }
+
+  const result = [...byPosition.values()].sort((a, b) => a[0] - b[0]);
+
+  if (result.length < 2) return null;
+
+  if (result[0][0] > 0) {
+    result.unshift([0, [...result[0][1]]]);
+  }
+
+  const last = result[result.length - 1];
+  if (last[0] < 1) {
+    result.push([1, [...last[1]]]);
+  }
+
+  return result;
+}
+
+function resolvePalette(name, customStops) {
+  if (name === 'custom') {
+    const stops = normalizePaletteStops(customStops);
+
+    if (stops) {
+      return {
+        key: `custom:${JSON.stringify(stops)}`,
+        stops,
+      };
+    }
+  }
+
   const key = STOPS[name] ? name : 'coolwarm';
-  if (lutCache.has(key)) return lutCache.get(key);
-  const stops = STOPS[key];
+
+  return {
+    key,
+    stops: STOPS[key],
+  };
+}
+
+/** 256×4 lookup table (RGBA, alpha always 255) for a palette. */
+function paletteLUT(name, customStops) {
+  const palette = resolvePalette(name, customStops);
+
+  if (lutCache.has(palette.key)) return lutCache.get(palette.key);
+
+  const stops = palette.stops;
   const lut = new Uint8ClampedArray(256 * 4);
+
   for (let i = 0; i < 256; i++) {
     const ratio = i / 255;
-    let lo = stops[0], hi = stops[stops.length - 1];
+
+    let lo = stops[0];
+    let hi = stops[stops.length - 1];
+
     for (let s = 0; s < stops.length - 1; s++) {
       if (ratio >= stops[s][0] && ratio <= stops[s + 1][0]) {
         lo = stops[s];
@@ -271,35 +371,50 @@ function paletteLUT(name) {
         break;
       }
     }
+
     const span = hi[0] - lo[0] || 1;
     const f = (ratio - lo[0]) / span;
+
     lut[i * 4 + 0] = Math.round(lo[1][0] + f * (hi[1][0] - lo[1][0]));
     lut[i * 4 + 1] = Math.round(lo[1][1] + f * (hi[1][1] - lo[1][1]));
     lut[i * 4 + 2] = Math.round(lo[1][2] + f * (hi[1][2] - lo[1][2]));
     lut[i * 4 + 3] = 255;
   }
-  lutCache.set(key, lut);
+
+  lutCache.set(palette.key, lut);
   return lut;
 }
 
 /** CSS gradient for the legend. */
-function paletteGradientCss(name, direction = '90deg') {
-  const stops = STOPS[STOPS[name] ? name : 'coolwarm'];
-  const parts = stops.map(([pos, [r, g, b]]) => `rgb(${r},${g},${b}) ${(pos * 100).toFixed(0)}%`);
+function paletteGradientCss(name, direction = '90deg', customStops) {
+  const { stops } = resolvePalette(name, customStops);
+
+  const parts = stops.map(
+    ([pos, [r, g, b]]) =>
+      `rgb(${r},${g},${b}) ${(pos * 100).toFixed(0)}%`
+  );
+
   return `linear-gradient(${direction}, ${parts.join(', ')})`;
 }
 
-function paletteColorCss(name, ratio) {
-  const lut = paletteLUT(name);
+function paletteColorCss(name, ratio, customStops) {
+  const lut = paletteLUT(name, customStops);
   const i = Math.round(clamp(ratio, 0, 1) * 255) * 4;
+
   return `rgb(${lut[i]}, ${lut[i + 1]}, ${lut[i + 2]})`;
 }
 
 /** Black or white — whichever reads better on top of the palette color. */
-function readableTextOn(name, ratio) {
-  const lut = paletteLUT(name);
+function readableTextOn(name, ratio, customStops) {
+  const lut = paletteLUT(name, customStops);
   const i = Math.round(clamp(ratio, 0, 1) * 255) * 4;
-  const luminance = (0.2126 * lut[i] + 0.7152 * lut[i + 1] + 0.0722 * lut[i + 2]) / 255;
+
+  const luminance =
+    (0.2126 * lut[i] +
+      0.7152 * lut[i + 1] +
+      0.0722 * lut[i + 2]) /
+    255;
+
   return luminance > 0.55 ? '#11151c' : '#ffffff';
 }
 
@@ -333,6 +448,7 @@ const DEFAULTS = {
   max: 26,
   auto_range: false,
   palette: 'coolwarm',
+  palette_stops: [],
   opacity: 0.85,
   cell_size: 8,
   sensor_radius: 0.4,
@@ -1112,7 +1228,7 @@ function roomsPath(rooms, view) {
  */
 function heatmapBuffer(doc, field, opts) {
   const { cols, rows, inside, T, reach } = field;
-  const lut = paletteLUT(opts.palette);
+  const lut = paletteLUT(opts.palette, opts.paletteStops);
   const min = opts.min;
   const span = Math.max(1e-6, opts.max - opts.min);
 
@@ -3412,7 +3528,14 @@ const PALETTE_LABEL_KEYS = {
   viridis: 'editor.paletteViridis',
   inferno: 'editor.paletteInferno',
   turbo: 'editor.paletteTurbo',
+  custom: 'editor.paletteCustom',
 };
+
+const DEFAULT_CUSTOM_PALETTE_STOPS = [
+  [0.00, '#2166AC'],
+  [0.50, '#F7F7F7'],
+  [1.00, '#B2182B'],
+];
 
 const TRANSMITTANCE_LABEL_KEYS = {
   exterior: 'label.exterior',
@@ -3448,7 +3571,79 @@ const FORM_STYLES = `
     border: 1px solid var(--divider-color, rgba(127,140,158,.35));
     border-radius: 8px; padding: 8px 10px; font-size: 14px; font-family: inherit;
   }
-  input:focus, select:focus { outline: none; border-color: var(--primary-color); }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+
+  .palette-stop-head,
+  .palette-stop {
+    display: grid;
+    grid-template-columns: 76px 36px minmax(0, 1fr) 32px;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .palette-stop-head {
+    margin: 8px 0 5px;
+    font-size: 11px;
+    color: var(--secondary-text-color);
+  }
+
+  .palette-stop-head .color-head {
+    grid-column: 2 / 4;
+  }
+
+  .palette-stop-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .palette-stop input[type=color] {
+    width: 36px;
+    height: 34px;
+    padding: 2px;
+    border: 1px solid var(--divider-color, rgba(127,140,158,.35));
+    border-radius: 7px;
+    background: var(--card-background-color, #fff);
+    cursor: pointer;
+  }
+
+  .palette-stop-remove {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 7px;
+    background: var(--divider-color, rgba(127,140,158,.18));
+    color: var(--primary-text-color);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .palette-stop-remove:hover {
+    background: var(--divider-color, rgba(127,140,158,.32));
+  }
+
+  .palette-stop-remove:disabled {
+    opacity: .3;
+    cursor: default;
+  }
+
+  .palette-add {
+    margin-top: 9px;
+    padding: 7px 11px;
+    border: 1px solid var(--divider-color, rgba(127,140,158,.35));
+    border-radius: 8px;
+    background: transparent;
+    color: var(--primary-text-color);
+    font-family: inherit;
+    cursor: pointer;
+  }
+
   input[type=range] { width: 100%; accent-color: var(--primary-color); }
   input:disabled { opacity: .5; }
   .check {
@@ -3533,6 +3728,7 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
     const cfg = normalizeConfig(this._config);
     const fp = cfg.floorplan;
     const lang = this._lang();
+    const paletteStops = paletteStopsForEditor(cfg.palette_stops);
     const tr = (key, vars) => t(lang, key, vars);
     const counts = tr('editor.counts', {
       rooms: fp.rooms.length, sensors: fp.sensors.length, openings: fp.openings.length,
@@ -3566,7 +3762,59 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
               </select>
             </div>
           </div>
-          <div class="swatch" style="background:${paletteGradientCss(cfg.palette)}"></div>
+          <div class="swatch" style="background:${paletteGradientCss(cfg.palette, '90deg', cfg.palette_stops)}"></div>
+          <div class="field" ${cfg.palette === 'custom' ? '' : 'hidden'} style="margin-top:12px">
+            <label>${tr('editor.paletteStops')}</label>
+
+            <div class="palette-stop-head">
+              <span>${tr('editor.palettePosition')}</span>
+              <span class="color-head">${tr('editor.paletteColor')}</span>
+              <span></span>
+            </div>
+
+            <div class="palette-stop-list">
+              ${paletteStops.map(([position, color]) => `
+                <div class="palette-stop" data-palette-stop>
+                  <input
+                    type="number"
+                    data-palette-position
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="${position}"
+                  >
+
+                  <input
+                    type="color"
+                    data-palette-picker
+                    value="${escapeAttr(color)}"
+                    title="${tr('editor.paletteColor')}"
+                  >
+
+                  <input
+                    type="text"
+                    data-palette-color
+                    value="${escapeAttr(color)}"
+                    spellcheck="false"
+                  >
+
+                  <button
+                    type="button"
+                    class="palette-stop-remove"
+                    data-remove-palette-stop
+                    title="${tr('editor.paletteRemoveStop')}"
+                    ${paletteStops.length <= 2 ? 'disabled' : ''}
+                  >×</button>
+                </div>
+              `).join('')}
+            </div>
+
+            <button type="button" class="palette-add" data-add-palette-stop>
+              + ${tr('editor.paletteAddStop')}
+            </button>
+
+            <div class="note">${tr('editor.paletteStopsNote')}</div>
+          </div>
 
           <div class="field" style="margin-top:12px">
             <label class="check"><input type="checkbox" data-key="auto_range" ${cfg.auto_range ? 'checked' : ''}>
@@ -3666,6 +3914,19 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
         else if (input.type === 'number' || input.type === 'range') value = parseFloat(input.value);
         else value = input.value;
         if (typeof value === 'number' && !Number.isFinite(value)) return;
+        if (
+          key === 'palette' &&
+          value === 'custom' &&
+          !normalizePaletteStops(this._config.palette_stops)
+        ) {
+          this._emit({
+            palette: 'custom',
+            palette_stops: DEFAULT_CUSTOM_PALETTE_STOPS.map(
+              ([position, color]) => [position, color]
+            ),
+          });
+          return;
+        }
 
         // Sliders must not trigger a re-render — otherwise the element
         // gets replaced while being dragged. Instead just update the
@@ -3701,6 +3962,131 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
         this._emit({ transmittance: { ...this._readTransmittance() } }, false);
       };
     });
+
+    const commitPaletteStops = (source) => {
+      const stops = this._readPaletteStops();
+
+      if (!normalizePaletteStops(stops)) {
+        if (source) {
+          source.setCustomValidity(tr('editor.paletteStopsInvalid'));
+          source.reportValidity();
+        }
+        return;
+      }
+
+      this.shadowRoot
+        .querySelectorAll('[data-palette-position], [data-palette-color]')
+        .forEach((input) => input.setCustomValidity(''));
+
+      this._emit({ palette_stops: stops });
+    };
+
+    this.shadowRoot.querySelectorAll('[data-palette-position]').forEach((input) => {
+      input.onchange = () => {
+        const value = parseFloat(input.value);
+
+        if (!Number.isFinite(value) || value < 0 || value > 1) {
+          input.setCustomValidity(tr('editor.paletteStopsInvalid'));
+          input.reportValidity();
+          return;
+        }
+
+        input.setCustomValidity('');
+        commitPaletteStops(input);
+      };
+    });
+
+    this.shadowRoot.querySelectorAll('[data-palette-color]').forEach((input) => {
+      input.onchange = () => {
+        const color = editorColorHex(input.value);
+
+        if (!color) {
+          input.setCustomValidity(tr('editor.paletteStopsInvalid'));
+          input.reportValidity();
+          return;
+        }
+
+        input.setCustomValidity('');
+        input.value = color;
+
+        const row = input.closest('[data-palette-stop]');
+        const picker = row && row.querySelector('[data-palette-picker]');
+        if (picker) picker.value = color;
+
+        commitPaletteStops(input);
+      };
+    });
+
+    this.shadowRoot.querySelectorAll('[data-palette-picker]').forEach((picker) => {
+      const row = picker.closest('[data-palette-stop]');
+      const text = row && row.querySelector('[data-palette-color]');
+
+      picker.oninput = () => {
+        if (text) text.value = picker.value.toUpperCase();
+      };
+
+      picker.onchange = () => {
+        if (text) text.value = picker.value.toUpperCase();
+        commitPaletteStops(picker);
+      };
+    });
+
+    this.shadowRoot.querySelectorAll('[data-remove-palette-stop]').forEach((button) => {
+      button.onclick = () => {
+        const rows = [...this.shadowRoot.querySelectorAll('[data-palette-stop]')];
+        if (rows.length <= 2) return;
+
+        const row = button.closest('[data-palette-stop]');
+        const index = rows.indexOf(row);
+        if (index < 0) return;
+
+        const stops = this._readPaletteStops();
+        stops.splice(index, 1);
+
+        this._emit({ palette_stops: stops });
+      };
+    });
+
+    const addPaletteStop = this.shadowRoot.querySelector('[data-add-palette-stop]');
+
+    if (addPaletteStop) {
+      addPaletteStop.onclick = () => {
+        const stops = paletteStopsForEditor(this._readPaletteStops());
+
+        let position = 0.5;
+        let largestGap = -1;
+
+        for (let i = 0; i < stops.length - 1; i++) {
+          const gap = stops[i + 1][0] - stops[i][0];
+
+          if (gap > largestGap) {
+            largestGap = gap;
+            position = (stops[i][0] + stops[i + 1][0]) / 2;
+          }
+        }
+
+        position = Number(position.toFixed(2));
+
+        // Use the colour already represented at the new position, so merely
+        // adding a stop doesn't change the appearance of the gradient.
+        const color =
+          rgbCssToHex(paletteColorCss('custom', position, stops)) || '#808080';
+
+        stops.push([position, color]);
+        stops.sort((a, b) => a[0] - b[0]);
+
+        this._emit({ palette_stops: stops });
+      };
+    }
+  }
+
+  _readPaletteStops() {
+    return [...this.shadowRoot.querySelectorAll('[data-palette-stop]')].map(
+      (row) => [
+        parseFloat(row.querySelector('[data-palette-position]').value),
+        row.querySelector('[data-palette-color]').value.trim(),
+      ]
+    );
   }
 
   /** Reads all transmittance sliders from the form. */
@@ -3757,6 +4143,79 @@ class FloorplanHeatmapCardEditor extends HTMLElement {
 function escapeAttr(value) {
   return String(value == null ? '' : value).replace(/[&<>"']/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function editorColorHex(value) {
+  if (Array.isArray(value) && value.length >= 3) {
+    const rgb = value.slice(0, 3).map(Number);
+    if (!rgb.every(Number.isFinite)) return null;
+
+    return `#${rgb.map((v) =>
+      Math.round(Math.min(255, Math.max(0, v)))
+        .toString(16)
+        .padStart(2, '0')
+    ).join('').toUpperCase()}`;
+  }
+
+  if (typeof value !== 'string') return null;
+
+  const text = value.trim();
+
+  const short = /^#([0-9a-f]{3})$/i.exec(text);
+  if (short) {
+    return `#${short[1]
+      .split('')
+      .map((c) => c + c)
+      .join('')
+      .toUpperCase()}`;
+  }
+
+  const full = /^#([0-9a-f]{6})$/i.exec(text);
+  if (full) return `#${full[1].toUpperCase()}`;
+
+  return null;
+}
+
+function paletteStopsForEditor(stops) {
+  const result = Array.isArray(stops)
+    ? stops
+        .map((stop) => {
+          if (!Array.isArray(stop) || stop.length < 2) return null;
+
+          const position = Number(stop[0]);
+          const color = editorColorHex(stop[1]);
+
+          if (
+            !Number.isFinite(position) ||
+            position < 0 ||
+            position > 1 ||
+            !color
+          ) {
+            return null;
+          }
+
+          return [position, color];
+        })
+        .filter(Boolean)
+        .sort((a, b) => a[0] - b[0])
+    : [];
+
+  if (result.length >= 2) return result;
+
+  return DEFAULT_CUSTOM_PALETTE_STOPS.map(
+    ([position, color]) => [position, color]
+  );
+}
+
+function rgbCssToHex(value) {
+  const match = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/.exec(value);
+  if (!match) return null;
+
+  return `#${match
+    .slice(1)
+    .map((v) => Number(v).toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()}`;
 }
 
 /* ===== src/card.js ===== */
@@ -4211,6 +4670,7 @@ class FloorplanHeatmapCard extends HTMLElement {
     if (this._hasField && !this._buffer) {
       this._buffer = heatmapBuffer(document, this._field, {
         palette: cfg.palette,
+        paletteStops: cfg.palette_stops,
         min: this._range.min,
         max: this._range.max,
       });
@@ -4250,6 +4710,7 @@ class FloorplanHeatmapCard extends HTMLElement {
     if (this._hasField) {
       renderField(ctx, this._field, view, {
         palette: cfg.palette,
+        paletteStops: cfg.palette_stops,
         min: this._range.min,
         max: this._range.max,
         opacity: clamp(cfg.opacity, 0, 1),
@@ -4360,8 +4821,12 @@ class FloorplanHeatmapCard extends HTMLElement {
       const value = values[i];
       const known = Number.isFinite(value);
       const ratio = known ? clamp((value - this._range.min) / span, 0, 1) : 0.5;
-      const bg = known ? paletteColorCss(cfg.palette, ratio) : 'rgba(120,130,145,0.85)';
-      const fg = known ? readableTextOn(cfg.palette, ratio) : '#fff';
+      const bg = known
+        ? paletteColorCss(cfg.palette, ratio, cfg.palette_stops)
+        : 'rgba(120,130,145,0.85)';
+      const fg = known
+        ? readableTextOn(cfg.palette, ratio, cfg.palette_stops)
+        : '#fff';
 
       const pos = positions[i] || { x: 0, y: 0 };
       el.style.left = `${(pos.x / this._stage.clientWidth) * 100}%`;
@@ -4389,7 +4854,7 @@ class FloorplanHeatmapCard extends HTMLElement {
     if (!cfg.show_legend) return;
     const unit = this._detectUnit();
     const bar = this._legend.querySelector('.bar');
-    bar.style.background = paletteGradientCss(cfg.palette);
+    bar.style.background = paletteGradientCss(cfg.palette, '90deg', cfg.palette_stops);
     this._legend.querySelector('.lo').textContent = `${this._range.min.toFixed(1)} ${unit}`;
     this._legend.querySelector('.hi').textContent = `${this._range.max.toFixed(1)} ${unit}`;
 
@@ -4469,12 +4934,19 @@ class FloorplanHeatmapCard extends HTMLElement {
     }
     const span = Math.max(1e-6, this._range.max - this._range.min);
     const ratio = clamp((value - this._range.min) / span, 0, 1);
-    const lut = paletteLUT(this._config.palette);
+    const lut = paletteLUT(
+      this._config.palette,
+      this._config.palette_stops
+    );
     const l = Math.round(ratio * 255) * 4;
     this._tooltip.style.left = `${px}px`;
     this._tooltip.style.top = `${py}px`;
     this._tooltip.style.background = `rgba(${lut[l]},${lut[l + 1]},${lut[l + 2]},0.95)`;
-    this._tooltip.style.color = readableTextOn(this._config.palette, ratio);
+    this._tooltip.style.color = readableTextOn(
+      this._config.palette,
+      ratio,
+      this._config.palette_stops
+    );
     this._tooltip.textContent = `${value.toFixed(1)} ${this._detectUnit()}`;
     this._tooltip.classList.add('show');
   }

@@ -146,7 +146,7 @@ unit: °C
 min: 18                 # lower bound of the color scale
 max: 26                 # upper bound
 auto_range: false       # true = scale follows the measured values
-palette: coolwarm       # coolwarm | thermal | viridis | inferno | turbo
+palette: coolwarm       # coolwarm | thermal | viridis | inferno | turbo | custom
 opacity: 0.85
 
 view_mode: flat         # flat = top-down view | tilted = 2.5D with walls
@@ -184,6 +184,35 @@ floorplan:
   sensors:
     - { id: s1, x: 175, y: 150, entity: sensor.living_room_temperature, name: Living Room }
 ```
+
+### Custom color scales
+
+Set `palette: custom` to define your own color scale with `palette_stops`.
+Each stop is a `[position, color]` pair, where the position runs from `0`
+at the configured minimum to `1` at the configured maximum.
+
+```yaml
+min: 30
+max: 80
+palette: custom
+palette_stops:
+  - [0.00, "#482382"]
+  - [0.15, "#2864d2"]
+  - [0.30, "#23b4c8"]
+  - [0.45, "#2db464"]
+  - [0.60, "#50be50"]
+  - [0.70, "#bed23c"]
+  - [0.80, "#f5be2d"]
+  - [0.90, "#eb6423"]
+  - [1.00, "#b91923"]
+```
+
+Colors may be written as `#RGB`, `#RRGGBB`, or RGB arrays such as
+`[45, 180, 100]`. At least two valid stops are required. Stops are sorted
+by position automatically, and if the first or last stop does not reach
+`0` or `1`, its nearest color is extended to that endpoint.
+
+The built-in palettes do not require `palette_stops`.
 
 Coordinates are abstract floor plan pixels. `px_per_meter` translates them
 into meters — you need this for labels, the sensor radius, and the wall

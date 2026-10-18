@@ -50,7 +50,7 @@ export function roomsPath(rooms, view) {
  */
 export function heatmapBuffer(doc, field, opts) {
   const { cols, rows, inside, T, reach } = field;
-  const lut = paletteLUT(opts.palette);
+  const lut = paletteLUT(opts.palette, opts.paletteStops);
   const min = opts.min;
   const span = Math.max(1e-6, opts.max - opts.min);
 

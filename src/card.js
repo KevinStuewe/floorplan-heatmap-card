@@ -458,6 +458,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
     if (this._hasField && !this._buffer) {
       this._buffer = heatmapBuffer(document, this._field, {
         palette: cfg.palette,
+        paletteStops: cfg.palette_stops,
         min: this._range.min,
         max: this._range.max,
       });
@@ -497,6 +498,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
     if (this._hasField) {
       renderField(ctx, this._field, view, {
         palette: cfg.palette,
+        paletteStops: cfg.palette_stops,
         min: this._range.min,
         max: this._range.max,
         opacity: clamp(cfg.opacity, 0, 1),
@@ -607,8 +609,12 @@ export class FloorplanHeatmapCard extends HTMLElement {
       const value = values[i];
       const known = Number.isFinite(value);
       const ratio = known ? clamp((value - this._range.min) / span, 0, 1) : 0.5;
-      const bg = known ? paletteColorCss(cfg.palette, ratio) : 'rgba(120,130,145,0.85)';
-      const fg = known ? readableTextOn(cfg.palette, ratio) : '#fff';
+      const bg = known
+        ? paletteColorCss(cfg.palette, ratio, cfg.palette_stops)
+        : 'rgba(120,130,145,0.85)';
+      const fg = known
+        ? readableTextOn(cfg.palette, ratio, cfg.palette_stops)
+        : '#fff';
 
       const pos = positions[i] || { x: 0, y: 0 };
       el.style.left = `${(pos.x / this._stage.clientWidth) * 100}%`;
@@ -636,7 +642,7 @@ export class FloorplanHeatmapCard extends HTMLElement {
     if (!cfg.show_legend) return;
     const unit = this._detectUnit();
     const bar = this._legend.querySelector('.bar');
-    bar.style.background = paletteGradientCss(cfg.palette);
+    bar.style.background = paletteGradientCss(cfg.palette, '90deg', cfg.palette_stops);
     this._legend.querySelector('.lo').textContent = `${this._range.min.toFixed(1)} ${unit}`;
     this._legend.querySelector('.hi').textContent = `${this._range.max.toFixed(1)} ${unit}`;
 
@@ -716,12 +722,19 @@ export class FloorplanHeatmapCard extends HTMLElement {
     }
     const span = Math.max(1e-6, this._range.max - this._range.min);
     const ratio = clamp((value - this._range.min) / span, 0, 1);
-    const lut = paletteLUT(this._config.palette);
+    const lut = paletteLUT(
+      this._config.palette,
+      this._config.palette_stops
+    );
     const l = Math.round(ratio * 255) * 4;
     this._tooltip.style.left = `${px}px`;
     this._tooltip.style.top = `${py}px`;
     this._tooltip.style.background = `rgba(${lut[l]},${lut[l + 1]},${lut[l + 2]},0.95)`;
-    this._tooltip.style.color = readableTextOn(this._config.palette, ratio);
+    this._tooltip.style.color = readableTextOn(
+      this._config.palette,
+      ratio,
+      this._config.palette_stops
+    );
     this._tooltip.textContent = `${value.toFixed(1)} ${this._detectUnit()}`;
     this._tooltip.classList.add('show');
   }
